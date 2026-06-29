@@ -13,7 +13,9 @@ Docelowe MVP VidEdit Studio obejmuje:
 
 ## Aktualny etap
 
-Obecny etap dodaje domenowy fundament importu mediów:
+Obecny etap `porzadki-techniczne` stabilizuje fundament developerski przed realnym importem pliku. Obejmuje porządek w strukturze projektu, skryptach, zależnościach, dokumentacji uruchamiania i podstawowych testach.
+
+Poprzedni fundament importu mediów obejmuje:
 
 - listę obsługiwanych rozszerzeń wideo,
 - walidację danych pliku mediów,
@@ -23,3 +25,5 @@ Obecny etap dodaje domenowy fundament importu mediów:
 - testy jednostkowe importu mediów.
 
 Prawdziwy import z dysku nie jest jeszcze implementowany. Ten etap nie używa Electron API, `fs`, FFmpeg ani FFprobe.
+
+Następny etap: `prawdziwy-import-pliku`.
