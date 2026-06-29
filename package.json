@@ -6,9 +6,9 @@
   "type": "module",
   "main": "src/infrastruktura/electron/glownyProces.cjs",
   "scripts": {
-    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on tcp:127.0.0.1:5173 && electron .\"",
-    "dev:ui": "vite --host 127.0.0.1",
+    "dev": "vite --host 127.0.0.1 --port 5180 --strictPort",
     "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5180 --strictPort",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -21,11 +21,8 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
-    "concurrently": "^9.2.1",
-    "electron": "^31.7.7",
     "jsdom": "^27.3.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15",
-    "wait-on": "^9.0.3"
+    "vitest": "^4.0.15"
   }
 }
