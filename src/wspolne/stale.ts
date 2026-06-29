@@ -1,0 +1,3 @@
+export const WERSJA_MODELU_PROJEKTU = 1;
+
+export const DOMYSLNA_LICZBA_KLATEK_NA_SEKUNDE = 25;
