@@ -4,7 +4,6 @@
   "description": "Lokalny edytor do szybkiego czyszczenia nagran mowionych.",
   "private": true,
   "type": "module",
-  "main": "src/infrastruktura/electron/glownyProces.cjs",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5180 --strictPort",
     "build": "npm run typecheck && vite build",

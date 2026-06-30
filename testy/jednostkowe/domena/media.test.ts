@@ -4,15 +4,34 @@ import {
   pobierzRozszerzeniePliku,
   sprawdzCzyRozszerzenieWideoJestObslugiwane
 } from "../../../src/domena/media/rozszerzeniaWideo";
-import { sprawdzCzyDaneImportuMediowSaPoprawne } from "../../../src/domena/media/walidacjaMediow";
-import type { DaneImportuPlikuMediow } from "../../../src/domena/media/typyMediow";
+import {
+  sprawdzCzyDaneImportuMediowSaPoprawne,
+  walidujPlikMediow
+} from "../../../src/domena/media/walidacjaMediow";
+import type {
+  DaneImportuPlikuMediow,
+  PlikDoWalidacjiMediow
+} from "../../../src/domena/media/typyMediow";
+
+function utworzTestowyPlik(
+  nadpisaneDane: Partial<PlikDoWalidacjiMediow> = {}
+): PlikDoWalidacjiMediow {
+  return {
+    name: "nagranie.mp4",
+    type: "video/mp4",
+    size: 2048,
+    ...nadpisaneDane
+  };
+}
 
 const poprawneDaneImportu: DaneImportuPlikuMediow = {
   id: "media-1",
   nazwaPliku: "nagranie.mp4",
-  sciezkaPliku: "C:/filmy/nagranie.mp4",
-  czasTrwaniaMs: 120000,
-  rozmiarBajtow: 2048
+  rozszerzenie: ".mp4",
+  typMime: "video/mp4",
+  rozmiarBajtow: 2048,
+  objectUrl: "blob:http://localhost/media-1",
+  czasTrwaniaMs: 120000
 };
 
 describe("import mediow", () => {
@@ -25,45 +44,74 @@ describe("import mediow", () => {
     expect(pobierzRozszerzeniePliku("Recenzja.MKV")).toBe(".mkv");
   });
 
+  it("akceptuje poprawny plik mp4", () => {
+    expect(walidujPlikMediow(utworzTestowyPlik())).toEqual([]);
+  });
+
+  it("akceptuje poprawny plik z polskimi znakami w nazwie", () => {
+    const bledy = walidujPlikMediow(
+      utworzTestowyPlik({
+        name: "zażółć gęślą jaźń.mov",
+        type: "video/quicktime"
+      })
+    );
+
+    expect(bledy).toEqual([]);
+  });
+
+  it("zwraca blad, gdy format pliku nie jest obslugiwany", () => {
+    const bledy = walidujPlikMediow(
+      utworzTestowyPlik({
+        name: "notatki.txt",
+        type: "text/plain"
+      })
+    );
+
+    expect(bledy).toContainEqual({
+      pole: "rozszerzenie",
+      komunikat: "Nieobsługiwany format pliku."
+    });
+  });
+
+  it("zwraca blad, gdy plik jest pusty", () => {
+    const bledy = walidujPlikMediow(
+      utworzTestowyPlik({
+        size: 0
+      })
+    );
+
+    expect(bledy).toContainEqual({
+      pole: "rozmiarBajtow",
+      komunikat: "Plik jest pusty."
+    });
+  });
+
+  it("zwraca blad, gdy nie wybrano pliku", () => {
+    const bledy = walidujPlikMediow(null);
+
+    expect(bledy).toEqual([
+      {
+        pole: "plik",
+        komunikat: "Nie wybrano pliku."
+      }
+    ]);
+  });
+
   it("akceptuje poprawne dane importu mediow", () => {
     expect(sprawdzCzyDaneImportuMediowSaPoprawne(poprawneDaneImportu)).toEqual(
       []
     );
   });
 
-  it("zwraca blad, gdy nazwa pliku mediow jest pusta", () => {
+  it("zwraca blad, gdy nie udalo sie utworzyc url podgladu", () => {
     const bledy = sprawdzCzyDaneImportuMediowSaPoprawne({
       ...poprawneDaneImportu,
-      nazwaPliku: " "
+      objectUrl: ""
     });
 
     expect(bledy).toContainEqual({
-      pole: "nazwaPliku",
-      komunikat: "Nazwa pliku mediów nie może być pusta."
-    });
-  });
-
-  it("zwraca blad, gdy sciezka pliku mediow jest pusta", () => {
-    const bledy = sprawdzCzyDaneImportuMediowSaPoprawne({
-      ...poprawneDaneImportu,
-      sciezkaPliku: ""
-    });
-
-    expect(bledy).toContainEqual({
-      pole: "sciezkaPliku",
-      komunikat: "Ścieżka pliku mediów nie może być pusta."
-    });
-  });
-
-  it("zwraca blad, gdy rozszerzenie wideo nie jest obslugiwane", () => {
-    const bledy = sprawdzCzyDaneImportuMediowSaPoprawne({
-      ...poprawneDaneImportu,
-      nazwaPliku: "notatki.txt"
-    });
-
-    expect(bledy).toContainEqual({
-      pole: "rozszerzenie",
-      komunikat: "Format pliku wideo nie jest obsługiwany."
+      pole: "objectUrl",
+      komunikat: "Nie udało się zaimportować pliku."
     });
   });
 
@@ -88,7 +136,11 @@ describe("import mediow", () => {
       expect(wynik.dane).toEqual({
         id: "media-1",
         nazwaPliku: "nagranie.mp4",
-        sciezkaPliku: "C:/filmy/nagranie.mp4",
+        rozszerzenie: ".mp4",
+        typMime: "video/mp4",
+        rozmiarBajtow: 2048,
+        objectUrl: "blob:http://localhost/media-1",
+        statusImportu: "zaimportowany",
         typ: "wideo",
         czasTrwaniaMs: 120000
       });
@@ -98,7 +150,8 @@ describe("import mediow", () => {
   it("nie tworzy pliku wideo z niepoprawnych danych importu", () => {
     const wynik = utworzPlikWideoZDanychImportu({
       ...poprawneDaneImportu,
-      nazwaPliku: "nagranie.wav"
+      nazwaPliku: "nagranie.wav",
+      rozszerzenie: ".wav"
     });
 
     expect(wynik.czySukces).toBe(false);
@@ -106,7 +159,7 @@ describe("import mediow", () => {
     if (!wynik.czySukces) {
       expect(wynik.bledy).toContainEqual({
         pole: "rozszerzenie",
-        komunikat: "Format pliku wideo nie jest obsługiwany."
+        komunikat: "Nieobsługiwany format pliku."
       });
     }
   });
