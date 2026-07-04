@@ -1,6 +1,6 @@
 # Architektura VidEdit Studio
 
-VidEdit Studio jest lokalną aplikacją desktopową opartą o Electron, React i TypeScript. Pierwszy etap tworzy bezpieczny fundament projektu, bez funkcji montażowych.
+VidEdit Studio jest lokalną aplikacją webową opartą o React, TypeScript i Vite. Pierwszy etap tworzy bezpieczny fundament projektu, bez funkcji montażowych.
 
 ## Główne warstwy
 
@@ -14,7 +14,7 @@ Czysta logika aplikacji: typy, model projektu, model czasu, walidacja i proste p
 
 ### `infrastruktura`
 
-Miejsce na integracje z narzędziami zewnętrznymi: Electron, system plików, zapis projektu i lokalny FFmpeg. W tym etapie istnieją tylko porty, tymczasowy adapter FFmpeg oraz port pod przyszły wybór pliku wideo.
+Miejsce na integracje z narzędziami zewnętrznymi: zapis projektu, obsługa plików przeglądarkowych i lokalny FFmpeg. Infrastruktura nie powinna przenosić logiki montażu ani reguł domenowych.
 
 ### `moduly`
 
@@ -33,6 +33,12 @@ UI zmienia się szybciej niż reguły domenowe. Oddzielenie domeny pozwala testo
 Pierwszy moduł importu mediów działa wyłącznie na danych wejściowych przekazanych do domeny. Waliduje nazwę pliku, ścieżkę, rozszerzenie wideo, opcjonalny czas trwania i opcjonalny rozmiar pliku.
 
 W tym etapie import nie otwiera okna wyboru pliku, nie czyta dysku, nie używa Electron API, `fs`, FFmpeg ani FFprobe. Warstwa infrastruktury zawiera tylko port `PortWyboruPliku`, który zostanie użyty przy późniejszej implementacji adaptera desktopowego.
+
+## Diagnostyka FFmpeg i FFprobe
+
+FFmpeg i FFprobe są zależnościami infrastrukturalnymi. Ich dostępność jest sprawdzana poza UI i poza domeną przez funkcję diagnostyczną w `src/infrastruktura/ffmpeg`.
+
+Diagnostyka uruchamia tylko `ffmpeg -version` oraz `ffprobe -version`, zbiera wersje i czytelne błędy. Nie analizuje audio, nie wykrywa ciszy i nie wykonuje montażu. Wynik tej diagnostyki będzie podstawą dla kolejnych etapów: wyodrębniania audio, wykrywania ciszy i eksportu.
 
 ## Czego nie wolno mieszać
 

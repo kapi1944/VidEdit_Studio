@@ -10,6 +10,7 @@ describe("browserowy adapter mediow", () => {
     expect(utworzDaneImportuZPlikuBrowserowego(plik)).toEqual({
       nazwaPliku: "nagranie.mp4",
       sciezkaPliku: "nagranie.mp4",
+      typMime: "video/mp4",
       rozmiarBajtow: 4
     });
   });

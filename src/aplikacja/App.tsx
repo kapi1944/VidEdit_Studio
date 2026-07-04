@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Panel_Osi_Czasu } from "../moduly/timeline/komponenty/Panel_Osi_Czasu";
 import {
   Panel_Importu_Mediow,
@@ -16,12 +16,21 @@ import {
   zaktualizujMetadaneMediumWProjekcie
 } from "../moduly/projekt/indeksProjektu";
 import { formatujCzas } from "../domena/czas/formatowanieCzasu";
+import type {
+  PodgladMedium,
+  PodgladyMediow
+} from "../moduly/media/typyPodgladuMediow";
+import { generujMiniatureWideoZPliku } from "../infrastruktura/media/generujMiniatureWideoBrowser";
 import { odczytajMetadaneWideoZPliku } from "../infrastruktura/media/odczytajMetadaneWideoBrowser";
 import { utworzDaneImportuZPlikuBrowserowego } from "../infrastruktura/media/utworzDaneImportuZPlikuBrowserowego";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
 const kluczTrybuWygladu = "videdit-studio.tryb-wygladu";
+
+function zwolnijObjectUrlPodgladu(podgladMedium: PodgladMedium) {
+  URL.revokeObjectURL(podgladMedium.objectUrl);
+}
 
 function sprawdzCzyTrybWygladuJestPoprawny(
   trybWygladu: string | null
@@ -51,17 +60,68 @@ export function Aplikacja() {
   const [statusImportuMediow, ustawStatusImportuMediow] =
     useState<StatusImportuMediow>("bezczynny");
   const [trybWygladu, ustawTrybWygladu] = useState(pobierzPoczatkowyTrybWygladu);
+  const [podgladyMediow, ustawPodgladyMediow] = useState<PodgladyMediow>({});
+  const podgladyMediowRef = useRef<PodgladyMediow>({});
 
   useEffect(() => {
     document.documentElement.dataset.trybWygladu = trybWygladu;
     localStorage.setItem(kluczTrybuWygladu, trybWygladu);
   }, [trybWygladu]);
 
+  useEffect(() => {
+    podgladyMediowRef.current = podgladyMediow;
+  }, [podgladyMediow]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(podgladyMediowRef.current).forEach(zwolnijObjectUrlPodgladu);
+    };
+  }, []);
+
   const czasStartowy = formatujCzas(
     0,
     projekt.ustawienia.formatWyswietlaniaCzasu,
     projekt.ustawienia.liczbaKlatekNaSekunde
   );
+
+  async function przygotujMiniatureMedium(idMedium: string, plik: File) {
+    try {
+      const miniaturaDataUrl = await generujMiniatureWideoZPliku(plik);
+
+      ustawPodgladyMediow((aktualnePodglady) => {
+        const podgladMedium = aktualnePodglady[idMedium];
+
+        if (!podgladMedium) {
+          return aktualnePodglady;
+        }
+
+        return {
+          ...aktualnePodglady,
+          [idMedium]: {
+            ...podgladMedium,
+            miniaturaDataUrl,
+            statusMiniatury: "gotowe"
+          }
+        };
+      });
+    } catch {
+      ustawPodgladyMediow((aktualnePodglady) => {
+        const podgladMedium = aktualnePodglady[idMedium];
+
+        if (!podgladMedium) {
+          return aktualnePodglady;
+        }
+
+        return {
+          ...aktualnePodglady,
+          [idMedium]: {
+            ...podgladMedium,
+            statusMiniatury: "Miniatura niedostepna"
+          }
+        };
+      });
+    }
+  }
 
   async function obsluzWybraniePliku(plik: File) {
     ustawStatusImportuMediow("wybieranie");
@@ -85,11 +145,23 @@ export function Aplikacja() {
       return;
     }
 
+    const idMedium = wynikImportu.dane.id;
+    const objectUrlPodgladu = URL.createObjectURL(plik);
+    const nowyPodgladMedium: PodgladMedium = {
+      idMedium,
+      objectUrl: objectUrlPodgladu,
+      statusMiniatury: "Przygotowanie miniatury"
+    };
+
     ustawProjekt((aktualnyProjekt) =>
       dodajMediumDoProjektu(aktualnyProjekt, wynikImportu.dane)
     );
+    Object.values(podgladyMediowRef.current).forEach(zwolnijObjectUrlPodgladu);
+    podgladyMediowRef.current = { [idMedium]: nowyPodgladMedium };
+    ustawPodgladyMediow(podgladyMediowRef.current);
     ustawBladImportuMediow(undefined);
     ustawStatusImportuMediow("odczyt_metadanych");
+    void przygotujMiniatureMedium(idMedium, plik);
 
     try {
       const metadane = await odczytajMetadaneWideoZPliku(plik);
@@ -97,7 +169,7 @@ export function Aplikacja() {
       ustawProjekt((aktualnyProjekt) =>
         zaktualizujMetadaneMediumWProjekcie(
           aktualnyProjekt,
-          wynikImportu.dane.id,
+          idMedium,
           metadane
         )
       );
@@ -157,7 +229,7 @@ export function Aplikacja() {
 
       <section className="sekcja-aplikacji" aria-labelledby="projekt-montazu">
         <h2 id="projekt-montazu">Projekt: {projekt.nazwa}</h2>
-        <Lista_Mediow media={projekt.media} />
+        <Lista_Mediow media={projekt.media} podgladyMediow={podgladyMediow} />
       </section>
 
       <Panel_Osi_Czasu

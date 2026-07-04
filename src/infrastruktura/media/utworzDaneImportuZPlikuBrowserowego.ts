@@ -6,6 +6,7 @@ export function utworzDaneImportuZPlikuBrowserowego(
   return {
     nazwaPliku: plik.name,
     sciezkaPliku: plik.name,
+    typMime: plik.type,
     rozmiarBajtow: plik.size
   };
 }
