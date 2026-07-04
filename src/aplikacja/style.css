@@ -160,11 +160,11 @@ select {
 
 .pasek-gorny-aplikacji {
   display: grid;
-  grid-template-columns: auto minmax(180px, 1fr) auto minmax(280px, auto);
-  gap: 16px;
+  grid-template-columns: auto minmax(220px, 1fr) auto minmax(300px, auto);
+  gap: 14px;
   align-items: center;
-  min-height: 64px;
-  padding: 10px 16px;
+  min-height: 48px;
+  padding: 7px 14px;
   border-bottom: 1px solid var(--kolor-obramowania-sekcji);
   background: var(--kolor-powierzchni-akcent);
 }
@@ -183,12 +183,13 @@ select {
 
 .pasek-gorny-aplikacji__marka strong {
   color: var(--kolor-tekstu-mocny);
-  font-size: 1.05rem;
+  font-size: 0.98rem;
 }
 
 .pasek-gorny-aplikacji__nazwa-projektu {
   min-width: 0;
   color: var(--kolor-tekstu-mocny);
+  font-size: 0.94rem;
   font-weight: 800;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -215,7 +216,7 @@ select {
 
 .pasek-gorny-aplikacji button,
 .pasek-gorny-aplikacji select {
-  min-height: 34px;
+  min-height: 30px;
   border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: 6px;
   color: var(--kolor-tekstu-mocny);
@@ -223,14 +224,15 @@ select {
 }
 
 .pasek-gorny-aplikacji button {
-  padding: 0 12px;
+  padding: 0 10px;
   font-weight: 700;
 }
 
 .pasek-gorny-aplikacji button:disabled {
   color: var(--kolor-tekstu-slaby);
+  background: var(--kolor-powierzchni-delikatny);
   cursor: not-allowed;
-  opacity: 0.58;
+  opacity: 0.62;
 }
 
 .pasek-gorny-aplikacji__wybor {
@@ -540,6 +542,13 @@ select {
   background: #3a2f12;
 }
 
+.znacznik-statusu--projekt_roboczy,
+.znacznik-statusu--trwa_operacja {
+  border-color: #b8942e;
+  color: #ffe08a;
+  background: #3a2f12;
+}
+
 .znacznik-statusu--aktywny {
   border-color: #4a8bd1;
   color: #d7e9ff;
@@ -553,30 +562,11 @@ select {
 }
 
 .znacznik-statusu--nieaktywne,
-.znacznik-statusu--placeholder {
+.znacznik-statusu--placeholder,
+.znacznik-statusu--brak_filmu {
   border-color: #536173;
   color: #b8c2d1;
   background: #222936;
-}
-
-.znacznik-statusu--zapisano {
-  border-color: #43885b;
-  color: #b9f3c9;
-  background: #173521;
-}
-
-.znacznik-statusu--niezapisane_zmiany,
-.znacznik-statusu--zapisywanie,
-.znacznik-statusu--roboczy {
-  border-color: #b8942e;
-  color: #ffe08a;
-  background: #3a2f12;
-}
-
-.znacznik-statusu--blad_zapisu {
-  border-color: #9a4b55;
-  color: #ffb8c0;
-  background: #351b22;
 }
 
 .pasek-statusu__kropka--gotowe {
@@ -584,6 +574,11 @@ select {
 }
 
 .pasek-statusu__kropka--oczekuje {
+  background: #f2c94c;
+}
+
+.pasek-statusu__kropka--projekt_roboczy,
+.pasek-statusu__kropka--trwa_operacja {
   background: #f2c94c;
 }
 
@@ -596,22 +591,9 @@ select {
 }
 
 .pasek-statusu__kropka--nieaktywne,
-.pasek-statusu__kropka--placeholder {
+.pasek-statusu__kropka--placeholder,
+.pasek-statusu__kropka--brak_filmu {
   background: #8a96a8;
-}
-
-.pasek-statusu__kropka--zapisano {
-  background: #42c46d;
-}
-
-.pasek-statusu__kropka--niezapisane_zmiany,
-.pasek-statusu__kropka--zapisywanie,
-.pasek-statusu__kropka--roboczy {
-  background: #f2c94c;
-}
-
-.pasek-statusu__kropka--blad_zapisu {
-  background: #f06f60;
 }
 
 .panel-boczny-lewy .panel-importu-mediow {

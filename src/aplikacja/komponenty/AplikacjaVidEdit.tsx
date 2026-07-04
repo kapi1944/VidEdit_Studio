@@ -20,18 +20,6 @@ import {
   type StatusProjektuUi
 } from "./pomocnicyPaskaGornego";
 
-export type StatusZapisuProjektu =
-  | "zapisano"
-  | "niezapisane_zmiany"
-  | "zapisywanie"
-  | "blad_zapisu"
-  | "roboczy";
-
-type OpisStatusuZapisuProjektu = {
-  etykieta: string;
-  tytul: string;
-};
-
 type WlasciwosciAplikacjiVidEdit = {
   pasekGorny: ReactNode;
   panelLewy: ReactNode;
@@ -90,51 +78,12 @@ const etykietyStatusuWorkflow: Record<StatusKrokuWorkflow, string> = {
   placeholder: "Placeholder"
 };
 
-const opisyStatusuZapisuProjektu: Record<
-  StatusZapisuProjektu,
-  OpisStatusuZapisuProjektu
-> = {
-  zapisano: {
-    etykieta: "zapisano",
-    tytul: "Projekt zapisany."
-  },
-  niezapisane_zmiany: {
-    etykieta: "niezapisane zmiany",
-    tytul: "Projekt zawiera niezapisane zmiany."
-  },
-  zapisywanie: {
-    etykieta: "zapisywanie...",
-    tytul: "Trwa zapisywanie projektu."
-  },
-  blad_zapisu: {
-    etykieta: "blad zapisu",
-    tytul: "Nie udalo sie zapisac projektu."
-  },
-  roboczy: {
-    etykieta: "projekt roboczy",
-    tytul: "Projekt roboczy - zapis projektu zostanie dopracowany w kolejnym etapie."
-  }
-};
-
 export function pobierzNazweProjektuDoPaska(nazwaProjektu?: string) {
   const nazwaPoPrzycieciu = nazwaProjektu?.trim();
 
   return nazwaPoPrzycieciu && nazwaPoPrzycieciu.length > 0
     ? nazwaPoPrzycieciu
     : "Projekt bez nazwy";
-}
-
-export function opiszStatusZapisuProjektu(
-  statusZapisu: StatusZapisuProjektu
-): OpisStatusuZapisuProjektu {
-  return opisyStatusuZapisuProjektu[statusZapisu];
-}
-
-export function sprawdzCzyEksportJestDostepny(
-  czyFilmDostepny: boolean,
-  czyIstniejaZatwierdzoneCiecia: boolean
-) {
-  return czyFilmDostepny || czyIstniejaZatwierdzoneCiecia;
 }
 
 export function AplikacjaVidEdit({
