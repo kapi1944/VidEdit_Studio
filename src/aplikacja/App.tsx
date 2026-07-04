@@ -8,10 +8,12 @@ import {
   PanelWorkflow,
   PasekGornyAplikacji,
   PasekStatusu,
-  TimelineMontazu,
-  sprawdzCzyEksportJestDostepny,
-  type StatusZapisuProjektu
+  TimelineMontazu
 } from "./komponenty/AplikacjaVidEdit";
+import {
+  okreslStatusProjektuUi,
+  pobierzEtykieteStatusuProjektuUi
+} from "./komponenty/pomocnicyPaskaGornego";
 import { Panel_Osi_Czasu } from "../moduly/timeline/komponenty/Panel_Osi_Czasu";
 import {
   Panel_Importu_Mediow,
@@ -87,7 +89,6 @@ export function Aplikacja() {
     useState<StatusImportuMediow>("bezczynny");
   const [trybWygladu, ustawTrybWygladu] = useState(pobierzPoczatkowyTrybWygladu);
   const [podgladyMediow, ustawPodgladyMediow] = useState<PodgladyMediow>({});
-  const [komunikatEksportu, ustawKomunikatEksportu] = useState<string>();
   const [idAktywnegoSegmentuCiszy, ustawIdAktywnegoSegmentuCiszy] =
     useState<string>();
   const [aktualnyCzasTimelineMs, ustawAktualnyCzasTimelineMs] = useState(0);
@@ -146,11 +147,10 @@ export function Aplikacja() {
     czasTrwaniaFilmuMs > 0
       ? Math.min(aktualnyCzasTimelineMs, czasTrwaniaFilmuMs)
       : 0;
-  const idAktywnegoSegmentuCiszyTimeline = segmentyCiszyTimeline.some(
+  const aktywnySegmentCiszyTimeline = segmentyCiszyTimeline.find(
     (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
-  )
-    ? idAktywnegoSegmentuCiszy
-    : undefined;
+  );
+  const idAktywnegoSegmentuCiszyTimeline = aktywnySegmentCiszyTimeline?.id;
 
   function formatujCzasNaTimeline(czasMs: number) {
     return formatujCzas(
@@ -158,6 +158,16 @@ export function Aplikacja() {
       projekt.ustawienia.formatWyswietlaniaCzasu,
       projekt.ustawienia.liczbaKlatekNaSekunde
     );
+  }
+
+  const opisAktywnegoSegmentuCiszy = aktywnySegmentCiszyTimeline
+    ? `${formatujCzasNaTimeline(
+        aktywnySegmentCiszyTimeline.czasPoczatkuMs
+      )} - ${formatujCzasNaTimeline(aktywnySegmentCiszyTimeline.czasKoncaMs)}`
+    : undefined;
+
+  function obsluzZmianeCzasuOdtwarzania(czasMs: number) {
+    ustawAktualnyCzasTimelineMs(czasMs);
   }
 
   async function przygotujMiniatureMedium(idMedium: string, plik: File) {
@@ -297,52 +307,64 @@ export function Aplikacja() {
     ustawAktualnyCzasTimelineMs(segmentCiszy.czasPoczatkuMs);
   }
 
-  function obsluzEksport() {
-    ustawKomunikatEksportu(
-      "Eksport filmu zostanie dopracowany w kolejnym etapie MVP."
-    );
-  }
-
   function obsluzZmianeTrybuWygladu(nowyTrybWygladu: string) {
     if (sprawdzCzyTrybWygladuJestPoprawny(nowyTrybWygladu)) {
       ustawTrybWygladu(nowyTrybWygladu);
     }
   }
 
-  const statusZapisu: StatusZapisuProjektu = "roboczy";
-  const czyIstniejaZatwierdzoneCiecia = projekt.timeline.propozycjeCiec.some(
-    (propozycjaCiecia) => propozycjaCiecia.status === "zatwierdzona"
-  );
-  const czyEksportDostepny = sprawdzCzyEksportJestDostepny(
-    Boolean(pierwszyPlikWideo),
-    czyIstniejaZatwierdzoneCiecia
-  );
+  const liczbaPropozycjiCiec = projekt.timeline.propozycjeCiec.length;
+  const liczbaPropozycjiOczekujacych =
+    projekt.timeline.propozycjeCiec.filter(
+      (propozycjaCiecia) => propozycjaCiecia.status === "oczekuje"
+    ).length;
+  const liczbaPropozycjiZatwierdzonych =
+    projekt.timeline.propozycjeCiec.filter(
+      (propozycjaCiecia) => propozycjaCiecia.status === "zatwierdzona"
+    ).length;
+  const liczbaPropozycjiOdrzuconych =
+    projekt.timeline.propozycjeCiec.filter(
+      (propozycjaCiecia) => propozycjaCiecia.status === "odrzucona"
+    ).length;
+  const statusProjektuUi = okreslStatusProjektuUi({
+    liczbaMediow: projekt.media.length,
+    statusImportuMediow
+  });
   const podgladPierwszegoPlikuWideo = pierwszyPlikWideo
     ? podgladyMediow[pierwszyPlikWideo.id]
     : undefined;
   const komunikatPaskaStatusu =
-    komunikatEksportu ??
     bladImportuMediow ??
-    `Media: ${projekt.media.length} | Segmenty ciszy: ${segmentyCiszyTimeline.length} | Propozycje ciec: ${projekt.timeline.propozycjeCiec.length}`;
+    `Media: ${projekt.media.length} | Segmenty ciszy: ${segmentyCiszyTimeline.length} | Propozycje cięć: ${projekt.timeline.propozycjeCiec.length} | Status: ${pobierzEtykieteStatusuProjektuUi(statusProjektuUi).toLowerCase()}`;
 
   return (
     <AplikacjaVidEdit
       pasekGorny={
         <PasekGornyAplikacji
           nazwaProjektu={projekt.nazwa}
-          statusZapisu={statusZapisu}
+          statusProjektuUi={statusProjektuUi}
           trybWygladu={trybWygladu}
-          czyEksportDostepny={czyEksportDostepny}
+          liczbaMediow={projekt.media.length}
           naZmianeTrybuWygladu={obsluzZmianeTrybuWygladu}
-          naEksportuj={obsluzEksport}
         />
       }
       panelLewy={
         <PanelBocznyLewy
           dzieci={
             <>
-              <PanelWorkflow />
+              <PanelWorkflow
+                liczbaMediow={projekt.media.length}
+                statusImportuMediow={statusImportuMediow}
+                liczbaSegmentowCiszy={segmentyCiszyTimeline.length}
+                liczbaPropozycjiCiec={liczbaPropozycjiCiec}
+                liczbaPropozycjiOczekujacych={liczbaPropozycjiOczekujacych}
+                liczbaPropozycjiZatwierdzonych={
+                  liczbaPropozycjiZatwierdzonych
+                }
+                liczbaPropozycjiOdrzuconych={liczbaPropozycjiOdrzuconych}
+              />
               <PanelMediowProjektu
+                czyFilmDostepny={Boolean(pierwszyPlikWideo)}
                 dzieci={
                   <>
                     <Panel_Importu_Mediow
@@ -351,10 +373,12 @@ export function Aplikacja() {
                       statusImportuMediow={statusImportuMediow}
                       naWybranoPlik={obsluzWybraniePliku}
                     />
-                    <Lista_Mediow
-                      media={projekt.media}
-                      podgladyMediow={podgladyMediow}
-                    />
+                    {projekt.media.length > 0 ? (
+                      <Lista_Mediow
+                        media={projekt.media}
+                        podgladyMediow={podgladyMediow}
+                      />
+                    ) : null}
                   </>
                 }
               />
@@ -366,6 +390,10 @@ export function Aplikacja() {
         <ObszarRoboczy
           plikWideo={pierwszyPlikWideo}
           podgladWideo={podgladPierwszegoPlikuWideo}
+          czasAktualnyMs={czasAktualnyWZakresieMs}
+          opisAktywnegoSegmentuCiszy={opisAktywnegoSegmentuCiszy}
+          formatujCzasPodgladu={formatujCzasNaTimeline}
+          naZmianeCzasuOdtwarzania={obsluzZmianeCzasuOdtwarzania}
         />
       }
       panelPrawy={
@@ -400,7 +428,7 @@ export function Aplikacja() {
       pasekStatusu={
         <PasekStatusu
           komunikat={komunikatPaskaStatusu}
-          statusZapisu={statusZapisu}
+          statusProjektuUi={statusProjektuUi}
         />
       }
     />
