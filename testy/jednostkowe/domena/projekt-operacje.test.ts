@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { PlikMediow } from "../../../src/domena/media/typyMediow";
+import type {
+  MetadaneWideo,
+  PlikMediow
+} from "../../../src/domena/media/typyMediow";
 import { utworzPustyProjekt } from "../../../src/domena/projekt/fabrykaProjektu";
-import { dodajMediumDoProjektu } from "../../../src/domena/projekt/operacjeProjektu";
+import {
+  dodajMediumDoProjektu,
+  zaktualizujMetadaneMediumWProjekcie
+} from "../../../src/domena/projekt/operacjeProjektu";
 
 function utworzPlikMediow(nadpisaneDane: Partial<PlikMediow> = {}): PlikMediow {
   return {
@@ -13,6 +19,18 @@ function utworzPlikMediow(nadpisaneDane: Partial<PlikMediow> = {}): PlikMediow {
     rozmiarBajtow: 2048,
     statusImportu: "zaimportowany",
     typ: "wideo",
+    ...nadpisaneDane
+  };
+}
+
+function utworzMetadaneWideo(
+  nadpisaneDane: Partial<MetadaneWideo> = {}
+): MetadaneWideo {
+  return {
+    czasTrwaniaMs: 125000,
+    szerokoscPx: 1920,
+    wysokoscPx: 1080,
+    czyMetadanePelne: false,
     ...nadpisaneDane
   };
 }
@@ -102,5 +120,109 @@ describe("operacje projektu", () => {
     const projektPoDodaniu = dodajMediumDoProjektu(projekt, nowszyPlik);
 
     expect(projektPoDodaniu.media).toEqual([nowszyPlik]);
+  });
+
+  it("aktualizuje metadane medium po id", () => {
+    const plikMediow = utworzPlikMediow({ id: "media-1" });
+    const metadane = utworzMetadaneWideo();
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [plikMediow]
+    };
+
+    const projektPoAktualizacji = zaktualizujMetadaneMediumWProjekcie(
+      projekt,
+      "media-1",
+      metadane
+    );
+
+    expect(projektPoAktualizacji.media[0]?.metadane).toEqual(metadane);
+  });
+
+  it("zwraca niezmieniony projekt przy blednym id medium", () => {
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [utworzPlikMediow({ id: "media-1" })]
+    };
+
+    const projektPoAktualizacji = zaktualizujMetadaneMediumWProjekcie(
+      projekt,
+      "brak-medium",
+      utworzMetadaneWideo()
+    );
+
+    expect(projektPoAktualizacji).toBe(projekt);
+  });
+
+  it("nie mutuje starego projektu przy aktualizacji metadanych", () => {
+    const plikMediow = utworzPlikMediow({ id: "media-1" });
+    const stareMedia = [plikMediow];
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: stareMedia
+    };
+
+    const projektPoAktualizacji = zaktualizujMetadaneMediumWProjekcie(
+      projekt,
+      "media-1",
+      utworzMetadaneWideo()
+    );
+
+    expect(projektPoAktualizacji).not.toBe(projekt);
+    expect(projektPoAktualizacji.media).not.toBe(stareMedia);
+    expect(projekt.media).toEqual([plikMediow]);
+  });
+
+  it("zachowuje date utworzenia i aktualizuje date modyfikacji", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-04T10:00:00.000Z"));
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [utworzPlikMediow({ id: "media-1" })]
+    };
+
+    vi.setSystemTime(new Date("2026-07-04T11:00:00.000Z"));
+    const projektPoAktualizacji = zaktualizujMetadaneMediumWProjekcie(
+      projekt,
+      "media-1",
+      utworzMetadaneWideo()
+    );
+
+    expect(projektPoAktualizacji.dataUtworzeniaIso).toBe(
+      projekt.dataUtworzeniaIso
+    );
+    expect(projektPoAktualizacji.dataModyfikacjiIso).toBe(
+      "2026-07-04T11:00:00.000Z"
+    );
+  });
+
+  it("przenosi czas trwania z metadanych do pola medium", () => {
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [utworzPlikMediow({ id: "media-1", czasTrwaniaMs: undefined })]
+    };
+
+    const projektPoAktualizacji = zaktualizujMetadaneMediumWProjekcie(
+      projekt,
+      "media-1",
+      utworzMetadaneWideo({ czasTrwaniaMs: 90000 })
+    );
+
+    expect(projektPoAktualizacji.media[0]?.czasTrwaniaMs).toBe(90000);
+  });
+
+  it("odrzuca niepoprawne metadane bez zmiany projektu", () => {
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [utworzPlikMediow({ id: "media-1" })]
+    };
+
+    const projektPoAktualizacji = zaktualizujMetadaneMediumWProjekcie(
+      projekt,
+      "media-1",
+      utworzMetadaneWideo({ czasTrwaniaMs: -1 })
+    );
+
+    expect(projektPoAktualizacji).toBe(projekt);
   });
 });

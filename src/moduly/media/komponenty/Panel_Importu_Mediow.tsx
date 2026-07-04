@@ -1,17 +1,47 @@
 import { type ChangeEvent, useRef } from "react";
 
+export type StatusImportuMediow =
+  | "bezczynny"
+  | "wybieranie"
+  | "odczyt_metadanych"
+  | "gotowe"
+  | "blad";
+
 type WlasciwosciPaneluImportuMediow = {
   rozszerzeniaWideo: readonly string[];
   bladImportuMediow?: string;
+  statusImportuMediow: StatusImportuMediow;
   naWybranoPlik: (plik: File) => void;
 };
+
+function pobierzKomunikatStatusuImportu(
+  statusImportuMediow: StatusImportuMediow
+): string | undefined {
+  if (statusImportuMediow === "odczyt_metadanych") {
+    return "Odczytuję metadane...";
+  }
+
+  if (statusImportuMediow === "gotowe") {
+    return "Metadane odczytane";
+  }
+
+  if (statusImportuMediow === "blad") {
+    return "Nie udało się odczytać metadanych";
+  }
+
+  return undefined;
+}
 
 export function Panel_Importu_Mediow({
   rozszerzeniaWideo,
   bladImportuMediow,
+  statusImportuMediow,
   naWybranoPlik
 }: WlasciwosciPaneluImportuMediow) {
   const polePliku = useRef<HTMLInputElement>(null);
+  const komunikatStatusuImportu = pobierzKomunikatStatusuImportu(
+    statusImportuMediow
+  );
 
   function otworzWyborPliku() {
     polePliku.current?.click();
@@ -60,6 +90,12 @@ export function Panel_Importu_Mediow({
       {bladImportuMediow ? (
         <p className="panel-importu-mediow__blad" role="alert">
           {bladImportuMediow}
+        </p>
+      ) : null}
+
+      {komunikatStatusuImportu ? (
+        <p className="panel-importu-mediow__status" role="status">
+          {komunikatStatusuImportu}
         </p>
       ) : null}
     </section>

@@ -291,6 +291,13 @@ h2 {
   font-weight: 700;
 }
 
+.panel-importu-mediow__status {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--kolor-tekstu-slaby);
+  font-weight: 700;
+}
+
 .panel-importu-mediow__lista {
   grid-column: 1 / -1;
 }

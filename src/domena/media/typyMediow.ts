@@ -3,6 +3,16 @@ import type { CzasMs } from "../czas/typyCzasu";
 export type TypPlikuMediow = "wideo" | "audio";
 export type StatusImportuMediow = "zaimportowany";
 
+export type MetadaneWideo = {
+  czasTrwaniaMs?: CzasMs;
+  szerokoscPx?: number;
+  wysokoscPx?: number;
+  liczbaKlatekNaSekunde?: number;
+  kodekWideo?: string;
+  liczbaSciezekAudio?: number;
+  czyMetadanePelne: boolean;
+};
+
 export type PlikMediow = {
   id: string;
   nazwaPliku: string;
@@ -16,6 +26,7 @@ export type PlikMediow = {
   szerokoscWideo?: number;
   wysokoscWideo?: number;
   czasTrwaniaMs?: CzasMs;
+  metadane?: MetadaneWideo;
 };
 
 export type DaneImportuPlikuMediow = {

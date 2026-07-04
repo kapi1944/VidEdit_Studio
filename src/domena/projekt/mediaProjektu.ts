@@ -1,8 +1,11 @@
 import type { PlikMediow } from "../media/typyMediow";
 import type { ProjektMontazu } from "./typyProjektu";
-import { dodajMediumDoProjektu } from "./operacjeProjektu";
+import {
+  dodajMediumDoProjektu,
+  zaktualizujMetadaneMediumWProjekcie
+} from "./operacjeProjektu";
 
-export { dodajMediumDoProjektu };
+export { dodajMediumDoProjektu, zaktualizujMetadaneMediumWProjekcie };
 
 export type MetadaneWideoPlikuMediow = Pick<
   PlikMediow,

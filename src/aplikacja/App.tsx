@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Panel_Osi_Czasu } from "../moduly/timeline/komponenty/Panel_Osi_Czasu";
-import { Panel_Importu_Mediow } from "../moduly/media/komponenty/Panel_Importu_Mediow";
+import {
+  Panel_Importu_Mediow,
+  type StatusImportuMediow
+} from "../moduly/media/komponenty/Panel_Importu_Mediow";
 import { Lista_Mediow } from "../moduly/media/komponenty/Lista_Mediow";
 import {
   OBSLUGIWANE_ROZSZERZENIA_WIDEO,
@@ -9,9 +12,11 @@ import {
 } from "../moduly/media/indeksMediow";
 import {
   dodajMediumDoProjektu,
-  utworzPustyProjekt
+  utworzPustyProjekt,
+  zaktualizujMetadaneMediumWProjekcie
 } from "../moduly/projekt/indeksProjektu";
 import { formatujCzas } from "../domena/czas/formatowanieCzasu";
+import { odczytajMetadaneWideoZPliku } from "../infrastruktura/media/odczytajMetadaneWideoBrowser";
 import { utworzDaneImportuZPlikuBrowserowego } from "../infrastruktura/media/utworzDaneImportuZPlikuBrowserowego";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
@@ -43,6 +48,8 @@ export function Aplikacja() {
     utworzPustyProjekt("Projekt bez nazwy")
   );
   const [bladImportuMediow, ustawBladImportuMediow] = useState<string>();
+  const [statusImportuMediow, ustawStatusImportuMediow] =
+    useState<StatusImportuMediow>("bezczynny");
   const [trybWygladu, ustawTrybWygladu] = useState(pobierzPoczatkowyTrybWygladu);
 
   useEffect(() => {
@@ -56,7 +63,8 @@ export function Aplikacja() {
     projekt.ustawienia.liczbaKlatekNaSekunde
   );
 
-  function obsluzWybraniePliku(plik: File) {
+  async function obsluzWybraniePliku(plik: File) {
+    ustawStatusImportuMediow("wybieranie");
     const bledyWalidacji = walidujPlikMediow(plik);
 
     if (bledyWalidacji.length > 0) {
@@ -81,6 +89,25 @@ export function Aplikacja() {
       dodajMediumDoProjektu(aktualnyProjekt, wynikImportu.dane)
     );
     ustawBladImportuMediow(undefined);
+    ustawStatusImportuMediow("odczyt_metadanych");
+
+    try {
+      const metadane = await odczytajMetadaneWideoZPliku(plik);
+
+      ustawProjekt((aktualnyProjekt) =>
+        zaktualizujMetadaneMediumWProjekcie(
+          aktualnyProjekt,
+          wynikImportu.dane.id,
+          metadane
+        )
+      );
+      ustawStatusImportuMediow("gotowe");
+    } catch {
+      ustawBladImportuMediow(
+        "Zaimportowano, ale nie udało się odczytać metadanych."
+      );
+      ustawStatusImportuMediow("blad");
+    }
   }
 
   return (
@@ -124,6 +151,7 @@ export function Aplikacja() {
       <Panel_Importu_Mediow
         rozszerzeniaWideo={OBSLUGIWANE_ROZSZERZENIA_WIDEO}
         bladImportuMediow={bladImportuMediow}
+        statusImportuMediow={statusImportuMediow}
         naWybranoPlik={obsluzWybraniePliku}
       />
 

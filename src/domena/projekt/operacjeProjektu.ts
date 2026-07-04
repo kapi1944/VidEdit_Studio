@@ -1,4 +1,5 @@
-import type { PlikMediow } from "../media/typyMediow";
+import type { MetadaneWideo, PlikMediow } from "../media/typyMediow";
+import { zwalidujMetadaneWideo } from "../media/walidacjaMetadanychWideo";
 import type { ProjektMontazu } from "./typyProjektu";
 
 export function dodajMediumDoProjektu(
@@ -21,5 +22,33 @@ export function dodajMediumDoProjektu(
     ...projekt,
     dataModyfikacjiIso: new Date().toISOString(),
     media: [...mediaBezZastapionegoPliku, plikMediow]
+  };
+}
+
+export function zaktualizujMetadaneMediumWProjekcie(
+  projekt: ProjektMontazu,
+  idMedium: string,
+  metadane: MetadaneWideo
+): ProjektMontazu {
+  const czyMediumIstnieje = projekt.media.some((medium) => medium.id === idMedium);
+
+  if (!czyMediumIstnieje || zwalidujMetadaneWideo(metadane).length > 0) {
+    return projekt;
+  }
+
+  return {
+    ...projekt,
+    dataModyfikacjiIso: new Date().toISOString(),
+    media: projekt.media.map((medium) =>
+      medium.id === idMedium
+        ? {
+            ...medium,
+            metadane,
+            ...(metadane.czasTrwaniaMs !== undefined
+              ? { czasTrwaniaMs: metadane.czasTrwaniaMs }
+              : {})
+          }
+        : medium
+    )
   };
 }
