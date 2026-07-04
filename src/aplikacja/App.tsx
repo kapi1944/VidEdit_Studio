@@ -1,4 +1,17 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  AplikacjaVidEdit,
+  ObszarRoboczy,
+  PanelBocznyLewy,
+  PanelBocznyPrawy,
+  PanelMediowProjektu,
+  PanelWorkflow,
+  PasekGornyAplikacji,
+  PasekStatusu,
+  TimelineMontazu,
+  sprawdzCzyEksportJestDostepny,
+  type StatusZapisuProjektu
+} from "./komponenty/AplikacjaVidEdit";
 import { Panel_Osi_Czasu } from "../moduly/timeline/komponenty/Panel_Osi_Czasu";
 import {
   Panel_Importu_Mediow,
@@ -32,7 +45,10 @@ import type {
 import { generujMiniatureWideoZPliku } from "../infrastruktura/media/generujMiniatureWideoBrowser";
 import { odczytajMetadaneWideoZPliku } from "../infrastruktura/media/odczytajMetadaneWideoBrowser";
 import { utworzDaneImportuZPlikuBrowserowego } from "../infrastruktura/media/utworzDaneImportuZPlikuBrowserowego";
-import type { PropozycjaCiecia } from "../domena/timeline/typyTimeline";
+import type {
+  PropozycjaCiecia,
+  SegmentCiszy
+} from "../domena/timeline/typyTimeline";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
@@ -59,18 +75,22 @@ function pobierzPoczatkowyTrybWygladu(): TrybWygladu {
     return zapisanyTrybWygladu;
   }
 
-  return "systemowy";
+  return "ciemny";
 }
 
 export function Aplikacja() {
   const [projekt, ustawProjekt] = useState(() =>
-    utworzPustyProjekt("Projekt bez nazwy")
+    utworzPustyProjekt("Nowy projekt")
   );
   const [bladImportuMediow, ustawBladImportuMediow] = useState<string>();
   const [statusImportuMediow, ustawStatusImportuMediow] =
     useState<StatusImportuMediow>("bezczynny");
   const [trybWygladu, ustawTrybWygladu] = useState(pobierzPoczatkowyTrybWygladu);
   const [podgladyMediow, ustawPodgladyMediow] = useState<PodgladyMediow>({});
+  const [komunikatEksportu, ustawKomunikatEksportu] = useState<string>();
+  const [idAktywnegoSegmentuCiszy, ustawIdAktywnegoSegmentuCiszy] =
+    useState<string>();
+  const [aktualnyCzasTimelineMs, ustawAktualnyCzasTimelineMs] = useState(0);
   const podgladyMediowRef = useRef<PodgladyMediow>({});
 
   useEffect(() => {
@@ -111,11 +131,34 @@ export function Aplikacja() {
     });
   }, [projekt.audio.segmentyCiszy, projekt.timeline.segmentyCiszy]);
 
-  const czasStartowy = formatujCzas(
-    0,
-    projekt.ustawienia.formatWyswietlaniaCzasu,
-    projekt.ustawienia.liczbaKlatekNaSekunde
+  const segmentyCiszyTimeline =
+    projekt.audio.segmentyCiszy.length > 0
+      ? projekt.audio.segmentyCiszy
+      : projekt.timeline.segmentyCiszy;
+  const pierwszyPlikWideo = projekt.media.find(
+    (medium) => medium.typ === "wideo"
   );
+  const czasTrwaniaFilmuMs =
+    pierwszyPlikWideo?.metadane?.czasTrwaniaMs ??
+    pierwszyPlikWideo?.czasTrwaniaMs ??
+    0;
+  const czasAktualnyWZakresieMs =
+    czasTrwaniaFilmuMs > 0
+      ? Math.min(aktualnyCzasTimelineMs, czasTrwaniaFilmuMs)
+      : 0;
+  const idAktywnegoSegmentuCiszyTimeline = segmentyCiszyTimeline.some(
+    (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
+  )
+    ? idAktywnegoSegmentuCiszy
+    : undefined;
+
+  function formatujCzasNaTimeline(czasMs: number) {
+    return formatujCzas(
+      czasMs,
+      projekt.ustawienia.formatWyswietlaniaCzasu,
+      projekt.ustawienia.liczbaKlatekNaSekunde
+    );
+  }
 
   async function przygotujMiniatureMedium(idMedium: string, plik: File) {
     try {
@@ -162,7 +205,7 @@ export function Aplikacja() {
 
     if (bledyWalidacji.length > 0) {
       ustawBladImportuMediow(
-        bledyWalidacji[0]?.komunikat ?? "Nie udało się zaimportować pliku."
+        bledyWalidacji[0]?.komunikat ?? "Nie udalo sie zaimportowac pliku."
       );
       return;
     }
@@ -172,8 +215,7 @@ export function Aplikacja() {
 
     if (!wynikImportu.czySukces) {
       ustawBladImportuMediow(
-        wynikImportu.bledy[0]?.komunikat ??
-          "Nie udało się zaimportować pliku."
+        wynikImportu.bledy[0]?.komunikat ?? "Nie udalo sie zaimportowac pliku."
       );
       return;
     }
@@ -209,7 +251,7 @@ export function Aplikacja() {
       ustawStatusImportuMediow("gotowe");
     } catch {
       ustawBladImportuMediow(
-        "Zaimportowano, ale nie udało się odczytać metadanych."
+        "Zaimportowano, ale nie udalo sie odczytac metadanych."
       );
       ustawStatusImportuMediow("blad");
     }
@@ -250,77 +292,117 @@ export function Aplikacja() {
     zaktualizujPropozycjeCiec(zatwierdzWszystkiePropozycjeCiec);
   }
 
-  function formatujCzasPropozycjiCiecia(czasMs: number) {
-    return formatujCzas(
-      czasMs,
-      projekt.ustawienia.formatWyswietlaniaCzasu,
-      projekt.ustawienia.liczbaKlatekNaSekunde
+  function obsluzWybranieSegmentuCiszy(segmentCiszy: SegmentCiszy) {
+    ustawIdAktywnegoSegmentuCiszy(segmentCiszy.id);
+    ustawAktualnyCzasTimelineMs(segmentCiszy.czasPoczatkuMs);
+  }
+
+  function obsluzEksport() {
+    ustawKomunikatEksportu(
+      "Eksport filmu zostanie dopracowany w kolejnym etapie MVP."
     );
   }
 
+  function obsluzZmianeTrybuWygladu(nowyTrybWygladu: string) {
+    if (sprawdzCzyTrybWygladuJestPoprawny(nowyTrybWygladu)) {
+      ustawTrybWygladu(nowyTrybWygladu);
+    }
+  }
+
+  const statusZapisu: StatusZapisuProjektu = "roboczy";
+  const czyIstniejaZatwierdzoneCiecia = projekt.timeline.propozycjeCiec.some(
+    (propozycjaCiecia) => propozycjaCiecia.status === "zatwierdzona"
+  );
+  const czyEksportDostepny = sprawdzCzyEksportJestDostepny(
+    Boolean(pierwszyPlikWideo),
+    czyIstniejaZatwierdzoneCiecia
+  );
+  const podgladPierwszegoPlikuWideo = pierwszyPlikWideo
+    ? podgladyMediow[pierwszyPlikWideo.id]
+    : undefined;
+  const komunikatPaskaStatusu =
+    komunikatEksportu ??
+    bladImportuMediow ??
+    `Media: ${projekt.media.length} | Segmenty ciszy: ${segmentyCiszyTimeline.length} | Propozycje ciec: ${projekt.timeline.propozycjeCiec.length}`;
+
   return (
-    <main className="ekran-startowy">
-      <section className="naglowek-aplikacji">
-        <div className="naglowek-aplikacji__gora">
-          <div>
-            <p className="etykieta-wersji">Wersja webowa</p>
-            <h1>VidEdit Studio</h1>
-            <p className="opis-aplikacji">
-              Prosty edytor do szybkiego czyszczenia nagrań mówionych.
-            </p>
-          </div>
-
-          <label className="przelacznik-wygladu">
-            <span>Tryb wyglądu</span>
-            <select
-              value={trybWygladu}
-              onChange={(zdarzenie) =>
-                ustawTrybWygladu(zdarzenie.currentTarget.value as TrybWygladu)
-              }
-            >
-              <option value="jasny">Jasny</option>
-              <option value="ciemny">Ciemny</option>
-              <option value="systemowy">Systemowy</option>
-            </select>
-          </label>
-        </div>
-      </section>
-
-      <section className="sekcja-aplikacji" aria-labelledby="nastepne-moduly">
-        <h2 id="nastepne-moduly">Następne moduły</h2>
-        <ul className="lista-modulow">
-          <li>Analiza techniczna pliku wideo</li>
-          <li>Wykrywanie ciszy i propozycje cięć</li>
-          <li>Ręczne zatwierdzanie zmian</li>
-          <li>Eksport przyciętego filmu</li>
-        </ul>
-      </section>
-
-      <Panel_Importu_Mediow
-        rozszerzeniaWideo={OBSLUGIWANE_ROZSZERZENIA_WIDEO}
-        bladImportuMediow={bladImportuMediow}
-        statusImportuMediow={statusImportuMediow}
-        naWybranoPlik={obsluzWybraniePliku}
-      />
-
-      <section className="sekcja-aplikacji" aria-labelledby="projekt-montazu">
-        <h2 id="projekt-montazu">Projekt: {projekt.nazwa}</h2>
-        <Lista_Mediow media={projekt.media} podgladyMediow={podgladyMediow} />
-      </section>
-
-      <Panel_Osi_Czasu
-        nazwaProjektu={projekt.nazwa}
-        czasPoczatku={czasStartowy}
-      />
-
-      <Panel_Propozycji_Ciec
-        propozycjeCiec={projekt.timeline.propozycjeCiec}
-        formatujCzasCiecia={formatujCzasPropozycjiCiecia}
-        naZatwierdz={obsluzZatwierdzeniePropozycjiCiecia}
-        naOdrzuc={obsluzOdrzuceniePropozycjiCiecia}
-        naCofnijDecyzje={obsluzCofniecieDecyzjiPropozycjiCiecia}
-        naZatwierdzWszystkie={obsluzZatwierdzenieWszystkichPropozycjiCiec}
-      />
-    </main>
+    <AplikacjaVidEdit
+      pasekGorny={
+        <PasekGornyAplikacji
+          nazwaProjektu={projekt.nazwa}
+          statusZapisu={statusZapisu}
+          trybWygladu={trybWygladu}
+          czyEksportDostepny={czyEksportDostepny}
+          naZmianeTrybuWygladu={obsluzZmianeTrybuWygladu}
+          naEksportuj={obsluzEksport}
+        />
+      }
+      panelLewy={
+        <PanelBocznyLewy
+          dzieci={
+            <>
+              <PanelWorkflow />
+              <PanelMediowProjektu
+                dzieci={
+                  <>
+                    <Panel_Importu_Mediow
+                      rozszerzeniaWideo={OBSLUGIWANE_ROZSZERZENIA_WIDEO}
+                      bladImportuMediow={bladImportuMediow}
+                      statusImportuMediow={statusImportuMediow}
+                      naWybranoPlik={obsluzWybraniePliku}
+                    />
+                    <Lista_Mediow
+                      media={projekt.media}
+                      podgladyMediow={podgladyMediow}
+                    />
+                  </>
+                }
+              />
+            </>
+          }
+        />
+      }
+      obszarRoboczy={
+        <ObszarRoboczy
+          plikWideo={pierwszyPlikWideo}
+          podgladWideo={podgladPierwszegoPlikuWideo}
+        />
+      }
+      panelPrawy={
+        <PanelBocznyPrawy
+          dzieci={
+            <Panel_Propozycji_Ciec
+              propozycjeCiec={projekt.timeline.propozycjeCiec}
+              formatujCzasCiecia={formatujCzasNaTimeline}
+              naZatwierdz={obsluzZatwierdzeniePropozycjiCiecia}
+              naOdrzuc={obsluzOdrzuceniePropozycjiCiecia}
+              naCofnijDecyzje={obsluzCofniecieDecyzjiPropozycjiCiecia}
+              naZatwierdzWszystkie={obsluzZatwierdzenieWszystkichPropozycjiCiec}
+            />
+          }
+        />
+      }
+      timeline={
+        <TimelineMontazu
+          dzieci={
+            <Panel_Osi_Czasu
+              nazwaProjektu={projekt.nazwa}
+              czasTrwaniaMs={czasTrwaniaFilmuMs}
+              czasAktualnyMs={czasAktualnyWZakresieMs}
+              segmentyCiszy={segmentyCiszyTimeline}
+              idAktywnegoSegmentuCiszy={idAktywnegoSegmentuCiszyTimeline}
+              formatujCzasTimeline={formatujCzasNaTimeline}
+              naWybranoSegmentCiszy={obsluzWybranieSegmentuCiszy}
+            />
+          }
+        />
+      }
+      pasekStatusu={
+        <PasekStatusu
+          komunikat={komunikatPaskaStatusu}
+          statusZapisu={statusZapisu}
+        />
+      }
+    />
   );
 }
