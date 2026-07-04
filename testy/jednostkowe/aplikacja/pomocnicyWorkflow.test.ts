@@ -30,11 +30,11 @@ function pobierzStatusKroku(
 }
 
 describe("pomocnicyWorkflow", () => {
-  it("ustawia import jako aktywny przy braku filmu", () => {
+  it("ustawia import jako aktywny przy braku mediow", () => {
     expect(pobierzStatusKroku("import-filmu")).toBe("aktywny");
   });
 
-  it("ustawia import jako gotowy, gdy film istnieje", () => {
+  it("ustawia import jako gotowy, gdy media istnieja", () => {
     expect(pobierzStatusKroku("import-filmu", { liczbaMediow: 1 })).toBe(
       "gotowe"
     );

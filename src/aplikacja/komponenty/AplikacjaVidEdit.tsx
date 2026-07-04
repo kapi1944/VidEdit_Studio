@@ -4,8 +4,15 @@ import {
   utworzDaneKartyMedium
 } from "../../domena/media/formatowanieKartyMedium";
 import type { PlikMediow } from "../../domena/media/typyMediow";
-import type { PodgladMedium } from "../../moduly/media/typyPodgladuMediow";
+import type { KlipTimeline } from "../../domena/timeline/typyTimeline";
+import type { PodgladyMediow } from "../../moduly/media/typyPodgladuMediow";
 import { PodgladWideo } from "./PodgladWideo";
+import {
+  obliczCzasPodgladuKlipu,
+  pobierzPodgladDlaMedium,
+  znajdzAktywnyKlipTimeline,
+  znajdzMediumDlaKlipu
+} from "./pomocnicyObszaruRoboczego";
 import {
   utworzKrokiWorkflow,
   type DaneWorkflow,
@@ -49,8 +56,9 @@ type WlasciwosciPaneluMediowProjektu = WlasciwosciKonteneraDzieci & {
 type WlasciwosciPaneluWorkflow = DaneWorkflow;
 
 type WlasciwosciObszaruRoboczego = {
-  plikWideo?: PlikMediow;
-  podgladWideo?: PodgladMedium;
+  media: PlikMediow[];
+  klipyTimeline: KlipTimeline[];
+  podgladyMediow: PodgladyMediow;
   czasAktualnyMs: number;
   uchwytWideoRef: RefObject<HTMLVideoElement | null>;
   czyPrzeciaganieGlowicy: boolean;
@@ -76,7 +84,7 @@ const etykietyStatusuWorkflow: Record<StatusKrokuWorkflow, string> = {
   gotowe: "Gotowe",
   aktywny: "Aktywny",
   oczekuje: "Oczekuje",
-  blad: "Błąd",
+  blad: "Blad",
   placeholder: "Placeholder"
 };
 
@@ -160,10 +168,10 @@ export function PasekGornyAplikacji({
           disabled={!czyHistoriaDostepna}
           title={tytulPlaceholderaHistorii}
         >
-          Ponów
+          Ponow
         </button>
         <label className="pasek-gorny-aplikacji__wybor">
-          <span>Wygląd</span>
+          <span>Wyglad</span>
           <select
             value={trybWygladu}
             onChange={(zdarzenie) =>
@@ -240,12 +248,12 @@ export function PanelMediowProjektu({
     >
       <div className="panel-mediow-projektu__naglowek">
         <p className="etykieta-panelu">Media</p>
-        <h2 id="media-projektu-tytul">Plik projektu</h2>
+        <h2 id="media-projektu-tytul">Media projektu</h2>
       </div>
       {dzieci}
       {!czyFilmDostepny ? (
         <p className="panel-mediow-projektu__pusty">
-          Dodaj pierwszy film, aby rozpocząć czyszczenie nagrania.
+          Dodaj media, aby rozpoczac montaz.
         </p>
       ) : null}
     </section>
@@ -253,8 +261,9 @@ export function PanelMediowProjektu({
 }
 
 export function ObszarRoboczy({
-  plikWideo,
-  podgladWideo,
+  media,
+  klipyTimeline,
+  podgladyMediow,
   czasAktualnyMs,
   uchwytWideoRef,
   czyPrzeciaganieGlowicy,
@@ -262,9 +271,29 @@ export function ObszarRoboczy({
   formatujCzasPodgladu,
   naZmianeCzasuOdtwarzania
 }: WlasciwosciObszaruRoboczego) {
-  const daneKartyWideo = plikWideo ? utworzDaneKartyMedium(plikWideo) : undefined;
-  const czasTrwaniaWideoMs = plikWideo
-    ? pobierzCzasTrwaniaMedium(plikWideo)
+  const aktywnyKlip = znajdzAktywnyKlipTimeline(klipyTimeline, czasAktualnyMs);
+  const aktywneMedium = znajdzMediumDlaKlipu(media, aktywnyKlip);
+  const podgladAktywnegoMedium = pobierzPodgladDlaMedium(
+    podgladyMediow,
+    aktywneMedium
+  );
+  const daneKartyMedium = aktywneMedium
+    ? utworzDaneKartyMedium(aktywneMedium)
+    : undefined;
+  const czasTrwaniaPodgladuMs = aktywnyKlip?.czasTrwaniaMs
+    ? aktywnyKlip.czasTrwaniaMs
+    : aktywneMedium
+      ? pobierzCzasTrwaniaMedium(aktywneMedium)
+      : undefined;
+  const czasPodgladuMs = aktywnyKlip
+    ? obliczCzasPodgladuKlipu(aktywnyKlip, czasAktualnyMs)
+    : czasAktualnyMs;
+  const czySaMedia = media.length > 0;
+  const czySaKlipyTimeline = klipyTimeline.length > 0;
+  const czyAktywneWideo = aktywnyKlip?.rodzaj === "wideo";
+  const czyAktywnaGrafika = aktywnyKlip?.rodzaj === "grafika";
+  const tekstCzasuKlipu = aktywnyKlip
+    ? formatujCzasPodgladu(aktywnyKlip.czasTrwaniaMs)
     : undefined;
 
   return (
@@ -275,38 +304,100 @@ export function ObszarRoboczy({
       </div>
 
       <div className="obszar-roboczy__podglad">
-        {!plikWideo ? (
+        {!czySaMedia ? (
           <div className="obszar-roboczy__pusty">
-            <strong>Zaimportuj film, aby rozpocząć.</strong>
+            <strong>Zaimportuj media, aby rozpocząć montaż.</strong>
             <span>
-              VidEdit Studio pomoże wykryć ciszę, sprawdzić propozycje cięć i
-              przygotować skróconą wersję nagrania.
+              Możesz dodać kilka plików wideo lub grafik, a potem ułożyć je na osi czasu.
             </span>
-            <span>Import znajdziesz w lewym panelu.</span>
           </div>
         ) : null}
 
-        {plikWideo && !podgladWideo ? (
+        {czySaMedia && !czySaKlipyTimeline ? (
           <div className="obszar-roboczy__pusty">
-            <strong>Podgląd wideo nie jest jeszcze gotowy.</strong>
-            <span>{plikWideo.nazwaPliku}</span>
+            <strong>Dodaj media na oś czasu.</strong>
+            <span>
+              Wybierz plik z panelu mediów i dodaj go jako klip na timeline.
+            </span>
+            <button type="button" disabled>
+              Dodawanie na timeline zostanie podłączone w następnym etapie.
+            </button>
           </div>
         ) : null}
 
-        {plikWideo && podgladWideo && daneKartyWideo ? (
+        {czySaKlipyTimeline && aktywnyKlip && !aktywneMedium ? (
+          <div className="obszar-roboczy__pusty">
+            <strong>Klip nie ma dostępnego pliku źródłowego.</strong>
+            <span>{aktywnyKlip.nazwa}</span>
+          </div>
+        ) : null}
+
+        {czySaKlipyTimeline && !aktywnyKlip ? (
+          <div className="obszar-roboczy__pusty">
+            <strong>Brak aktywnego klipu w tym miejscu osi czasu.</strong>
+            <span>Przesun glowice na klip, aby zobaczyc podglad.</span>
+          </div>
+        ) : null}
+
+        {czySaKlipyTimeline &&
+        aktywnyKlip &&
+        aktywneMedium &&
+        !podgladAktywnegoMedium ? (
+          <div className="obszar-roboczy__pusty">
+            <strong>Podgląd aktywnego klipu nie jest jeszcze gotowy.</strong>
+            <span>{aktywnyKlip.nazwa}</span>
+            <span>Źródło: {aktywneMedium.nazwaPliku}</span>
+          </div>
+        ) : null}
+
+        {czyAktywneWideo &&
+        aktywnyKlip &&
+        aktywneMedium &&
+        podgladAktywnegoMedium &&
+        daneKartyMedium ? (
           <PodgladWideo
-            objectUrl={podgladWideo.objectUrl}
-            nazwaPliku={plikWideo.nazwaPliku}
-            czasAktualnyMs={czasAktualnyMs}
-            czasTrwaniaMs={czasTrwaniaWideoMs}
+            objectUrl={podgladAktywnegoMedium.objectUrl}
+            nazwaKlipu={aktywnyKlip.nazwa}
+            nazwaPliku={aktywneMedium.nazwaPliku}
+            etykietaAktywnegoKlipu="Podgląd aktywnego klipu"
+            czasAktualnyMs={czasPodgladuMs}
+            czasTrwaniaMs={czasTrwaniaPodgladuMs}
             uchwytWideoRef={uchwytWideoRef}
             czyPrzeciaganieGlowicy={czyPrzeciaganieGlowicy}
-            rozdzielczosc={daneKartyWideo.rozdzielczosc}
-            fps={daneKartyWideo.fps}
-            audio={daneKartyWideo.audio}
+            rozdzielczosc={daneKartyMedium.rozdzielczosc}
+            fps={daneKartyMedium.fps}
+            audio={daneKartyMedium.audio}
             formatujCzasPodgladu={formatujCzasPodgladu}
             naZmianeCzasuOdtwarzania={naZmianeCzasuOdtwarzania}
           />
+        ) : null}
+
+        {czyAktywnaGrafika &&
+        aktywnyKlip &&
+        aktywneMedium &&
+        podgladAktywnegoMedium ? (
+          <div className="podglad-grafiki">
+            <div className="podglad-grafiki__naglowek">
+              <span className="podglad-wideo__etykieta">
+                Grafika na timeline
+              </span>
+              <p className="podglad-grafiki__nazwa">{aktywnyKlip.nazwa}</p>
+              <p className="podglad-grafiki__zrodlo">
+                Zrodlo: {aktywneMedium.nazwaPliku}
+              </p>
+              {tekstCzasuKlipu ? (
+                <p className="podglad-grafiki__czas">
+                  Czas trwania klipu: {tekstCzasuKlipu}
+                </p>
+              ) : null}
+            </div>
+            <div className="podglad-grafiki__ramka">
+              <img
+                src={podgladAktywnegoMedium.objectUrl}
+                alt={`Podglad grafiki ${aktywneMedium.nazwaPliku}`}
+              />
+            </div>
+          </div>
         ) : null}
       </div>
 
@@ -337,7 +428,9 @@ export function PasekStatusu({
 }: WlasciwosciPaskaStatusu) {
   return (
     <footer className="pasek-statusu">
-      <span className={`pasek-statusu__kropka pasek-statusu__kropka--${statusProjektuUi}`} />
+      <span
+        className={`pasek-statusu__kropka pasek-statusu__kropka--${statusProjektuUi}`}
+      />
       <span>{komunikat}</span>
     </footer>
   );

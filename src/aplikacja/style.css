@@ -413,6 +413,17 @@ select {
   font-size: 1.15rem;
 }
 
+.obszar-roboczy__pusty button {
+  min-height: 34px;
+  margin-top: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: 6px;
+  color: var(--kolor-tekstu-slaby);
+  background: var(--kolor-powierzchni-delikatny);
+  cursor: not-allowed;
+}
+
 .obszar-roboczy__kontekst {
   margin: 0;
   color: var(--kolor-tekstu-drugi);
@@ -439,10 +450,25 @@ select {
 }
 
 .podglad-wideo__nazwa,
-.podglad-wideo__czas {
+.podglad-wideo__czas,
+.podglad-wideo__zrodlo {
   margin: 0;
   min-width: 0;
   font-weight: 800;
+}
+
+.podglad-wideo__opis {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.podglad-wideo__etykieta {
+  width: fit-content;
+  color: #92a0b6;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .podglad-wideo__nazwa {
@@ -452,6 +478,12 @@ select {
 .podglad-wideo__czas {
   color: #aebbd0;
   font-variant-numeric: tabular-nums;
+}
+
+.podglad-wideo__zrodlo {
+  color: #aebbd0;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
 }
 
 .podglad-wideo__ramka {
@@ -465,6 +497,58 @@ select {
   border: 1px solid #202a3a;
   border-radius: 6px;
   background: #000000;
+}
+
+.podglad-grafiki {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  width: min(100%, 820px);
+  min-width: 0;
+  height: 100%;
+  color: #d6deea;
+}
+
+.podglad-grafiki__naglowek {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.podglad-grafiki__nazwa,
+.podglad-grafiki__zrodlo,
+.podglad-grafiki__czas {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.podglad-grafiki__nazwa {
+  color: #d6deea;
+  font-weight: 800;
+}
+
+.podglad-grafiki__zrodlo,
+.podglad-grafiki__czas {
+  color: #aebbd0;
+  font-weight: 700;
+}
+
+.podglad-grafiki__ramka {
+  display: grid;
+  width: 100%;
+  min-height: 0;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #202a3a;
+  border-radius: 6px;
+  background: #000000;
+}
+
+.podglad-grafiki__ramka img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .podglad-wideo__metadane {

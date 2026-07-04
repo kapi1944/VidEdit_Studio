@@ -2,7 +2,9 @@ import { useEffect, type RefObject, type SyntheticEvent } from "react";
 
 type WlasciwosciPodgladuWideo = {
   objectUrl: string;
+  nazwaKlipu?: string;
   nazwaPliku: string;
+  etykietaAktywnegoKlipu?: string;
   czasAktualnyMs: number;
   czasTrwaniaMs?: number;
   uchwytWideoRef: RefObject<HTMLVideoElement | null>;
@@ -29,7 +31,9 @@ export function utworzTekstCzasuPodgladu(
 
 export function PodgladWideo({
   objectUrl,
+  nazwaKlipu,
   nazwaPliku,
+  etykietaAktywnegoKlipu,
   czasAktualnyMs,
   czasTrwaniaMs,
   uchwytWideoRef,
@@ -73,7 +77,17 @@ export function PodgladWideo({
   return (
     <div className="podglad-wideo">
       <div className="podglad-wideo__naglowek">
-        <p className="podglad-wideo__nazwa">{nazwaPliku}</p>
+        <div className="podglad-wideo__opis">
+          {etykietaAktywnegoKlipu ? (
+            <span className="podglad-wideo__etykieta">
+              {etykietaAktywnegoKlipu}
+            </span>
+          ) : null}
+          <p className="podglad-wideo__nazwa">{nazwaKlipu ?? nazwaPliku}</p>
+          {nazwaKlipu ? (
+            <p className="podglad-wideo__zrodlo">Zrodlo: {nazwaPliku}</p>
+          ) : null}
+        </div>
         <p className="podglad-wideo__czas">{tekstCzasu}</p>
       </div>
 
@@ -82,7 +96,7 @@ export function PodgladWideo({
           controls
           ref={uchwytWideoRef}
           src={objectUrl}
-          aria-label={`Podgląd filmu ${nazwaPliku}`}
+          aria-label={`Podgląd wideo ${nazwaPliku}`}
           onTimeUpdate={obsluzZmianeCzasuOdtwarzania}
         />
       </div>

@@ -18,7 +18,7 @@ describe("PasekGornyAplikacji", () => {
     expect(pobierzNazweProjektuDoPaska("   ")).toBe("Projekt bez nazwy");
   });
 
-  it("ustawia status brak filmu przy pustym projekcie", () => {
+  it("ustawia status brak mediow przy pustym projekcie", () => {
     expect(
       okreslStatusProjektuUi({
         liczbaMediow: 0,
@@ -27,7 +27,7 @@ describe("PasekGornyAplikacji", () => {
     ).toBe("brak_filmu");
   });
 
-  it("ustawia status gotowe, gdy film istnieje", () => {
+  it("ustawia status gotowe, gdy media istnieja", () => {
     expect(
       okreslStatusProjektuUi({
         liczbaMediow: 1,
@@ -62,7 +62,7 @@ describe("PasekGornyAplikacji", () => {
     ).toBe(false);
   });
 
-  it("wylacza eksport przy braku filmu", () => {
+  it("wylacza eksport przy braku mediow", () => {
     expect(
       czyEksportDostepnyWUi({
         liczbaMediow: 0,
@@ -86,7 +86,7 @@ describe("PasekGornyAplikacji", () => {
     );
 
     expect(widok).toContain("Projekt bez nazwy");
-    expect(widok).toContain("Brak filmu");
+    expect(widok).toContain("Brak mediow");
     expect(widok).toContain("Tryb: Czyszczenie ciszy");
     expect(widok).toContain(tytulPlaceholderaHistorii);
     expect(widok).toContain(tytulPlaceholderaEksportu);
@@ -113,7 +113,7 @@ describe("PasekGornyAplikacji", () => {
     );
   });
 
-  it("wlacza eksport dopiero przy realnej akcji i filmie", () => {
+  it("wlacza eksport dopiero przy realnej akcji i mediach", () => {
     expect(
       czyEksportDostepnyWUi({
         liczbaMediow: 1,

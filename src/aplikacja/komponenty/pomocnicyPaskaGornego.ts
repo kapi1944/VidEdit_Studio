@@ -28,7 +28,7 @@ const etykietyStatusuProjektuUi: Record<StatusProjektuUi, string> = {
   projekt_roboczy: "Projekt roboczy",
   trwa_operacja: "Trwa operacja",
   blad: "Błąd",
-  brak_filmu: "Brak filmu"
+  brak_filmu: "Brak mediow"
 };
 
 export function okreslStatusProjektuUi({

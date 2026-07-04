@@ -151,6 +151,7 @@ export function Aplikacja() {
     czasTrwaniaFilmuMs > 0
       ? Math.min(aktualnyCzasTimelineMs, czasTrwaniaFilmuMs)
       : 0;
+  const klipyTimeline = projekt.timeline.klipy ?? [];
   const aktywnySegmentCiszyTimeline = segmentyCiszyTimeline.find(
     (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
   );
@@ -338,9 +339,6 @@ export function Aplikacja() {
     liczbaMediow: projekt.media.length,
     statusImportuMediow
   });
-  const podgladPierwszegoPlikuWideo = pierwszyPlikWideo
-    ? podgladyMediow[pierwszyPlikWideo.id]
-    : undefined;
   const komunikatPaskaStatusu =
     bladImportuMediow ??
     `Media: ${projekt.media.length} | Segmenty ciszy: ${segmentyCiszyTimeline.length} | Propozycje cięć: ${projekt.timeline.propozycjeCiec.length} | Status: ${pobierzEtykieteStatusuProjektuUi(statusProjektuUi).toLowerCase()}`;
@@ -372,7 +370,7 @@ export function Aplikacja() {
                 liczbaPropozycjiOdrzuconych={liczbaPropozycjiOdrzuconych}
               />
               <PanelMediowProjektu
-                czyFilmDostepny={Boolean(pierwszyPlikWideo)}
+                czyFilmDostepny={projekt.media.length > 0}
                 dzieci={
                   <>
                     <Panel_Importu_Mediow
@@ -396,8 +394,9 @@ export function Aplikacja() {
       }
       obszarRoboczy={
         <ObszarRoboczy
-          plikWideo={pierwszyPlikWideo}
-          podgladWideo={podgladPierwszegoPlikuWideo}
+          media={projekt.media}
+          klipyTimeline={klipyTimeline}
+          podgladyMediow={podgladyMediow}
           czasAktualnyMs={czasAktualnyWZakresieMs}
           uchwytWideoRef={uchwytWideoRef}
           czyPrzeciaganieGlowicy={czyPrzeciaganieGlowicy}

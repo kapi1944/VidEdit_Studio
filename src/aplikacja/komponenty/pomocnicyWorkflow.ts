@@ -83,11 +83,11 @@ export function utworzKrokiWorkflow(daneWorkflow: DaneWorkflow): KrokWorkflow[] 
   return [
     {
       id: "import-filmu",
-      nazwa: "Import filmu",
+      nazwa: "Import mediow",
       opis:
         daneWorkflow.liczbaMediow > 0
-          ? "Film jest w projekcie."
-          : "Dodaj jeden plik wideo.",
+          ? "Media sa w projekcie."
+          : "Dodaj pliki wideo lub grafiki.",
       status: okreslStatusImportuFilmu(daneWorkflow)
     },
     {
@@ -117,7 +117,7 @@ export function utworzKrokiWorkflow(daneWorkflow: DaneWorkflow): KrokWorkflow[] 
     {
       id: "eksport",
       nazwa: "Eksport",
-      opis: "Eksport filmu pozostaje placeholderem MVP.",
+      opis: "Eksport montazu pozostaje placeholderem MVP.",
       status: "placeholder"
     }
   ];

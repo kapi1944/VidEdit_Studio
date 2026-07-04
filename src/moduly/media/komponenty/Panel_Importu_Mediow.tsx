@@ -18,7 +18,7 @@ function pobierzKomunikatStatusuImportu(
   statusImportuMediow: StatusImportuMediow
 ): string | undefined {
   if (statusImportuMediow === "odczyt_metadanych") {
-    return "Odczytuję metadane...";
+    return "Odczytuje metadane...";
   }
 
   if (statusImportuMediow === "gotowe") {
@@ -26,7 +26,7 @@ function pobierzKomunikatStatusuImportu(
   }
 
   if (statusImportuMediow === "blad") {
-    return "Nie udało się odczytać metadanych";
+    return "Nie udalo sie odczytac metadanych";
   }
 
   return undefined;
@@ -61,9 +61,9 @@ export function Panel_Importu_Mediow({
     <section className="panel-importu-mediow" aria-labelledby="import-mediow">
       <div className="panel-importu-mediow__naglowek">
         <p className="panel-importu-mediow__etykieta">Media projektu</p>
-        <h2 id="import-mediow">Import mediów</h2>
+        <h2 id="import-mediow">Import mediow</h2>
         <p className="panel-importu-mediow__opis">
-          Wybierz jeden plik wideo do projektu.
+          Wybierz plik do biblioteki mediow projektu.
         </p>
       </div>
 
@@ -80,7 +80,7 @@ export function Panel_Importu_Mediow({
           type="button"
           onClick={otworzWyborPliku}
         >
-          Importuj wideo
+          Importuj media
         </button>
         <span className="panel-importu-mediow__formaty">
           {rozszerzeniaWideo.join(", ")}
