@@ -13,6 +13,10 @@ describe("projekt montazu", () => {
     expect(projekt.nazwa).toBe("Nowy projekt");
     expect(projekt.wersjaModelu).toBe(1);
     expect(projekt.media).toEqual([]);
+    expect(projekt.audio).toEqual({
+      statusAnalizyAudio: "brak",
+      segmentyCiszy: []
+    });
     expect(projekt.timeline.segmentyCiszy).toEqual([]);
     expect(projekt.timeline.propozycjeCiec).toEqual([]);
     expect(projekt.ustawienia.formatWyswietlaniaCzasu).toBe("czas");

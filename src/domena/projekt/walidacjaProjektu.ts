@@ -1,3 +1,6 @@
+import { STATUSY_ANALIZY_AUDIO } from "../audio/typyAudio";
+import { walidujSciezkeAudio } from "../audio/walidacjaAudio";
+import type { DaneAudioProjektu } from "../audio/typyAudio";
 import { OBSLUGIWANE_FORMATY_CZASU } from "../czas/typyCzasu";
 import type { CzasMs } from "../czas/typyCzasu";
 import type { SegmentCzasu } from "../timeline/typyTimeline";
@@ -50,6 +53,78 @@ export function sprawdzCzySegmentCzasuJestPoprawny(
   return bledy;
 }
 
+export function walidujDaneAudioProjektu(
+  daneAudio: DaneAudioProjektu | null | undefined
+): BladWalidacji[] {
+  if (!daneAudio) {
+    return [
+      {
+        pole: "audio",
+        komunikat: "Projekt musi zawierac dane audio."
+      }
+    ];
+  }
+
+  const bledy: BladWalidacji[] = [];
+
+  if (!daneAudio.statusAnalizyAudio) {
+    bledy.push({
+      pole: "statusAnalizyAudio",
+      komunikat: "Dane audio musza miec status analizy."
+    });
+  } else if (!STATUSY_ANALIZY_AUDIO.includes(daneAudio.statusAnalizyAudio)) {
+    bledy.push({
+      pole: "statusAnalizyAudio",
+      komunikat: "Status analizy audio nie jest obslugiwany."
+    });
+  }
+
+  if (daneAudio.statusAnalizyAudio === "ukonczona" && !daneAudio.sciezkaAudio) {
+    bledy.push({
+      pole: "sciezkaAudio",
+      komunikat: "Ukonczona analiza audio wymaga sciezki audio."
+    });
+  }
+
+  if (
+    daneAudio.statusAnalizyAudio === "blad" &&
+    (!daneAudio.ostatniBladAudio ||
+      daneAudio.ostatniBladAudio.trim().length === 0)
+  ) {
+    bledy.push({
+      pole: "ostatniBladAudio",
+      komunikat: "Blad analizy audio wymaga komunikatu bledu."
+    });
+  }
+
+  if (!Array.isArray(daneAudio.segmentyCiszy)) {
+    bledy.push({
+      pole: "segmentyCiszy",
+      komunikat: "Segmenty ciszy musza byc tablica."
+    });
+  } else {
+    daneAudio.segmentyCiszy.forEach((segment) => {
+      bledy.push(
+        ...sprawdzCzySegmentCzasuJestPoprawny(segment).map((blad) => ({
+          ...blad,
+          pole: `segmentyCiszy.${blad.pole}`
+        }))
+      );
+    });
+  }
+
+  if (daneAudio.sciezkaAudio) {
+    bledy.push(
+      ...walidujSciezkeAudio(daneAudio.sciezkaAudio).map((blad) => ({
+        ...blad,
+        pole: `sciezkaAudio.${blad.pole}`
+      }))
+    );
+  }
+
+  return bledy;
+}
+
 export function sprawdzCzyProjektJestPoprawny(
   projekt: ProjektMontazu
 ): BladWalidacji[] {
@@ -97,6 +172,13 @@ export function sprawdzCzyProjektJestPoprawny(
   projekt.timeline.propozycjeCiec.forEach((propozycja) => {
     bledy.push(...sprawdzCzySegmentCzasuJestPoprawny(propozycja));
   });
+
+  bledy.push(
+    ...walidujDaneAudioProjektu(projekt.audio).map((blad) => ({
+      ...blad,
+      pole: blad.pole === "audio" ? "audio" : `audio.${blad.pole}`
+    }))
+  );
 
   return bledy;
 }

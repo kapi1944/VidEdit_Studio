@@ -40,6 +40,12 @@ FFmpeg i FFprobe są zależnościami infrastrukturalnymi. Ich dostępność jest
 
 Diagnostyka uruchamia tylko `ffmpeg -version` oraz `ffprobe -version`, zbiera wersje i czytelne błędy. Nie analizuje audio, nie wykrywa ciszy i nie wykonuje montażu. Wynik tej diagnostyki będzie podstawą dla kolejnych etapów: wyodrębniania audio, wykrywania ciszy i eksportu.
 
+## Model audio projektu
+
+`ProjektMontazu.audio` przechowuje stan audio przypisany do projektu. `SciezkaAudio` opisuje pojedynczy wyodrebniony plik WAV powiazany z plikiem zrodlowym, jego czas trwania, liczbe kanalow i probkowanie. `statusAnalizyAudio` okresla, czy analiza nie zostala jeszcze zaplanowana, oczekuje, trwa, zakonczyla sie poprawnie albo bledem.
+
+Wykryte `segmentyCiszy` sa zapisywane w `ProjektMontazu.audio.segmentyCiszy`, a ostatni blad analizy w `ProjektMontazu.audio.ostatniBladAudio`. Ten model nie uruchamia jeszcze analizy audio, wyodrebniania audio ani wykrywania ciszy.
+
 ## Czego nie wolno mieszać
 
 - Komponenty React nie wywołują bezpośrednio FFmpeg.

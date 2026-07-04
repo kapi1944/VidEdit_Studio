@@ -2,6 +2,7 @@ import type {
   FormatWyswietlaniaCzasu,
   LiczbaKlatekNaSekunde
 } from "../czas/typyCzasu";
+import type { DaneAudioProjektu } from "../audio/typyAudio";
 import type { PlikMediow } from "../media/typyMediow";
 import type { TimelineProjektu } from "../timeline/typyTimeline";
 
@@ -18,5 +19,6 @@ export type ProjektMontazu = {
   dataModyfikacjiIso: string;
   ustawienia: UstawieniaProjektu;
   media: PlikMediow[];
+  audio: DaneAudioProjektu;
   timeline: TimelineProjektu;
 };

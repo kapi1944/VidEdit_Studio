@@ -23,6 +23,10 @@ export function utworzPustyProjekt(nazwa: string): ProjektMontazu {
       liczbaKlatekNaSekunde: DOMYSLNA_LICZBA_KLATEK_NA_SEKUNDE
     },
     media: [],
+    audio: {
+      statusAnalizyAudio: "brak",
+      segmentyCiszy: []
+    },
     timeline: {
       segmentyCiszy: [],
       propozycjeCiec: []
