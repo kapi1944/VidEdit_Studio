@@ -9,17 +9,62 @@ function ograniczDoZakresu(wartosc: number, minimum: number, maksimum: number) {
   return Math.min(Math.max(wartosc, minimum), maksimum);
 }
 
+export function ograniczCzasDoZakresu(
+  czasMs: CzasMs,
+  czasTrwaniaMs: CzasMs
+): CzasMs {
+  if (!Number.isFinite(czasMs)) {
+    return 0;
+  }
+
+  if (czyCzasTrwaniaJestNiepoprawny(czasTrwaniaMs)) {
+    return 0;
+  }
+
+  return ograniczDoZakresu(czasMs, 0, czasTrwaniaMs);
+}
+
+export function przeliczPozycjeNaCzas(
+  pozycjaX: number,
+  szerokoscTimeline: number,
+  czasTrwaniaMs: CzasMs
+): CzasMs {
+  if (
+    !Number.isFinite(pozycjaX) ||
+    !Number.isFinite(szerokoscTimeline) ||
+    szerokoscTimeline <= 0 ||
+    czyCzasTrwaniaJestNiepoprawny(czasTrwaniaMs)
+  ) {
+    return 0;
+  }
+
+  const pozycjaWZakresie = ograniczDoZakresu(
+    pozycjaX,
+    0,
+    szerokoscTimeline
+  );
+
+  return (pozycjaWZakresie / szerokoscTimeline) * czasTrwaniaMs;
+}
+
+export function przeliczCzasNaProcent(
+  czasMs: CzasMs,
+  czasTrwaniaMs: CzasMs
+): number {
+  if (czyCzasTrwaniaJestNiepoprawny(czasTrwaniaMs)) {
+    return 0;
+  }
+
+  const czasWZakresieMs = ograniczCzasDoZakresu(czasMs, czasTrwaniaMs);
+
+  return (czasWZakresieMs / czasTrwaniaMs) * 100;
+}
+
 export function przeliczCzasNaPozycje(
   czasMs: CzasMs,
   czasTrwaniaMs: CzasMs
 ): number {
-  if (czyCzasTrwaniaJestNiepoprawny(czasTrwaniaMs) || !Number.isFinite(czasMs)) {
-    return 0;
-  }
-
-  const czasWZakresieMs = ograniczDoZakresu(czasMs, 0, czasTrwaniaMs);
-
-  return (czasWZakresieMs / czasTrwaniaMs) * 100;
+  return przeliczCzasNaProcent(czasMs, czasTrwaniaMs);
 }
 
 export function przeliczZakresCzasuNaPolozenie(

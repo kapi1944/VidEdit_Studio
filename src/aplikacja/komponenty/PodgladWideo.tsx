@@ -1,10 +1,12 @@
-import type { SyntheticEvent } from "react";
+import { useEffect, type RefObject, type SyntheticEvent } from "react";
 
 type WlasciwosciPodgladuWideo = {
   objectUrl: string;
   nazwaPliku: string;
   czasAktualnyMs: number;
   czasTrwaniaMs?: number;
+  uchwytWideoRef: RefObject<HTMLVideoElement | null>;
+  czyPrzeciaganieGlowicy: boolean;
   rozdzielczosc?: string;
   fps?: string;
   audio?: string;
@@ -30,6 +32,8 @@ export function PodgladWideo({
   nazwaPliku,
   czasAktualnyMs,
   czasTrwaniaMs,
+  uchwytWideoRef,
+  czyPrzeciaganieGlowicy,
   rozdzielczosc,
   fps,
   audio,
@@ -42,12 +46,28 @@ export function PodgladWideo({
     formatujCzasPodgladu
   );
 
+  useEffect(() => {
+    const elementWideo = uchwytWideoRef.current;
+
+    if (!elementWideo || !Number.isFinite(czasAktualnyMs)) {
+      return;
+    }
+
+    const czasSekundy = czasAktualnyMs / 1000;
+
+    if (Math.abs(elementWideo.currentTime - czasSekundy) > 0.05) {
+      elementWideo.currentTime = czasSekundy;
+    }
+  }, [czasAktualnyMs, uchwytWideoRef]);
+
   function obsluzZmianeCzasuOdtwarzania(
     zdarzenie: SyntheticEvent<HTMLVideoElement>
   ) {
-    naZmianeCzasuOdtwarzania(
-      Math.round(zdarzenie.currentTarget.currentTime * 1000)
-    );
+    if (czyPrzeciaganieGlowicy) {
+      return;
+    }
+
+    naZmianeCzasuOdtwarzania(zdarzenie.currentTarget.currentTime * 1000);
   }
 
   return (
@@ -60,6 +80,7 @@ export function PodgladWideo({
       <div className="podglad-wideo__ramka">
         <video
           controls
+          ref={uchwytWideoRef}
           src={objectUrl}
           aria-label={`Podgląd filmu ${nazwaPliku}`}
           onTimeUpdate={obsluzZmianeCzasuOdtwarzania}

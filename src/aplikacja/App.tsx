@@ -15,6 +15,7 @@ import {
   pobierzEtykieteStatusuProjektuUi
 } from "./komponenty/pomocnicyPaskaGornego";
 import { Panel_Osi_Czasu } from "../moduly/timeline/komponenty/Panel_Osi_Czasu";
+import { ograniczCzasDoZakresu } from "../moduly/timeline/przeliczCzasNaPozycje";
 import {
   Panel_Importu_Mediow,
   type StatusImportuMediow
@@ -92,6 +93,9 @@ export function Aplikacja() {
   const [idAktywnegoSegmentuCiszy, ustawIdAktywnegoSegmentuCiszy] =
     useState<string>();
   const [aktualnyCzasTimelineMs, ustawAktualnyCzasTimelineMs] = useState(0);
+  const [czyPrzeciaganieGlowicy, ustawCzyPrzeciaganieGlowicy] =
+    useState(false);
+  const uchwytWideoRef = useRef<HTMLVideoElement>(null);
   const podgladyMediowRef = useRef<PodgladyMediow>({});
 
   useEffect(() => {
@@ -167,7 +171,9 @@ export function Aplikacja() {
     : undefined;
 
   function obsluzZmianeCzasuOdtwarzania(czasMs: number) {
-    ustawAktualnyCzasTimelineMs(czasMs);
+    ustawAktualnyCzasTimelineMs(
+      ograniczCzasDoZakresu(czasMs, czasTrwaniaFilmuMs)
+    );
   }
 
   async function przygotujMiniatureMedium(idMedium: string, plik: File) {
@@ -238,6 +244,8 @@ export function Aplikacja() {
       statusMiniatury: "Przygotowanie miniatury"
     };
 
+    ustawAktualnyCzasTimelineMs(0);
+    ustawCzyPrzeciaganieGlowicy(false);
     ustawProjekt((aktualnyProjekt) =>
       dodajMediumDoProjektu(aktualnyProjekt, wynikImportu.dane)
     );
@@ -391,6 +399,8 @@ export function Aplikacja() {
           plikWideo={pierwszyPlikWideo}
           podgladWideo={podgladPierwszegoPlikuWideo}
           czasAktualnyMs={czasAktualnyWZakresieMs}
+          uchwytWideoRef={uchwytWideoRef}
+          czyPrzeciaganieGlowicy={czyPrzeciaganieGlowicy}
           opisAktywnegoSegmentuCiszy={opisAktywnegoSegmentuCiszy}
           formatujCzasPodgladu={formatujCzasNaTimeline}
           naZmianeCzasuOdtwarzania={obsluzZmianeCzasuOdtwarzania}
@@ -419,7 +429,10 @@ export function Aplikacja() {
               czasAktualnyMs={czasAktualnyWZakresieMs}
               segmentyCiszy={segmentyCiszyTimeline}
               idAktywnegoSegmentuCiszy={idAktywnegoSegmentuCiszyTimeline}
+              uchwytWideoRef={uchwytWideoRef}
               formatujCzasTimeline={formatujCzasNaTimeline}
+              naZmianeCzasuTimeline={obsluzZmianeCzasuOdtwarzania}
+              naZmianePrzeciaganiaGlowicy={ustawCzyPrzeciaganieGlowicy}
               naWybranoSegmentCiszy={obsluzWybranieSegmentuCiszy}
             />
           }

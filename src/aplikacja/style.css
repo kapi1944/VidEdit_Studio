@@ -1235,11 +1235,29 @@ h2 {
   top: -8px;
   bottom: 0;
   z-index: 2;
+  width: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+  transform: translateX(-7px);
+}
+
+.znacznik-czasu::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
   width: 3px;
   border-radius: 999px;
   background: var(--kolor-toru-znacznik);
-  transform: translateX(-1px);
-  pointer-events: none;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.znacznik-czasu:focus-visible {
+  outline: 2px solid var(--kolor-toru-znacznik);
+  outline-offset: 2px;
 }
 
 .panel-osi-czasu__podsumowanie {

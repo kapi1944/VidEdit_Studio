@@ -1,4 +1,13 @@
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ZdarzenieMyszy,
+  type RefObject
+} from "react";
 import type { SegmentCiszy } from "../../../domena/timeline/typyTimeline";
+import { przeliczPozycjeNaCzas } from "../przeliczCzasNaPozycje";
 import { Pasek_Klipu } from "./Pasek_Klipu";
 import { Segment_Ciszy_Na_Timeline } from "./Segment_Ciszy_Na_Timeline";
 import { Znacznik_Czasu } from "./Znacznik_Czasu";
@@ -9,7 +18,10 @@ type WlasciwosciPaneluOsiCzasu = {
   czasAktualnyMs: number;
   segmentyCiszy: SegmentCiszy[];
   idAktywnegoSegmentuCiszy?: string;
+  uchwytWideoRef: RefObject<HTMLVideoElement | null>;
   formatujCzasTimeline: (czasMs: number) => string;
+  naZmianeCzasuTimeline: (czasMs: number) => void;
+  naZmianePrzeciaganiaGlowicy: (czyPrzeciaganieGlowicy: boolean) => void;
   naWybranoSegmentCiszy: (segmentCiszy: SegmentCiszy) => void;
 };
 
@@ -19,12 +31,97 @@ export function Panel_Osi_Czasu({
   czasAktualnyMs,
   segmentyCiszy,
   idAktywnegoSegmentuCiszy,
+  uchwytWideoRef,
   formatujCzasTimeline,
+  naZmianeCzasuTimeline,
+  naZmianePrzeciaganiaGlowicy,
   naWybranoSegmentCiszy
 }: WlasciwosciPaneluOsiCzasu) {
+  const uchwytTimelineRef = useRef<HTMLDivElement>(null);
+  const [czyPrzeciaganieGlowicy, ustawCzyPrzeciaganieGlowicy] =
+    useState(false);
   const aktywnySegmentCiszy = segmentyCiszy.find(
     (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
   );
+
+  const ustawCzasZPozycjiMyszy = useCallback(
+    (pozycjaMyszyX: number) => {
+      const elementTimeline = uchwytTimelineRef.current;
+
+      if (!elementTimeline || czasTrwaniaMs <= 0) {
+        return;
+      }
+
+      const wymiaryTimeline = elementTimeline.getBoundingClientRect();
+      const czasMs = przeliczPozycjeNaCzas(
+        pozycjaMyszyX - wymiaryTimeline.left,
+        wymiaryTimeline.width,
+        czasTrwaniaMs
+      );
+
+      if (uchwytWideoRef.current) {
+        uchwytWideoRef.current.currentTime = czasMs / 1000;
+      }
+
+      naZmianeCzasuTimeline(czasMs);
+    },
+    [czasTrwaniaMs, naZmianeCzasuTimeline, uchwytWideoRef]
+  );
+
+  function ustawStanPrzeciaganiaGlowicy(czyPrzeciaganie: boolean) {
+    ustawCzyPrzeciaganieGlowicy(czyPrzeciaganie);
+    naZmianePrzeciaganiaGlowicy(czyPrzeciaganie);
+  }
+
+  function obsluzKlikniecieTimeline(zdarzenie: ZdarzenieMyszy<HTMLDivElement>) {
+    if (zdarzenie.button !== 0) {
+      return;
+    }
+
+    if (
+      (zdarzenie.target as Element).closest(".segment-ciszy-na-timeline") ||
+      (zdarzenie.target as Element).closest(".znacznik-czasu")
+    ) {
+      return;
+    }
+
+    ustawCzasZPozycjiMyszy(zdarzenie.clientX);
+  }
+
+  function rozpocznijPrzeciaganieGlowicy(
+    zdarzenie: ZdarzenieMyszy<HTMLButtonElement>
+  ) {
+    if (zdarzenie.button !== 0 || czasTrwaniaMs <= 0) {
+      return;
+    }
+
+    zdarzenie.preventDefault();
+    zdarzenie.stopPropagation();
+    ustawStanPrzeciaganiaGlowicy(true);
+    ustawCzasZPozycjiMyszy(zdarzenie.clientX);
+  }
+
+  useEffect(() => {
+    if (!czyPrzeciaganieGlowicy) {
+      return;
+    }
+
+    function obsluzRuchMyszy(zdarzenie: MouseEvent) {
+      ustawCzasZPozycjiMyszy(zdarzenie.clientX);
+    }
+
+    function zakonczPrzeciaganieGlowicy() {
+      ustawStanPrzeciaganiaGlowicy(false);
+    }
+
+    document.addEventListener("mousemove", obsluzRuchMyszy);
+    document.addEventListener("mouseup", zakonczPrzeciaganieGlowicy);
+
+    return () => {
+      document.removeEventListener("mousemove", obsluzRuchMyszy);
+      document.removeEventListener("mouseup", zakonczPrzeciaganieGlowicy);
+    };
+  }, [czyPrzeciaganieGlowicy, ustawCzasZPozycjiMyszy]);
 
   return (
     <section className="panel-osi-czasu" aria-label="Os czasu projektu">
@@ -37,7 +134,11 @@ export function Panel_Osi_Czasu({
       </div>
 
       <div className="panel-osi-czasu__tor">
-        <div className="panel-osi-czasu__obszar">
+        <div
+          className="panel-osi-czasu__obszar"
+          ref={uchwytTimelineRef}
+          onMouseDown={obsluzKlikniecieTimeline}
+        >
           <Pasek_Klipu
             czasTrwaniaMs={czasTrwaniaMs}
             formatujCzas={formatujCzasTimeline}
@@ -57,7 +158,10 @@ export function Panel_Osi_Czasu({
           <Znacznik_Czasu
             czasAktualnyMs={czasAktualnyMs}
             czasTrwaniaMs={czasTrwaniaMs}
+            uchwytWideoRef={uchwytWideoRef}
+            czyPrzeciaganieGlowicy={czyPrzeciaganieGlowicy}
             formatujCzas={formatujCzasTimeline}
+            naRozpocznijPrzeciaganie={rozpocznijPrzeciaganieGlowicy}
           />
         </div>
       </div>

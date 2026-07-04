@@ -1,3 +1,4 @@
+import { createRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -37,6 +38,8 @@ function wyrenderujObszarRoboczy(
   return renderToStaticMarkup(
     <ObszarRoboczy
       czasAktualnyMs={0}
+      uchwytWideoRef={createRef<HTMLVideoElement>()}
+      czyPrzeciaganieGlowicy={false}
       formatujCzasPodgladu={formatujCzasTestowy}
       naZmianeCzasuOdtwarzania={vi.fn()}
       {...wlasciwosci}

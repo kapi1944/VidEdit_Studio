@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import {
   pobierzCzasTrwaniaMedium,
   utworzDaneKartyMedium
@@ -52,6 +52,8 @@ type WlasciwosciObszaruRoboczego = {
   plikWideo?: PlikMediow;
   podgladWideo?: PodgladMedium;
   czasAktualnyMs: number;
+  uchwytWideoRef: RefObject<HTMLVideoElement | null>;
+  czyPrzeciaganieGlowicy: boolean;
   opisAktywnegoSegmentuCiszy?: string;
   formatujCzasPodgladu: (czasMs: number) => string;
   naZmianeCzasuOdtwarzania: (czasMs: number) => void;
@@ -254,6 +256,8 @@ export function ObszarRoboczy({
   plikWideo,
   podgladWideo,
   czasAktualnyMs,
+  uchwytWideoRef,
+  czyPrzeciaganieGlowicy,
   opisAktywnegoSegmentuCiszy,
   formatujCzasPodgladu,
   naZmianeCzasuOdtwarzania
@@ -295,6 +299,8 @@ export function ObszarRoboczy({
             nazwaPliku={plikWideo.nazwaPliku}
             czasAktualnyMs={czasAktualnyMs}
             czasTrwaniaMs={czasTrwaniaWideoMs}
+            uchwytWideoRef={uchwytWideoRef}
+            czyPrzeciaganieGlowicy={czyPrzeciaganieGlowicy}
             rozdzielczosc={daneKartyWideo.rozdzielczosc}
             fps={daneKartyWideo.fps}
             audio={daneKartyWideo.audio}
