@@ -27,10 +27,10 @@ function utworzTestowyPlik(
 const poprawneDaneImportu: DaneImportuPlikuMediow = {
   id: "media-1",
   nazwaPliku: "nagranie.mp4",
+  sciezkaPliku: "nagranie.mp4",
   rozszerzenie: ".mp4",
   typMime: "video/mp4",
   rozmiarBajtow: 2048,
-  objectUrl: "blob:http://localhost/media-1",
   czasTrwaniaMs: 120000
 };
 
@@ -103,15 +103,15 @@ describe("import mediow", () => {
     );
   });
 
-  it("zwraca blad, gdy nie udalo sie utworzyc url podgladu", () => {
+  it("zwraca blad, gdy brakuje identyfikatora pliku", () => {
     const bledy = sprawdzCzyDaneImportuMediowSaPoprawne({
       ...poprawneDaneImportu,
-      objectUrl: ""
+      sciezkaPliku: ""
     });
 
     expect(bledy).toContainEqual({
-      pole: "objectUrl",
-      komunikat: "Nie udało się zaimportować pliku."
+      pole: "sciezkaPliku",
+      komunikat: "Brak identyfikatora pliku."
     });
   });
 
@@ -136,10 +136,10 @@ describe("import mediow", () => {
       expect(wynik.dane).toEqual({
         id: "media-1",
         nazwaPliku: "nagranie.mp4",
+        sciezkaPliku: "nagranie.mp4",
         rozszerzenie: ".mp4",
         typMime: "video/mp4",
         rozmiarBajtow: 2048,
-        objectUrl: "blob:http://localhost/media-1",
         statusImportu: "zaimportowany",
         typ: "wideo",
         czasTrwaniaMs: 120000

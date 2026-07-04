@@ -1,6 +1,34 @@
 :root {
-  color: #202124;
-  background: #f5f7fb;
+  color-scheme: light;
+  --kolor-tla: #f5f7fb;
+  --kolor-powierzchni: #ffffff;
+  --kolor-powierzchni-delikatny: #fbfcff;
+  --kolor-powierzchni-akcent: #f7f9fc;
+  --kolor-tekstu: #202124;
+  --kolor-tekstu-mocny: #27364a;
+  --kolor-tekstu-drugi: #44505f;
+  --kolor-tekstu-slaby: #607086;
+  --kolor-etykiety: #62738a;
+  --kolor-obramowania: #d7deea;
+  --kolor-obramowania-mocny: #cfd8e6;
+  --kolor-obramowania-sekcji: #dce3ee;
+  --kolor-obramowania-akcent: #9fb0c9;
+  --kolor-znacznika-tla: #eef4ff;
+  --kolor-znacznika-tekstu: #385074;
+  --kolor-znacznika-obramowania: #cad4e8;
+  --kolor-przycisku: #2f6fad;
+  --kolor-przycisku-hover: #265d92;
+  --kolor-przycisku-obramowania: #2d5f9a;
+  --kolor-przycisku-tekstu: #ffffff;
+  --kolor-bledu-tla: #fff4f4;
+  --kolor-bledu-tekstu: #8f1f1f;
+  --kolor-bledu-obramowania: #e5a2a2;
+  --kolor-toru-znacznik: #d84f3f;
+  --kolor-toru-linia: #dce5f2;
+  --kolor-toru-start: #f8fafc;
+  --kolor-toru-koniec: #edf2f8;
+  color: var(--kolor-tekstu);
+  background: var(--kolor-tla);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -8,6 +36,70 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-tryb-wygladu="ciemny"] {
+  color-scheme: dark;
+  --kolor-tla: #11141a;
+  --kolor-powierzchni: #1b2029;
+  --kolor-powierzchni-delikatny: #202633;
+  --kolor-powierzchni-akcent: #171c25;
+  --kolor-tekstu: #edf2f8;
+  --kolor-tekstu-mocny: #f5f7fb;
+  --kolor-tekstu-drugi: #c4cfdd;
+  --kolor-tekstu-slaby: #aab6c6;
+  --kolor-etykiety: #94a4b8;
+  --kolor-obramowania: #344155;
+  --kolor-obramowania-mocny: #42516a;
+  --kolor-obramowania-sekcji: #303a4c;
+  --kolor-obramowania-akcent: #64748b;
+  --kolor-znacznika-tla: #17263c;
+  --kolor-znacznika-tekstu: #bcd6ff;
+  --kolor-znacznika-obramowania: #38547a;
+  --kolor-przycisku: #4a8bd1;
+  --kolor-przycisku-hover: #5c9be3;
+  --kolor-przycisku-obramowania: #6aa6e8;
+  --kolor-przycisku-tekstu: #07111f;
+  --kolor-bledu-tla: #351b22;
+  --kolor-bledu-tekstu: #ffb8c0;
+  --kolor-bledu-obramowania: #8d4654;
+  --kolor-toru-znacznik: #f06f60;
+  --kolor-toru-linia: #334055;
+  --kolor-toru-start: #1d2430;
+  --kolor-toru-koniec: #161b24;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-tryb-wygladu="systemowy"] {
+    color-scheme: dark;
+    --kolor-tla: #11141a;
+    --kolor-powierzchni: #1b2029;
+    --kolor-powierzchni-delikatny: #202633;
+    --kolor-powierzchni-akcent: #171c25;
+    --kolor-tekstu: #edf2f8;
+    --kolor-tekstu-mocny: #f5f7fb;
+    --kolor-tekstu-drugi: #c4cfdd;
+    --kolor-tekstu-slaby: #aab6c6;
+    --kolor-etykiety: #94a4b8;
+    --kolor-obramowania: #344155;
+    --kolor-obramowania-mocny: #42516a;
+    --kolor-obramowania-sekcji: #303a4c;
+    --kolor-obramowania-akcent: #64748b;
+    --kolor-znacznika-tla: #17263c;
+    --kolor-znacznika-tekstu: #bcd6ff;
+    --kolor-znacznika-obramowania: #38547a;
+    --kolor-przycisku: #4a8bd1;
+    --kolor-przycisku-hover: #5c9be3;
+    --kolor-przycisku-obramowania: #6aa6e8;
+    --kolor-przycisku-tekstu: #07111f;
+    --kolor-bledu-tla: #351b22;
+    --kolor-bledu-tekstu: #ffb8c0;
+    --kolor-bledu-obramowania: #8d4654;
+    --kolor-toru-znacznik: #f06f60;
+    --kolor-toru-linia: #334055;
+    --kolor-toru-start: #1d2430;
+    --kolor-toru-koniec: #161b24;
+  }
 }
 
 * {
@@ -18,6 +110,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--kolor-tla);
 }
 
 button,
@@ -37,16 +130,42 @@ select {
   margin-bottom: 32px;
 }
 
+.naglowek-aplikacji__gora {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
 .etykieta-wersji {
   width: fit-content;
   margin: 0 0 12px;
   padding: 6px 10px;
-  border: 1px solid #cad4e8;
+  border: 1px solid var(--kolor-znacznika-obramowania);
   border-radius: 6px;
-  color: #385074;
-  background: #eef4ff;
+  color: var(--kolor-znacznika-tekstu);
+  background: var(--kolor-znacznika-tla);
   font-size: 0.875rem;
   font-weight: 700;
+}
+
+.przelacznik-wygladu {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+  color: var(--kolor-etykiety);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.przelacznik-wygladu select {
+  min-height: 38px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: 6px;
+  color: var(--kolor-tekstu-mocny);
+  background: var(--kolor-powierzchni);
 }
 
 h1,
@@ -69,7 +188,7 @@ h2 {
 .opis-aplikacji {
   max-width: 680px;
   margin-bottom: 0;
-  color: #44505f;
+  color: var(--kolor-tekstu-drugi);
   font-size: 1.2rem;
   line-height: 1.5;
 }
@@ -77,8 +196,8 @@ h2 {
 .sekcja-aplikacji {
   margin-bottom: 28px;
   padding: 24px 0;
-  border-top: 1px solid #dce3ee;
-  border-bottom: 1px solid #dce3ee;
+  border-top: 1px solid var(--kolor-obramowania-sekcji);
+  border-bottom: 1px solid var(--kolor-obramowania-sekcji);
 }
 
 .lista-modulow {
@@ -93,9 +212,9 @@ h2 {
 .lista-modulow li {
   min-height: 52px;
   padding: 14px 16px;
-  border: 1px solid #d7deea;
+  border: 1px solid var(--kolor-obramowania);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--kolor-powierzchni);
 }
 
 .panel-importu-mediow {
@@ -105,9 +224,9 @@ h2 {
   align-items: start;
   margin-bottom: 28px;
   padding: 20px;
-  border: 1px solid #cfd8e6;
+  border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--kolor-powierzchni);
 }
 
 .panel-importu-mediow__naglowek {
@@ -116,7 +235,7 @@ h2 {
 
 .panel-importu-mediow__etykieta {
   margin-bottom: 8px;
-  color: #62738a;
+  color: var(--kolor-etykiety);
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -124,7 +243,7 @@ h2 {
 
 .panel-importu-mediow__opis {
   margin-bottom: 0;
-  color: #56667c;
+  color: var(--kolor-tekstu-slaby);
   line-height: 1.5;
 }
 
@@ -132,9 +251,9 @@ h2 {
   display: grid;
   gap: 10px;
   padding: 16px;
-  border: 1px dashed #9fb0c9;
+  border: 1px dashed var(--kolor-obramowania-akcent);
   border-radius: 8px;
-  background: #f7f9fc;
+  background: var(--kolor-powierzchni-akcent);
 }
 
 .panel-importu-mediow__input {
@@ -143,20 +262,20 @@ h2 {
 
 .panel-importu-mediow__przycisk {
   min-height: 44px;
-  border: 1px solid #2d5f9a;
+  border: 1px solid var(--kolor-przycisku-obramowania);
   border-radius: 6px;
-  color: #ffffff;
-  background: #2f6fad;
+  color: var(--kolor-przycisku-tekstu);
+  background: var(--kolor-przycisku);
   font-weight: 700;
   cursor: pointer;
 }
 
 .panel-importu-mediow__przycisk:hover {
-  background: #265d92;
+  background: var(--kolor-przycisku-hover);
 }
 
 .panel-importu-mediow__formaty {
-  color: #607086;
+  color: var(--kolor-tekstu-slaby);
   font-size: 0.95rem;
   overflow-wrap: anywhere;
 }
@@ -165,10 +284,10 @@ h2 {
   grid-column: 1 / -1;
   margin: 0;
   padding: 12px 14px;
-  border: 1px solid #e5a2a2;
+  border: 1px solid var(--kolor-bledu-obramowania);
   border-radius: 6px;
-  color: #8f1f1f;
-  background: #fff4f4;
+  color: var(--kolor-bledu-tekstu);
+  background: var(--kolor-bledu-tla);
   font-weight: 700;
 }
 
@@ -178,7 +297,63 @@ h2 {
 
 .panel-importu-mediow__pusty {
   margin: 0;
-  color: #607086;
+  color: var(--kolor-tekstu-slaby);
+}
+
+.lista-mediow {
+  margin-top: 18px;
+}
+
+.lista-mediow h2 {
+  margin-bottom: 12px;
+}
+
+.lista-mediow__pusty {
+  margin: 0;
+  color: var(--kolor-tekstu-slaby);
+}
+
+.lista-mediow__lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-mediow__element {
+  padding: 14px;
+  border: 1px solid var(--kolor-obramowania);
+  border-radius: 8px;
+  background: var(--kolor-powierzchni);
+}
+
+.lista-mediow__nazwa {
+  margin-bottom: 10px;
+  color: var(--kolor-tekstu-mocny);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.lista-mediow__dane {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.lista-mediow__dane dt {
+  margin-bottom: 4px;
+  color: var(--kolor-etykiety);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lista-mediow__dane dd {
+  margin: 0;
+  color: var(--kolor-tekstu-mocny);
+  font-weight: 700;
 }
 
 .lista-plikow-mediow {
@@ -195,9 +370,9 @@ h2 {
   gap: 16px;
   align-items: start;
   padding: 14px;
-  border: 1px solid #d7deea;
+  border: 1px solid var(--kolor-obramowania);
   border-radius: 8px;
-  background: #fbfcff;
+  background: var(--kolor-powierzchni-delikatny);
 }
 
 .plik-mediow__podglad {
@@ -219,7 +394,7 @@ h2 {
 
 .plik-mediow__sekcja h3 {
   margin: 0 0 10px;
-  color: #27364a;
+  color: var(--kolor-tekstu-mocny);
   font-size: 0.95rem;
 }
 
@@ -237,7 +412,7 @@ h2 {
 
 .plik-mediow__dane dt {
   margin-bottom: 4px;
-  color: #62738a;
+  color: var(--kolor-etykiety);
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -245,16 +420,16 @@ h2 {
 
 .plik-mediow__dane dd {
   margin: 0;
-  color: #27364a;
+  color: var(--kolor-tekstu-mocny);
   font-weight: 700;
   overflow-wrap: anywhere;
 }
 
 .panel-osi-czasu {
   padding: 20px;
-  border: 1px solid #cfd8e6;
+  border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--kolor-powierzchni);
 }
 
 .panel-osi-czasu__naglowek {
@@ -272,7 +447,7 @@ h2 {
 }
 
 .panel-osi-czasu__czas {
-  color: #56667c;
+  color: var(--kolor-tekstu-slaby);
   font-variant-numeric: tabular-nums;
 }
 
@@ -280,17 +455,17 @@ h2 {
   position: relative;
   height: 72px;
   overflow: hidden;
-  border: 1px solid #bac7d9;
+  border: 1px solid var(--kolor-obramowania-akcent);
   border-radius: 6px;
   background:
     repeating-linear-gradient(
       to right,
-      #dce5f2 0,
-      #dce5f2 1px,
+      var(--kolor-toru-linia) 0,
+      var(--kolor-toru-linia) 1px,
       transparent 1px,
       transparent 48px
     ),
-    linear-gradient(180deg, #f8fafc, #edf2f8);
+    linear-gradient(180deg, var(--kolor-toru-start), var(--kolor-toru-koniec));
 }
 
 .panel-osi-czasu__znacznik {
@@ -300,12 +475,12 @@ h2 {
   left: 18px;
   width: 3px;
   border-radius: 999px;
-  background: #d84f3f;
+  background: var(--kolor-toru-znacznik);
 }
 
 .panel-osi-czasu__opis {
   margin: 12px 0 0;
-  color: #607086;
+  color: var(--kolor-tekstu-slaby);
   font-size: 0.95rem;
 }
 

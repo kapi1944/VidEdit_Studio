@@ -24,12 +24,12 @@ export function utworzPlikWideoZDanychImportu(
   return sukces({
     id: daneImportu.id ?? utworzIdPlikuMediow(),
     nazwaPliku: daneImportu.nazwaPliku.trim(),
+    sciezkaPliku: daneImportu.sciezkaPliku.trim(),
     rozszerzenie:
-      daneImportu.rozszerzenie.trim() ||
+      daneImportu.rozszerzenie?.trim() ||
       pobierzRozszerzeniePliku(daneImportu.nazwaPliku),
-    typMime: daneImportu.typMime.trim(),
+    typMime: daneImportu.typMime?.trim() ?? "",
     rozmiarBajtow: daneImportu.rozmiarBajtow,
-    objectUrl: daneImportu.objectUrl.trim(),
     statusImportu: daneImportu.statusImportu ?? "zaimportowany",
     typ: "wideo",
     ...(daneImportu.dataModyfikacjiPlikuIso

@@ -6,10 +6,10 @@ export type StatusImportuMediow = "zaimportowany";
 export type PlikMediow = {
   id: string;
   nazwaPliku: string;
+  sciezkaPliku: string;
   rozszerzenie: string;
   typMime: string;
   rozmiarBajtow: number;
-  objectUrl: string;
   statusImportu: StatusImportuMediow;
   typ: TypPlikuMediow;
   dataModyfikacjiPlikuIso?: string;
@@ -21,10 +21,10 @@ export type PlikMediow = {
 export type DaneImportuPlikuMediow = {
   id?: string;
   nazwaPliku: string;
-  rozszerzenie: string;
-  typMime: string;
+  sciezkaPliku: string;
+  rozszerzenie?: string;
+  typMime?: string;
   rozmiarBajtow: number;
-  objectUrl: string;
   statusImportu?: StatusImportuMediow;
   dataModyfikacjiPlikuIso?: string;
   czasTrwaniaMs?: CzasMs;

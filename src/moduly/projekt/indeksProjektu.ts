@@ -1,6 +1,7 @@
 export { utworzPustyProjekt } from "../../domena/projekt/fabrykaProjektu";
 export {
   aktualizujMetadaneWideoPlikuMediow,
+  dodajMediumDoProjektu,
   dodajPlikDoProjektu
 } from "../../domena/projekt/mediaProjektu";
 export { sprawdzCzyProjektJestPoprawny } from "../../domena/projekt/walidacjaProjektu";

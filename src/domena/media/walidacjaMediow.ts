@@ -46,7 +46,7 @@ export function sprawdzCzyDaneImportuMediowSaPoprawne(
 ): BladWalidacji[] {
   const bledy: BladWalidacji[] = [];
   const nazwaPliku = daneImportu.nazwaPliku.trim();
-  const objectUrl = daneImportu.objectUrl.trim();
+  const sciezkaPliku = daneImportu.sciezkaPliku.trim();
 
   if (nazwaPliku.length === 0) {
     bledy.push({
@@ -55,10 +55,10 @@ export function sprawdzCzyDaneImportuMediowSaPoprawne(
     });
   }
 
-  if (objectUrl.length === 0) {
+  if (sciezkaPliku.length === 0) {
     bledy.push({
-      pole: "objectUrl",
-      komunikat: "Nie udało się zaimportować pliku."
+      pole: "sciezkaPliku",
+      komunikat: "Brak identyfikatora pliku."
     });
   }
 
