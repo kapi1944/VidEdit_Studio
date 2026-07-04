@@ -3,10 +3,12 @@ import type {
   MetadaneWideo,
   PlikMediow
 } from "../../../src/domena/media/typyMediow";
+import type { PropozycjaCiecia } from "../../../src/domena/timeline/typyTimeline";
 import { utworzPustyProjekt } from "../../../src/domena/projekt/fabrykaProjektu";
 import {
   dodajMediumDoProjektu,
-  zaktualizujMetadaneMediumWProjekcie
+  zaktualizujMetadaneMediumWProjekcie,
+  zaktualizujPropozycjeCiecWProjekcie
 } from "../../../src/domena/projekt/operacjeProjektu";
 
 function utworzPlikMediow(nadpisaneDane: Partial<PlikMediow> = {}): PlikMediow {
@@ -31,6 +33,21 @@ function utworzMetadaneWideo(
     szerokoscPx: 1920,
     wysokoscPx: 1080,
     czyMetadanePelne: false,
+    ...nadpisaneDane
+  };
+}
+
+function utworzPropozycjeCiecia(
+  nadpisaneDane: Partial<PropozycjaCiecia> = {}
+): PropozycjaCiecia {
+  return {
+    id: "propozycja-ciecia-cisza-1",
+    idSegmentuCiszy: "cisza-1",
+    czasPoczatkuMs: 1000,
+    czasKoncaMs: 2500,
+    status: "oczekuje",
+    powod: "cisza",
+    utworzonoAutomatycznie: true,
     ...nadpisaneDane
   };
 }
@@ -209,6 +226,22 @@ describe("operacje projektu", () => {
     );
 
     expect(projektPoAktualizacji.media[0]?.czasTrwaniaMs).toBe(90000);
+  });
+
+  it("zapisuje propozycje ciec w stanie projektu", () => {
+    const projekt = utworzPustyProjekt("Projekt testowy");
+    const propozycjeCiec = [utworzPropozycjeCiecia()];
+
+    const projektPoAktualizacji = zaktualizujPropozycjeCiecWProjekcie(
+      projekt,
+      propozycjeCiec
+    );
+
+    expect(projektPoAktualizacji.timeline.propozycjeCiec).toBe(
+      propozycjeCiec
+    );
+    expect(projektPoAktualizacji).not.toBe(projekt);
+    expect(projekt.timeline.propozycjeCiec).toEqual([]);
   });
 
   it("odrzuca niepoprawne metadane bez zmiany projektu", () => {

@@ -3,7 +3,8 @@ export {
   aktualizujMetadaneWideoPlikuMediow,
   dodajMediumDoProjektu,
   dodajPlikDoProjektu,
-  zaktualizujMetadaneMediumWProjekcie
+  zaktualizujMetadaneMediumWProjekcie,
+  zaktualizujPropozycjeCiecWProjekcie
 } from "../../domena/projekt/mediaProjektu";
 export { sprawdzCzyProjektJestPoprawny } from "../../domena/projekt/walidacjaProjektu";
 export type { ProjektMontazu, UstawieniaProjektu } from "../../domena/projekt/typyProjektu";

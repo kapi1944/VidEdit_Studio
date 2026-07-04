@@ -3,7 +3,14 @@ import { walidujSciezkeAudio } from "../audio/walidacjaAudio";
 import type { DaneAudioProjektu } from "../audio/typyAudio";
 import { OBSLUGIWANE_FORMATY_CZASU } from "../czas/typyCzasu";
 import type { CzasMs } from "../czas/typyCzasu";
-import type { SegmentCzasu } from "../timeline/typyTimeline";
+import {
+  POWODY_PROPOZYCJI_CIEC,
+  STATUSY_PROPOZYCJI_CIEC
+} from "../timeline/typyTimeline";
+import type {
+  PropozycjaCiecia,
+  SegmentCzasu
+} from "../timeline/typyTimeline";
 import type { BladWalidacji } from "../../wspolne/bledy";
 import type { ProjektMontazu } from "./typyProjektu";
 
@@ -47,6 +54,44 @@ export function sprawdzCzySegmentCzasuJestPoprawny(
     bledy.push({
       pole: "czasKoncaMs",
       komunikat: "Czas końca segmentu musi być większy niż czas początku."
+    });
+  }
+
+  return bledy;
+}
+
+export function sprawdzCzyPropozycjaCieciaJestPoprawna(
+  propozycja: PropozycjaCiecia
+): BladWalidacji[] {
+  const bledy: BladWalidacji[] = [
+    ...sprawdzCzySegmentCzasuJestPoprawny(propozycja)
+  ];
+
+  if (!STATUSY_PROPOZYCJI_CIEC.includes(propozycja.status)) {
+    bledy.push({
+      pole: "status",
+      komunikat: "Status propozycji ciecia nie jest obslugiwany."
+    });
+  }
+
+  if (!POWODY_PROPOZYCJI_CIEC.includes(propozycja.powod)) {
+    bledy.push({
+      pole: "powod",
+      komunikat: "Powod propozycji ciecia nie jest obslugiwany."
+    });
+  }
+
+  if (propozycja.powod === "cisza" && !propozycja.idSegmentuCiszy) {
+    bledy.push({
+      pole: "idSegmentuCiszy",
+      komunikat: "Propozycja ciecia ciszy musi wskazywac segment ciszy."
+    });
+  }
+
+  if (typeof propozycja.utworzonoAutomatycznie !== "boolean") {
+    bledy.push({
+      pole: "utworzonoAutomatycznie",
+      komunikat: "Propozycja ciecia musi okreslac sposob utworzenia."
     });
   }
 
@@ -165,13 +210,31 @@ export function sprawdzCzyProjektJestPoprawny(
     });
   }
 
-  projekt.timeline.segmentyCiszy.forEach((segment) => {
-    bledy.push(...sprawdzCzySegmentCzasuJestPoprawny(segment));
-  });
+  if (projekt.timeline && !Array.isArray(projekt.timeline.segmentyCiszy)) {
+    bledy.push({
+      pole: "timeline.segmentyCiszy",
+      komunikat: "Segmenty ciszy na osi czasu musza byc tablica."
+    });
+  } else {
+    const segmentyCiszyTimeline = projekt.timeline?.segmentyCiszy ?? [];
 
-  projekt.timeline.propozycjeCiec.forEach((propozycja) => {
-    bledy.push(...sprawdzCzySegmentCzasuJestPoprawny(propozycja));
-  });
+    segmentyCiszyTimeline.forEach((segment) => {
+      bledy.push(...sprawdzCzySegmentCzasuJestPoprawny(segment));
+    });
+  }
+
+  if (projekt.timeline && !Array.isArray(projekt.timeline.propozycjeCiec)) {
+    bledy.push({
+      pole: "timeline.propozycjeCiec",
+      komunikat: "Propozycje ciec musza byc tablica."
+    });
+  } else {
+    const propozycjeCiec = projekt.timeline?.propozycjeCiec ?? [];
+
+    propozycjeCiec.forEach((propozycja) => {
+      bledy.push(...sprawdzCzyPropozycjaCieciaJestPoprawna(propozycja));
+    });
+  }
 
   bledy.push(
     ...walidujDaneAudioProjektu(projekt.audio).map((blad) => ({

@@ -13,16 +13,24 @@ export type SegmentCiszy = SegmentCzasu & {
   status: StatusSegmentuCiszy;
 };
 
-export type PowodPropozycjiCiecia = "cisza" | "dubel" | "reczne";
+export const POWODY_PROPOZYCJI_CIEC = ["cisza", "dubel", "reczne"] as const;
+
+export type PowodPropozycjiCiecia = (typeof POWODY_PROPOZYCJI_CIEC)[number];
+
+export const STATUSY_PROPOZYCJI_CIEC = [
+  "oczekuje",
+  "zatwierdzona",
+  "odrzucona"
+] as const;
 
 export type StatusPropozycjiCiecia =
-  | "oczekuje"
-  | "zatwierdzona"
-  | "odrzucona";
+  (typeof STATUSY_PROPOZYCJI_CIEC)[number];
 
 export type PropozycjaCiecia = SegmentCzasu & {
+  idSegmentuCiszy?: string;
   powod: PowodPropozycjiCiecia;
   status: StatusPropozycjiCiecia;
+  utworzonoAutomatycznie: boolean;
 };
 
 export type TimelineProjektu = {

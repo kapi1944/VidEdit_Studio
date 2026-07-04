@@ -6,6 +6,14 @@ import {
 } from "../moduly/media/komponenty/Panel_Importu_Mediow";
 import { Lista_Mediow } from "../moduly/media/komponenty/Lista_Mediow";
 import {
+  Panel_Propozycji_Ciec,
+  cofnijDecyzjePropozycjiCiecia,
+  odrzucPropozycjeCiecia,
+  uzupelnijBrakujacePropozycjeCiec,
+  zatwierdzPropozycjeCiecia,
+  zatwierdzWszystkiePropozycjeCiec
+} from "../moduly/propozycje-ciec/indeksPropozycjiCiec";
+import {
   OBSLUGIWANE_ROZSZERZENIA_WIDEO,
   walidujPlikMediow,
   zaimportujPlikMediow
@@ -13,7 +21,8 @@ import {
 import {
   dodajMediumDoProjektu,
   utworzPustyProjekt,
-  zaktualizujMetadaneMediumWProjekcie
+  zaktualizujMetadaneMediumWProjekcie,
+  zaktualizujPropozycjeCiecWProjekcie
 } from "../moduly/projekt/indeksProjektu";
 import { formatujCzas } from "../domena/czas/formatowanieCzasu";
 import type {
@@ -23,6 +32,7 @@ import type {
 import { generujMiniatureWideoZPliku } from "../infrastruktura/media/generujMiniatureWideoBrowser";
 import { odczytajMetadaneWideoZPliku } from "../infrastruktura/media/odczytajMetadaneWideoBrowser";
 import { utworzDaneImportuZPlikuBrowserowego } from "../infrastruktura/media/utworzDaneImportuZPlikuBrowserowego";
+import type { PropozycjaCiecia } from "../domena/timeline/typyTimeline";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
@@ -77,6 +87,29 @@ export function Aplikacja() {
       Object.values(podgladyMediowRef.current).forEach(zwolnijObjectUrlPodgladu);
     };
   }, []);
+
+  useEffect(() => {
+    ustawProjekt((aktualnyProjekt) => {
+      const segmentyCiszy =
+        aktualnyProjekt.audio.segmentyCiszy.length > 0
+          ? aktualnyProjekt.audio.segmentyCiszy
+          : aktualnyProjekt.timeline.segmentyCiszy;
+
+      if (segmentyCiszy.length === 0) {
+        return aktualnyProjekt;
+      }
+
+      const propozycjeCiec = uzupelnijBrakujacePropozycjeCiec(
+        segmentyCiszy,
+        aktualnyProjekt.timeline.propozycjeCiec
+      );
+
+      return zaktualizujPropozycjeCiecWProjekcie(
+        aktualnyProjekt,
+        propozycjeCiec
+      );
+    });
+  }, [projekt.audio.segmentyCiszy, projekt.timeline.segmentyCiszy]);
 
   const czasStartowy = formatujCzas(
     0,
@@ -182,6 +215,49 @@ export function Aplikacja() {
     }
   }
 
+  function zaktualizujPropozycjeCiec(
+    zaktualizuj: (propozycjeCiec: PropozycjaCiecia[]) => PropozycjaCiecia[]
+  ) {
+    ustawProjekt((aktualnyProjekt) =>
+      zaktualizujPropozycjeCiecWProjekcie(
+        aktualnyProjekt,
+        zaktualizuj(aktualnyProjekt.timeline.propozycjeCiec)
+      )
+    );
+  }
+
+  function obsluzZatwierdzeniePropozycjiCiecia(idPropozycjiCiecia: string) {
+    zaktualizujPropozycjeCiec((propozycjeCiec) =>
+      zatwierdzPropozycjeCiecia(propozycjeCiec, idPropozycjiCiecia)
+    );
+  }
+
+  function obsluzOdrzuceniePropozycjiCiecia(idPropozycjiCiecia: string) {
+    zaktualizujPropozycjeCiec((propozycjeCiec) =>
+      odrzucPropozycjeCiecia(propozycjeCiec, idPropozycjiCiecia)
+    );
+  }
+
+  function obsluzCofniecieDecyzjiPropozycjiCiecia(
+    idPropozycjiCiecia: string
+  ) {
+    zaktualizujPropozycjeCiec((propozycjeCiec) =>
+      cofnijDecyzjePropozycjiCiecia(propozycjeCiec, idPropozycjiCiecia)
+    );
+  }
+
+  function obsluzZatwierdzenieWszystkichPropozycjiCiec() {
+    zaktualizujPropozycjeCiec(zatwierdzWszystkiePropozycjeCiec);
+  }
+
+  function formatujCzasPropozycjiCiecia(czasMs: number) {
+    return formatujCzas(
+      czasMs,
+      projekt.ustawienia.formatWyswietlaniaCzasu,
+      projekt.ustawienia.liczbaKlatekNaSekunde
+    );
+  }
+
   return (
     <main className="ekran-startowy">
       <section className="naglowek-aplikacji">
@@ -235,6 +311,15 @@ export function Aplikacja() {
       <Panel_Osi_Czasu
         nazwaProjektu={projekt.nazwa}
         czasPoczatku={czasStartowy}
+      />
+
+      <Panel_Propozycji_Ciec
+        propozycjeCiec={projekt.timeline.propozycjeCiec}
+        formatujCzasCiecia={formatujCzasPropozycjiCiecia}
+        naZatwierdz={obsluzZatwierdzeniePropozycjiCiecia}
+        naOdrzuc={obsluzOdrzuceniePropozycjiCiecia}
+        naCofnijDecyzje={obsluzCofniecieDecyzjiPropozycjiCiecia}
+        naZatwierdzWszystkie={obsluzZatwierdzenieWszystkichPropozycjiCiec}
       />
     </main>
   );

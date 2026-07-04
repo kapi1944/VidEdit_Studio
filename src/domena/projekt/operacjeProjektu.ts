@@ -1,4 +1,5 @@
 import type { MetadaneWideo, PlikMediow } from "../media/typyMediow";
+import type { PropozycjaCiecia } from "../timeline/typyTimeline";
 import { zwalidujMetadaneWideo } from "../media/walidacjaMetadanychWideo";
 import type { ProjektMontazu } from "./typyProjektu";
 
@@ -49,6 +50,29 @@ export function zaktualizujMetadaneMediumWProjekcie(
               : {})
           }
         : medium
-    )
+      )
+  };
+}
+
+export function zaktualizujPropozycjeCiecWProjekcie(
+  projekt: ProjektMontazu,
+  propozycjeCiec: PropozycjaCiecia[]
+): ProjektMontazu {
+  const timeline = projekt.timeline ?? {
+    segmentyCiszy: [],
+    propozycjeCiec: []
+  };
+
+  if (timeline.propozycjeCiec === propozycjeCiec) {
+    return projekt;
+  }
+
+  return {
+    ...projekt,
+    dataModyfikacjiIso: new Date().toISOString(),
+    timeline: {
+      ...timeline,
+      propozycjeCiec
+    }
   };
 }
