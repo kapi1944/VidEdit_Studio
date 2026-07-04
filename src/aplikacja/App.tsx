@@ -45,6 +45,7 @@ import type {
   PodgladMedium,
   PodgladyMediow
 } from "../moduly/media/typyPodgladuMediow";
+import { dodajLubZaktualizujPodgladMedium } from "../moduly/media/typyPodgladuMediow";
 import { generujMiniatureWideoZPliku } from "../infrastruktura/media/generujMiniatureWideoBrowser";
 import { odczytajMetadaneWideoZPliku } from "../infrastruktura/media/odczytajMetadaneWideoBrowser";
 import { utworzDaneImportuZPlikuBrowserowego } from "../infrastruktura/media/utworzDaneImportuZPlikuBrowserowego";
@@ -52,12 +53,28 @@ import type {
   PropozycjaCiecia,
   SegmentCiszy
 } from "../domena/timeline/typyTimeline";
+import { obliczCzasKoncaKlipu } from "../domena/timeline/typyTimeline";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
 const kluczTrybuWygladu = "videdit-studio.tryb-wygladu";
+const minimalnyCzasTechnicznyTimelineMs = 10_000;
 
-function zwolnijObjectUrlPodgladu(podgladMedium: PodgladMedium) {
+function obliczKoniecZakresowTimeline(
+  zakresyTimeline: Array<Pick<SegmentCiszy | PropozycjaCiecia, "czasKoncaMs">>
+) {
+  return zakresyTimeline.reduce(
+    (najdluzszyCzasMs, zakresTimeline) =>
+      Math.max(najdluzszyCzasMs, zakresTimeline.czasKoncaMs),
+    0
+  );
+}
+
+function zwolnijObjectUrlPodgladu(podgladMedium?: PodgladMedium) {
+  if (!podgladMedium?.objectUrl) {
+    return;
+  }
+
   URL.revokeObjectURL(podgladMedium.objectUrl);
 }
 
@@ -140,18 +157,24 @@ export function Aplikacja() {
     projekt.audio.segmentyCiszy.length > 0
       ? projekt.audio.segmentyCiszy
       : projekt.timeline.segmentyCiszy;
-  const pierwszyPlikWideo = projekt.media.find(
-    (medium) => medium.typ === "wideo"
-  );
-  const czasTrwaniaFilmuMs =
-    pierwszyPlikWideo?.metadane?.czasTrwaniaMs ??
-    pierwszyPlikWideo?.czasTrwaniaMs ??
-    0;
-  const czasAktualnyWZakresieMs =
-    czasTrwaniaFilmuMs > 0
-      ? Math.min(aktualnyCzasTimelineMs, czasTrwaniaFilmuMs)
-      : 0;
   const klipyTimeline = projekt.timeline.klipy ?? [];
+  const czasTrwaniaKlipowTimelineMs = klipyTimeline.reduce(
+    (najdluzszyCzasMs, klipTimeline) =>
+      Math.max(najdluzszyCzasMs, obliczCzasKoncaKlipu(klipTimeline)),
+    0
+  );
+  const czasTrwaniaDanychTimelineMs = Math.max(
+    obliczKoniecZakresowTimeline(segmentyCiszyTimeline),
+    obliczKoniecZakresowTimeline(projekt.timeline.propozycjeCiec)
+  );
+  const czasTechnicznyTimelineMs =
+    czasTrwaniaKlipowTimelineMs > 0
+      ? czasTrwaniaKlipowTimelineMs
+      : Math.max(minimalnyCzasTechnicznyTimelineMs, czasTrwaniaDanychTimelineMs);
+  const czasAktualnyWZakresieMs =
+    czasTechnicznyTimelineMs > 0
+      ? Math.min(aktualnyCzasTimelineMs, czasTechnicznyTimelineMs)
+      : 0;
   const aktywnySegmentCiszyTimeline = segmentyCiszyTimeline.find(
     (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
   );
@@ -173,7 +196,7 @@ export function Aplikacja() {
 
   function obsluzZmianeCzasuOdtwarzania(czasMs: number) {
     ustawAktualnyCzasTimelineMs(
-      ograniczCzasDoZakresu(czasMs, czasTrwaniaFilmuMs)
+      ograniczCzasDoZakresu(czasMs, czasTechnicznyTimelineMs)
     );
   }
 
@@ -250,9 +273,24 @@ export function Aplikacja() {
     ustawProjekt((aktualnyProjekt) =>
       dodajMediumDoProjektu(aktualnyProjekt, wynikImportu.dane)
     );
-    Object.values(podgladyMediowRef.current).forEach(zwolnijObjectUrlPodgladu);
-    podgladyMediowRef.current = { [idMedium]: nowyPodgladMedium };
-    ustawPodgladyMediow(podgladyMediowRef.current);
+    ustawPodgladyMediow((aktualnePodglady) => {
+      const poprzedniPodglad = aktualnePodglady[idMedium];
+
+      if (
+        poprzedniPodglad &&
+        poprzedniPodglad.objectUrl !== nowyPodgladMedium.objectUrl
+      ) {
+        zwolnijObjectUrlPodgladu(poprzedniPodglad);
+      }
+
+      const nowePodglady = dodajLubZaktualizujPodgladMedium(
+        aktualnePodglady,
+        nowyPodgladMedium
+      );
+
+      podgladyMediowRef.current = nowePodglady;
+      return nowePodglady;
+    });
     ustawBladImportuMediow(undefined);
     ustawStatusImportuMediow("odczyt_metadanych");
     void przygotujMiniatureMedium(idMedium, plik);
@@ -370,7 +408,7 @@ export function Aplikacja() {
                 liczbaPropozycjiOdrzuconych={liczbaPropozycjiOdrzuconych}
               />
               <PanelMediowProjektu
-                czyFilmDostepny={projekt.media.length > 0}
+                czyMediaDostepne={projekt.media.length > 0}
                 dzieci={
                   <>
                     <Panel_Importu_Mediow
@@ -424,7 +462,8 @@ export function Aplikacja() {
           dzieci={
             <Panel_Osi_Czasu
               nazwaProjektu={projekt.nazwa}
-              czasTrwaniaMs={czasTrwaniaFilmuMs}
+              klipyTimeline={klipyTimeline}
+              czasTrwaniaMs={czasTechnicznyTimelineMs}
               czasAktualnyMs={czasAktualnyWZakresieMs}
               segmentyCiszy={segmentyCiszyTimeline}
               idAktywnegoSegmentuCiszy={idAktywnegoSegmentuCiszyTimeline}

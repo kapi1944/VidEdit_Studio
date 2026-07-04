@@ -2,6 +2,7 @@ import { act, createRef } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { KlipTimeline } from "../../../../src/domena/timeline/typyTimeline";
 import { Panel_Osi_Czasu } from "../../../../src/moduly/timeline/komponenty/Panel_Osi_Czasu";
 
 let korzen: Root | undefined;
@@ -25,8 +26,19 @@ function utworzWymiaryTimeline(szerokosc: number): DOMRect {
   };
 }
 
+const klipTimeline: KlipTimeline = {
+  id: "klip-1",
+  idPlikuMediow: "medium-1",
+  rodzaj: "wideo",
+  czasStartuMs: 0,
+  czasTrwaniaMs: 10_000,
+  sciezka: "wideo-1",
+  nazwa: "Intro timeline"
+};
+
 function wyrenderujPanelOsiCzasu(
-  naZmianeCzasuTimeline: (czasMs: number) => void
+  naZmianeCzasuTimeline: (czasMs: number) => void,
+  nadpisaneWlasciwosci: Partial<Parameters<typeof Panel_Osi_Czasu>[0]> = {}
 ) {
   kontener = document.createElement("div");
   document.body.appendChild(kontener);
@@ -36,6 +48,7 @@ function wyrenderujPanelOsiCzasu(
     korzen?.render(
       <Panel_Osi_Czasu
         nazwaProjektu="Test"
+        klipyTimeline={[klipTimeline]}
         czasTrwaniaMs={10_000}
         czasAktualnyMs={0}
         segmentyCiszy={[]}
@@ -44,6 +57,7 @@ function wyrenderujPanelOsiCzasu(
         naZmianeCzasuTimeline={naZmianeCzasuTimeline}
         naZmianePrzeciaganiaGlowicy={vi.fn()}
         naWybranoSegmentCiszy={vi.fn()}
+        {...nadpisaneWlasciwosci}
       />
     );
   });
@@ -75,6 +89,24 @@ afterEach(() => {
 });
 
 describe("Panel_Osi_Czasu", () => {
+  it("nie pokazuje falszywego klipu wideo przy technicznej dlugosci bez klipow timeline", () => {
+    wyrenderujPanelOsiCzasu(vi.fn(), {
+      klipyTimeline: [],
+      czasTrwaniaMs: 30_000
+    });
+
+    expect(kontener?.textContent).not.toContain("Klip wideo");
+    expect(kontener?.textContent).toContain("Brak klipow na osi czasu.");
+    expect(kontener?.textContent).toContain("Dlugosc: brak klipow");
+  });
+
+  it("pokazuje klip z timeline", () => {
+    wyrenderujPanelOsiCzasu(vi.fn());
+
+    expect(kontener?.textContent).toContain("Intro timeline");
+    expect(kontener?.textContent).toContain("10000 ms");
+  });
+
   it("ustawia czas po kliknieciu w timeline", () => {
     const obsluzZmianeCzasuTimeline = vi.fn();
     const obszarTimeline = wyrenderujPanelOsiCzasu(

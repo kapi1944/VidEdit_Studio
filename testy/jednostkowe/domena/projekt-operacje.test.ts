@@ -66,8 +66,8 @@ describe("operacje projektu", () => {
     expect(projektPoDodaniu.media).toEqual([plikMediow]);
   });
 
-  it("zastepuje poprzednie medium przy imporcie drugiego pliku wideo", () => {
-    const pierwszyPlik = utworzPlikMediow({ id: "media-1" });
+  it("dodaje kolejne medium bez usuwania poprzedniego wideo", () => {
+    const istniejacyPlik = utworzPlikMediow({ id: "media-1" });
     const drugiPlik = utworzPlikMediow({
       id: "media-2",
       nazwaPliku: "drugie.mp4",
@@ -75,12 +75,12 @@ describe("operacje projektu", () => {
     });
     const projekt = {
       ...utworzPustyProjekt("Projekt testowy"),
-      media: [pierwszyPlik]
+      media: [istniejacyPlik]
     };
 
     const projektPoDodaniu = dodajMediumDoProjektu(projekt, drugiPlik);
 
-    expect(projektPoDodaniu.media).toEqual([drugiPlik]);
+    expect(projektPoDodaniu.media).toEqual([istniejacyPlik, drugiPlik]);
   });
 
   it("aktualizuje date modyfikacji projektu", () => {
@@ -106,8 +106,8 @@ describe("operacje projektu", () => {
   });
 
   it("nie mutuje starej tablicy mediow", () => {
-    const pierwszyPlik = utworzPlikMediow({ id: "media-1" });
-    const stareMedia = [pierwszyPlik];
+    const istniejacyPlik = utworzPlikMediow({ id: "media-1" });
+    const stareMedia = [istniejacyPlik];
     const projekt = {
       ...utworzPustyProjekt("Projekt testowy"),
       media: stareMedia
@@ -119,11 +119,11 @@ describe("operacje projektu", () => {
     );
 
     expect(projektPoDodaniu.media).not.toBe(stareMedia);
-    expect(stareMedia).toEqual([pierwszyPlik]);
+    expect(stareMedia).toEqual([istniejacyPlik]);
   });
 
   it("nie dodaje duplikatu medium o tym samym id", () => {
-    const pierwszyPlik = utworzPlikMediow({ id: "media-1" });
+    const istniejacyPlik = utworzPlikMediow({ id: "media-1" });
     const nowszyPlik = utworzPlikMediow({
       id: "media-1",
       nazwaPliku: "nowsze.mp4",
@@ -131,7 +131,7 @@ describe("operacje projektu", () => {
     });
     const projekt = {
       ...utworzPustyProjekt("Projekt testowy"),
-      media: [pierwszyPlik]
+      media: [istniejacyPlik]
     };
 
     const projektPoDodaniu = dodajMediumDoProjektu(projekt, nowszyPlik);

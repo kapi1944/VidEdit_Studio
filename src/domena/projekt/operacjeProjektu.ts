@@ -1,5 +1,8 @@
 import type { MetadaneWideo, PlikMediow } from "../media/typyMediow";
-import type { PropozycjaCiecia } from "../timeline/typyTimeline";
+import {
+  DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
+  type PropozycjaCiecia
+} from "../timeline/typyTimeline";
 import { zwalidujMetadaneWideo } from "../media/walidacjaMetadanychWideo";
 import type { ProjektMontazu } from "./typyProjektu";
 
@@ -7,17 +10,9 @@ export function dodajMediumDoProjektu(
   projekt: ProjektMontazu,
   plikMediow: PlikMediow
 ): ProjektMontazu {
-  const mediaBezZastapionegoPliku = projekt.media.filter((medium) => {
-    if (medium.id === plikMediow.id) {
-      return false;
-    }
-
-    if (plikMediow.typ === "wideo" && medium.typ === "wideo") {
-      return false;
-    }
-
-    return true;
-  });
+  const mediaBezZastapionegoPliku = projekt.media.filter(
+    (medium) => medium.id !== plikMediow.id
+  );
 
   return {
     ...projekt,
@@ -59,6 +54,8 @@ export function zaktualizujPropozycjeCiecWProjekcie(
   propozycjeCiec: PropozycjaCiecia[]
 ): ProjektMontazu {
   const timeline = projekt.timeline ?? {
+    klipy: [],
+    ustawieniaDociagania: DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
     segmentyCiszy: [],
     propozycjeCiec: []
   };

@@ -5,7 +5,7 @@ export type StatusProjektuUi =
   | "projekt_roboczy"
   | "trwa_operacja"
   | "blad"
-  | "brak_filmu";
+  | "brak_mediow";
 
 type DaneStatusuProjektuUi = {
   liczbaMediow: number;
@@ -28,7 +28,7 @@ const etykietyStatusuProjektuUi: Record<StatusProjektuUi, string> = {
   projekt_roboczy: "Projekt roboczy",
   trwa_operacja: "Trwa operacja",
   blad: "Błąd",
-  brak_filmu: "Brak mediow"
+  brak_mediow: "Brak mediow"
 };
 
 export function okreslStatusProjektuUi({
@@ -47,7 +47,7 @@ export function okreslStatusProjektuUi({
   }
 
   if (liczbaMediow <= 0) {
-    return "brak_filmu";
+    return "brak_mediow";
   }
 
   return "gotowe";

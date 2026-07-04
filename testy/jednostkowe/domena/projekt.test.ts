@@ -17,6 +17,12 @@ describe("projekt montazu", () => {
       statusAnalizyAudio: "brak",
       segmentyCiszy: []
     });
+    expect(projekt.timeline.klipy).toEqual([]);
+    expect(projekt.timeline.ustawieniaDociagania).toEqual({
+      wlaczone: false,
+      tryb: "brak",
+      jednostka: "brak"
+    });
     expect(projekt.timeline.segmentyCiszy).toEqual([]);
     expect(projekt.timeline.propozycjeCiec).toEqual([]);
     expect(projekt.ustawienia.formatWyswietlaniaCzasu).toBe("czas");

@@ -1,6 +1,6 @@
 import type { CzasMs } from "../czas/typyCzasu";
 
-export type TypPlikuMediow = "wideo" | "audio";
+export type TypPlikuMediow = "wideo" | "audio" | "grafika";
 export type StatusImportuMediow = "zaimportowany";
 
 export type MetadaneWideo = {

@@ -8,7 +8,7 @@ export type StatusKrokuWorkflow =
   | "placeholder";
 
 export type IdKrokuWorkflow =
-  | "import-filmu"
+  | "import-mediow"
   | "przygotowanie-audio"
   | "wykrycie-ciszy"
   | "decyzje-ciec"
@@ -31,7 +31,7 @@ export type KrokWorkflow = {
   status: StatusKrokuWorkflow;
 };
 
-function okreslStatusImportuFilmu({
+function okreslStatusImportuMediow({
   liczbaMediow,
   statusImportuMediow
 }: Pick<DaneWorkflow, "liczbaMediow" | "statusImportuMediow">) {
@@ -82,13 +82,13 @@ function okreslStatusDecyzjiCiec({
 export function utworzKrokiWorkflow(daneWorkflow: DaneWorkflow): KrokWorkflow[] {
   return [
     {
-      id: "import-filmu",
+      id: "import-mediow",
       nazwa: "Import mediow",
       opis:
         daneWorkflow.liczbaMediow > 0
           ? "Media sa w projekcie."
-          : "Dodaj pliki wideo lub grafiki.",
-      status: okreslStatusImportuFilmu(daneWorkflow)
+          : "Dodaj media do biblioteki projektu.",
+      status: okreslStatusImportuMediow(daneWorkflow)
     },
     {
       id: "przygotowanie-audio",

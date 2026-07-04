@@ -192,4 +192,36 @@ describe("pomocnicy obszaru roboczego", () => {
     );
     expect(obliczCzasPodgladuKlipu(klipWideo, 3250)).toBe(4250);
   });
+
+  it("pobiera podglad medium aktywnego klipu po id", () => {
+    const podgladyMediow: PodgladyMediow = {
+      [plikWideo.id]: {
+        idMedium: plikWideo.id,
+        objectUrl: "blob:http://localhost/medium-wideo-1"
+      },
+      [plikGrafiki.id]: {
+        idMedium: plikGrafiki.id,
+        objectUrl: "blob:http://localhost/grafika-1"
+      }
+    };
+    const aktywnyKlip = znajdzAktywnyKlipTimeline(
+      [klipWideo, klipGrafiki],
+      500
+    );
+    const medium = znajdzMediumDlaKlipu([plikWideo, plikGrafiki], aktywnyKlip);
+
+    expect(aktywnyKlip).toBe(klipGrafiki);
+    expect(medium).toBe(plikGrafiki);
+    expect(pobierzPodgladDlaMedium(podgladyMediow, medium)).toEqual(
+      podgladyMediow[plikGrafiki.id]
+    );
+  });
+
+  it("zwraca bezpieczny brak podgladu dla medium bez wpisu", () => {
+    const aktywnyKlip = znajdzAktywnyKlipTimeline([klipWideo], 1500);
+    const medium = znajdzMediumDlaKlipu([plikWideo], aktywnyKlip);
+
+    expect(pobierzPodgladDlaMedium({}, medium)).toBeUndefined();
+    expect(pobierzPodgladDlaMedium({}, undefined)).toBeUndefined();
+  });
 });

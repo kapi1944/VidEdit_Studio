@@ -24,7 +24,7 @@ describe("PasekGornyAplikacji", () => {
         liczbaMediow: 0,
         statusImportuMediow: "bezczynny"
       })
-    ).toBe("brak_filmu");
+    ).toBe("brak_mediow");
   });
 
   it("ustawia status gotowe, gdy media istnieja", () => {
@@ -78,7 +78,7 @@ describe("PasekGornyAplikacji", () => {
   it("pokazuje status projektu i placeholdery akcji", () => {
     const widok = renderToStaticMarkup(
       <PasekGornyAplikacji
-        statusProjektuUi="brak_filmu"
+        statusProjektuUi="brak_mediow"
         trybWygladu="ciemny"
         liczbaMediow={0}
         naZmianeTrybuWygladu={vi.fn()}

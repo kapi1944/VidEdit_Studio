@@ -6,6 +6,8 @@ Aplikacja znajduje sie we wlasciwym katalogu wewnetrznym `VidEdit_Studio/VidEdit
 
 Projekt jest obecnie aplikacja React + TypeScript + Vite. Skrypty w `package.json` uruchamiaja Vite na `127.0.0.1:5180` i nie wymagaja Electrona. Zaleznosci sa male: `react`, `react-dom`, Vite, TypeScript, Vitest i typy.
 
+Uwaga: MVP zostalo rozszerzone o wiele mediow i klipy timeline. Szczegoly sa opisane w `docs/plan-mvp-wiele-mediow.md`.
+
 Glowny ekran znajduje sie w `src/aplikacja/App.tsx`. Komponent `Aplikacja` laczy dzisiaj kilka odpowiedzialnosci UI:
 
 - naglowek i przelacznik trybu wygladu,
@@ -63,7 +65,7 @@ Proponowane komponenty: `PanelWorkflow`, `PanelMediowProjektu`.
 
 ### Glowny obszar roboczy
 
-Glowny obszar roboczy powinien byc miejscem podgladu wideo i kontekstu aktualnego wyboru. Na pierwszym etapie moze uzywac danych z pierwszego pliku wideo i istniejacego `objectUrl` z `podgladyMediow`. Nie powinien uruchamiac FFmpeg ani dodawac przetwarzania audio/wideo.
+Glowny obszar roboczy powinien byc miejscem podgladu aktywnego klipu i kontekstu aktualnego wyboru. Na tym etapie powinien korzystac z klipow timeline oraz istniejacego `objectUrl` z `podgladyMediow`. Nie powinien uruchamiac FFmpeg ani dodawac przetwarzania audio/wideo.
 
 Proponowane komponenty: `ObszarRoboczy`, `PodgladWideo`.
 

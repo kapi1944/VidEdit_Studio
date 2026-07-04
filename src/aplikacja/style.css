@@ -647,7 +647,7 @@ select {
 
 .znacznik-statusu--nieaktywne,
 .znacznik-statusu--placeholder,
-.znacznik-statusu--brak_filmu {
+.znacznik-statusu--brak_mediow {
   border-color: #536173;
   color: #b8c2d1;
   background: #222936;
@@ -676,7 +676,7 @@ select {
 
 .pasek-statusu__kropka--nieaktywne,
 .pasek-statusu__kropka--placeholder,
-.pasek-statusu__kropka--brak_filmu {
+.pasek-statusu__kropka--brak_mediow {
   background: #8a96a8;
 }
 
@@ -1240,11 +1240,33 @@ h2 {
   inset: 18px 16px;
 }
 
-.pasek-klipu {
+.panel-osi-czasu__klipy {
   position: absolute;
   top: 0;
   right: 0;
   left: 0;
+  height: 36px;
+}
+
+.panel-osi-czasu__pusty {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px dashed var(--kolor-obramowania-mocny);
+  border-radius: 6px;
+  color: var(--kolor-tekstu-slaby);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.pasek-klipu {
+  position: absolute;
+  top: 0;
   display: flex;
   gap: 10px;
   align-items: center;

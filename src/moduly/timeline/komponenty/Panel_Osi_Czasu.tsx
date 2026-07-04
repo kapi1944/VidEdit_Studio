@@ -6,7 +6,10 @@ import {
   type MouseEvent as ZdarzenieMyszy,
   type RefObject
 } from "react";
-import type { SegmentCiszy } from "../../../domena/timeline/typyTimeline";
+import type {
+  KlipTimeline,
+  SegmentCiszy
+} from "../../../domena/timeline/typyTimeline";
 import { przeliczPozycjeNaCzas } from "../przeliczCzasNaPozycje";
 import { Pasek_Klipu } from "./Pasek_Klipu";
 import { Segment_Ciszy_Na_Timeline } from "./Segment_Ciszy_Na_Timeline";
@@ -14,6 +17,7 @@ import { Znacznik_Czasu } from "./Znacznik_Czasu";
 
 type WlasciwosciPaneluOsiCzasu = {
   nazwaProjektu: string;
+  klipyTimeline: KlipTimeline[];
   czasTrwaniaMs: number;
   czasAktualnyMs: number;
   segmentyCiszy: SegmentCiszy[];
@@ -27,6 +31,7 @@ type WlasciwosciPaneluOsiCzasu = {
 
 export function Panel_Osi_Czasu({
   nazwaProjektu,
+  klipyTimeline,
   czasTrwaniaMs,
   czasAktualnyMs,
   segmentyCiszy,
@@ -43,6 +48,7 @@ export function Panel_Osi_Czasu({
   const aktywnySegmentCiszy = segmentyCiszy.find(
     (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
   );
+  const czySaKlipyTimeline = klipyTimeline.length > 0;
 
   const ustawCzasZPozycjiMyszy = useCallback(
     (pozycjaMyszyX: number) => {
@@ -128,7 +134,12 @@ export function Panel_Osi_Czasu({
       <div className="panel-osi-czasu__naglowek">
         <h2 className="panel-osi-czasu__tytul">Os czasu: {nazwaProjektu}</h2>
         <div className="panel-osi-czasu__metryki">
-          <span>Dlugosc: {formatujCzasTimeline(czasTrwaniaMs)}</span>
+          <span>
+            Dlugosc:{" "}
+            {czySaKlipyTimeline
+              ? formatujCzasTimeline(czasTrwaniaMs)
+              : "brak klipow"}
+          </span>
           <span>Aktualny czas: {formatujCzasTimeline(czasAktualnyMs)}</span>
         </div>
       </div>
@@ -139,10 +150,22 @@ export function Panel_Osi_Czasu({
           ref={uchwytTimelineRef}
           onMouseDown={obsluzKlikniecieTimeline}
         >
-          <Pasek_Klipu
-            czasTrwaniaMs={czasTrwaniaMs}
-            formatujCzas={formatujCzasTimeline}
-          />
+          {czySaKlipyTimeline ? (
+            <div className="panel-osi-czasu__klipy">
+              {klipyTimeline.map((klipTimeline) => (
+                <Pasek_Klipu
+                  key={klipTimeline.id}
+                  klipTimeline={klipTimeline}
+                  czasTrwaniaTimelineMs={czasTrwaniaMs}
+                  formatujCzas={formatujCzasTimeline}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="panel-osi-czasu__pusty">
+              Brak klipow na osi czasu.
+            </div>
+          )}
           <div className="panel-osi-czasu__segmenty">
             {segmentyCiszy.map((segmentCiszy) => (
               <Segment_Ciszy_Na_Timeline

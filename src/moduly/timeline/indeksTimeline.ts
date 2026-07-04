@@ -8,8 +8,21 @@ export {
 } from "./przeliczCzasNaPozycje";
 export type { PolozenieZakresuOsiCzasu } from "./typyTimeline";
 export type {
+  DaneUtworzeniaKlipuTimeline,
+  JednostkaDociaganiaTimeline,
+  KlipTimeline,
   PropozycjaCiecia,
+  RodzajKlipuTimeline,
   SegmentCiszy,
   SegmentCzasu,
-  TimelineProjektu
+  TimelineProjektu,
+  TrybDociaganiaTimeline,
+  UstawieniaDociaganiaTimeline
+} from "../../domena/timeline/typyTimeline";
+export {
+  czyKlipTimelineJestPoprawny,
+  DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
+  obliczCzasKoncaKlipu,
+  USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
+  utworzKlipTimelineZDodanegoMedium
 } from "../../domena/timeline/typyTimeline";

@@ -31,18 +31,18 @@ function pobierzStatusKroku(
 
 describe("pomocnicyWorkflow", () => {
   it("ustawia import jako aktywny przy braku mediow", () => {
-    expect(pobierzStatusKroku("import-filmu")).toBe("aktywny");
+    expect(pobierzStatusKroku("import-mediow")).toBe("aktywny");
   });
 
   it("ustawia import jako gotowy, gdy media istnieja", () => {
-    expect(pobierzStatusKroku("import-filmu", { liczbaMediow: 1 })).toBe(
+    expect(pobierzStatusKroku("import-mediow", { liczbaMediow: 1 })).toBe(
       "gotowe"
     );
   });
 
   it("ustawia import jako blad przy bledzie importu", () => {
     expect(
-      pobierzStatusKroku("import-filmu", {
+      pobierzStatusKroku("import-mediow", {
         liczbaMediow: 1,
         statusImportuMediow: "blad"
       })
@@ -82,5 +82,15 @@ describe("pomocnicyWorkflow", () => {
     expect(pobierzStatusKroku("eksport", { liczbaMediow: 1 })).toBe(
       "placeholder"
     );
+  });
+
+  it("nazywa krok importu importem mediow", () => {
+    const [krokImportu] = utworzKrokiWorkflow(domyslneDaneWorkflow);
+
+    expect(krokImportu).toMatchObject({
+      id: "import-mediow",
+      nazwa: "Import mediow"
+    });
+    expect(krokImportu?.opis).not.toContain("jeden film");
   });
 });

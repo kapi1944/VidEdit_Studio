@@ -63,7 +63,8 @@ export function Panel_Importu_Mediow({
         <p className="panel-importu-mediow__etykieta">Media projektu</p>
         <h2 id="import-mediow">Import mediow</h2>
         <p className="panel-importu-mediow__opis">
-          Wybierz plik do biblioteki mediow projektu.
+          Obecnie import dziala dla pojedynczego pliku wideo. Import wielu
+          plikow naraz i grafik zostanie rozszerzony w nastepnym etapie.
         </p>
       </div>
 
@@ -80,7 +81,7 @@ export function Panel_Importu_Mediow({
           type="button"
           onClick={otworzWyborPliku}
         >
-          Importuj media
+          Wybierz plik wideo
         </button>
         <span className="panel-importu-mediow__formaty">
           {rozszerzeniaWideo.join(", ")}

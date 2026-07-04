@@ -6,3 +6,13 @@ export type PodgladMedium = {
 };
 
 export type PodgladyMediow = Record<string, PodgladMedium>;
+
+export function dodajLubZaktualizujPodgladMedium(
+  podgladyMediow: PodgladyMediow,
+  podgladMedium: PodgladMedium
+): PodgladyMediow {
+  return {
+    ...podgladyMediow,
+    [podgladMedium.idMedium]: podgladMedium
+  };
+}

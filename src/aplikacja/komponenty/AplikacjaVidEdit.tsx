@@ -50,7 +50,7 @@ type WlasciwosciKonteneraDzieci = {
 };
 
 type WlasciwosciPaneluMediowProjektu = WlasciwosciKonteneraDzieci & {
-  czyFilmDostepny: boolean;
+  czyMediaDostepne: boolean;
 };
 
 type WlasciwosciPaneluWorkflow = DaneWorkflow;
@@ -239,7 +239,7 @@ export function PanelWorkflow(wlasciwosci: WlasciwosciPaneluWorkflow) {
 
 export function PanelMediowProjektu({
   dzieci,
-  czyFilmDostepny
+  czyMediaDostepne
 }: WlasciwosciPaneluMediowProjektu) {
   return (
     <section
@@ -251,7 +251,7 @@ export function PanelMediowProjektu({
         <h2 id="media-projektu-tytul">Media projektu</h2>
       </div>
       {dzieci}
-      {!czyFilmDostepny ? (
+      {!czyMediaDostepne ? (
         <p className="panel-mediow-projektu__pusty">
           Dodaj media, aby rozpoczac montaz.
         </p>
