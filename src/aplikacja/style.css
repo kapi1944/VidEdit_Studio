@@ -74,8 +74,11 @@ select:focus-visible {
   align-items: center;
   min-height: 48px;
   padding: 7px 14px;
-  border-bottom: 1px solid var(--kolor-obramowania-sekcji);
-  background: var(--kolor-powierzchni-akcent);
+  border-bottom: 1px solid var(--kolor-krawedzi-topbara);
+  background: var(--kolor-tla-topbara);
+  box-shadow: var(--cien-topbara);
+  backdrop-filter: var(--blur-topbara);
+  -webkit-backdrop-filter: var(--blur-topbara);
 }
 
 .pasek-gorny-aplikacji__marka {
@@ -126,15 +129,20 @@ select:focus-visible {
 .pasek-gorny-aplikacji button,
 .pasek-gorny-aplikacji select {
   min-height: 30px;
-  border: 1px solid var(--kolor-obramowania-mocny);
+  border: 1px solid var(--kolor-obramowania-selecta);
   border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
-  background: var(--kolor-powierzchni);
+  background: var(--kolor-tla-selecta);
 }
 
 .pasek-gorny-aplikacji button {
   padding: 0 10px;
   font-weight: 700;
+}
+
+.pasek-gorny-aplikacji button:not(:disabled):not(.pasek-gorny-aplikacji__eksport):hover {
+  border-color: var(--kolor-obramowania-akcent);
+  background: var(--kolor-tla-przycisku-drugorzednego-hover);
 }
 
 .pasek-gorny-aplikacji button:disabled {
@@ -185,7 +193,8 @@ select:focus-visible {
   align-content: start;
   gap: 14px;
   padding: 14px;
-  background: var(--kolor-powierzchni);
+  background: var(--kolor-tla-panelu-bocznego);
+  box-shadow: var(--cien-panelu);
 }
 
 .panel-boczny-lewy {
@@ -232,8 +241,10 @@ select:focus-visible {
 }
 
 .lista-workflow__krok--aktywny {
-  border-color: var(--kolor-przycisku-obramowania);
-  background: var(--kolor-powierzchni-akcent);
+  border-color: var(--kolor-obramowania-panelu-aktywnego);
+  background: var(--kolor-tla-panelu-aktywnego);
+  box-shadow: var(--cien-elementu-aktywnego);
+  color: var(--kolor-tekstu-panelu-aktywnego);
 }
 
 .lista-workflow__tresc {
@@ -500,7 +511,7 @@ select:focus-visible {
   padding: 5px 16px;
   border-top: 1px solid var(--kolor-obramowania-sekcji);
   color: var(--kolor-tekstu-slaby);
-  background: var(--kolor-powierzchni-akcent);
+  background: var(--kolor-tla-paska-statusu);
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -811,6 +822,7 @@ h2 {
   border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
+  box-shadow: var(--cien-panelu);
 }
 
 .panel-importu-mediow__naglowek {
@@ -925,6 +937,7 @@ h2 {
   border: 1px solid var(--kolor-obramowania);
   border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
+  box-shadow: var(--cien-panelu);
 }
 
 .karta-medium__miniatura {
@@ -1009,12 +1022,17 @@ h2 {
 .karta-medium__akcje button {
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid var(--kolor-obramowania-mocny);
+  border: 1px solid var(--kolor-obramowania-selecta);
   border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
-  background: var(--kolor-powierzchni-akcent);
+  background: var(--kolor-tla-przycisku-drugorzednego);
   font-weight: 800;
   cursor: pointer;
+}
+
+.karta-medium__akcje button:hover {
+  border-color: var(--kolor-obramowania-akcent);
+  background: var(--kolor-tla-przycisku-drugorzednego-hover);
 }
 
 .lista-mediow__nazwa {
@@ -1119,6 +1137,7 @@ h2 {
   border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
+  box-shadow: var(--cien-panelu);
 }
 
 .panel-osi-czasu__naglowek {
@@ -1155,21 +1174,26 @@ h2 {
 
 .panel-osi-czasu__siatka select {
   min-height: 30px;
-  border: 1px solid var(--kolor-obramowania-mocny);
+  border: 1px solid var(--kolor-obramowania-selecta);
   border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
-  background: var(--kolor-powierzchni);
+  background: var(--kolor-tla-selecta);
 }
 
 .panel-osi-czasu__narzedzia button {
   min-height: 30px;
   padding: 0 12px;
-  border: 1px solid var(--kolor-obramowania-mocny);
+  border: 1px solid var(--kolor-obramowania-selecta);
   border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
-  background: var(--kolor-powierzchni-akcent);
+  background: var(--kolor-tla-przycisku-drugorzednego);
   font-weight: 800;
   cursor: pointer;
+}
+
+.panel-osi-czasu__narzedzia button:hover:not(:disabled) {
+  border-color: var(--kolor-obramowania-akcent);
+  background: var(--kolor-tla-przycisku-drugorzednego-hover);
 }
 
 .panel-osi-czasu__narzedzia button:disabled {
@@ -1183,7 +1207,7 @@ h2 {
   position: relative;
   height: 132px;
   overflow: hidden;
-  border: 1px solid var(--kolor-obramowania-akcent);
+  border: 1px solid var(--kolor-timeline-obramowania);
   border-radius: var(--radius-timeline);
   background:
     repeating-linear-gradient(
@@ -1247,6 +1271,10 @@ h2 {
   box-shadow: var(--cien-zaznaczenia-klipu);
 }
 
+.pasek-klipu:hover {
+  border-color: var(--kolor-klipu-zaznaczenia);
+}
+
 .pasek-klipu__nazwa,
 .pasek-klipu__czas {
   min-width: 0;
@@ -1294,7 +1322,7 @@ h2 {
 
 .segment-ciszy-na-timeline--aktywny {
   border-color: var(--kolor-ciszy-aktywny);
-  box-shadow: 0 0 0 2px var(--kolor-ciszy-aktywny);
+  box-shadow: var(--cien-elementu-aktywnego);
 }
 
 .segment-ciszy-na-timeline__etykieta {
@@ -1309,12 +1337,12 @@ h2 {
   top: -8px;
   bottom: 0;
   z-index: 2;
-  width: 14px;
+  width: var(--rozmiar-uchwytu-playheada);
   padding: 0;
   border: 0;
   background: transparent;
   cursor: ew-resize;
-  transform: translateX(-7px);
+  transform: translateX(calc(var(--rozmiar-uchwytu-playheada) / -2));
 }
 
 .znacznik-czasu::after {
@@ -1322,16 +1350,18 @@ h2 {
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 3px;
+  width: var(--szerokosc-playheada);
   border-radius: var(--radius-pill);
-  background: var(--kolor-toru-znacznik);
+  background: var(--kolor-tla-playheada);
+  box-shadow: var(--cien-playheada);
   content: "";
   transform: translateX(-50%);
 }
 
 .znacznik-czasu:focus-visible {
-  outline: 2px solid var(--kolor-toru-znacznik);
+  outline: 2px solid var(--kolor-focus);
   outline-offset: 2px;
+  box-shadow: var(--glow-focus);
 }
 
 .panel-osi-czasu__podsumowanie {
@@ -1351,6 +1381,7 @@ h2 {
   border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
+  box-shadow: var(--cien-panelu);
 }
 
 .panel-propozycji-ciec__naglowek {
@@ -1475,12 +1506,12 @@ h2 {
 
 .panel-propozycji-ciec__przycisk--drugorzedny {
   color: var(--kolor-tekstu-mocny);
-  background: var(--kolor-powierzchni);
-  border-color: var(--kolor-obramowania-mocny);
+  background: var(--kolor-tla-przycisku-drugorzednego);
+  border-color: var(--kolor-obramowania-selecta);
 }
 
 .panel-propozycji-ciec__przycisk--drugorzedny:hover:not(:disabled) {
-  background: var(--kolor-powierzchni-akcent);
+  background: var(--kolor-tla-przycisku-drugorzednego-hover);
 }
 
 @media (max-width: 720px) {
