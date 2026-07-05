@@ -68,6 +68,7 @@ import {
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
 const kluczTrybuWygladu = "videdit-studio.tryb-wygladu";
+const domyslnyMotywUi = "black-red";
 const minimalnyCzasTechnicznyTimelineMs = 10_000;
 
 function obliczKoniecZakresowTimeline(
@@ -132,6 +133,7 @@ export function Aplikacja() {
   const podgladyMediowRef = useRef<PodgladyMediow>({});
 
   useEffect(() => {
+    document.documentElement.dataset.motyw = domyslnyMotywUi;
     document.documentElement.dataset.trybWygladu = trybWygladu;
     localStorage.setItem(kluczTrybuWygladu, trybWygladu);
   }, [trybWygladu]);
