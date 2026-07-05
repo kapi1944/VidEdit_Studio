@@ -111,12 +111,9 @@ describe("ObszarRoboczy", () => {
     });
 
     expect(widok).toContain("Dodaj media na oś czasu.");
-    expect(widok).toContain(
-      "Wybierz plik z panelu mediów i dodaj go jako klip na timeline."
-    );
-    expect(widok).toContain(
-      "Dodawanie na timeline zostanie podłączone w następnym etapie."
-    );
+    expect(widok).toContain("Media sa w bibliotece projektu.");
+    expect(widok).toContain("Timeline pozostaje pusty");
+    expect(widok).not.toContain("Podgląd aktywnego klipu");
   });
 
   it("pokazuje aktywny klip wideo z gotowym objectUrl", () => {

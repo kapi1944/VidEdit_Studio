@@ -108,6 +108,8 @@ describe("PasekGornyAplikacji", () => {
     expect(widok).toContain("Gotowe");
     expect(widok).not.toContain("Zapisano");
     expect(widok).not.toContain("zapisano");
+    expect(widok).toContain("Eksport niedostepny");
+    expect(widok).not.toContain(">Eksportuj<");
     expect(widok).toContain(
       "class=\"pasek-gorny-aplikacji__eksport\" disabled"
     );

@@ -63,8 +63,7 @@ export function Panel_Importu_Mediow({
         <p className="panel-importu-mediow__etykieta">Media projektu</p>
         <h2 id="import-mediow">Import mediow</h2>
         <p className="panel-importu-mediow__opis">
-          Obecnie import dziala dla pojedynczego pliku wideo. Import wielu
-          plikow naraz i grafik zostanie rozszerzony w nastepnym etapie.
+          Obecnie import dziala dla pojedynczego pliku wideo.
         </p>
       </div>
 

@@ -15,7 +15,8 @@ describe("Panel_Importu_Mediow", () => {
 
     expect(widok).toContain("Import mediow");
     expect(widok).toContain("Obecnie import dziala dla pojedynczego pliku wideo.");
-    expect(widok).toContain("Import wielu plikow naraz i grafik");
+    expect(widok).not.toContain("Import wielu plikow naraz");
+    expect(widok).not.toContain("grafik zostanie");
     expect(widok).toContain("Wybierz plik wideo");
   });
 });

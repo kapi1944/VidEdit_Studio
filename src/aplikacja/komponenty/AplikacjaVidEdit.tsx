@@ -131,6 +131,9 @@ export function PasekGornyAplikacji({
     pobierzEtykieteStatusuProjektuUi(statusProjektuUi);
   const czyHistoriaDostepna = czyHistoriaDostepnaWUi();
   const czyEksportDostepny = czyEksportDostepnyWUi({ liczbaMediow });
+  const etykietaEksportu = czyEksportDostepny
+    ? "Eksportuj"
+    : "Eksport niedostepny";
 
   return (
     <header className="pasek-gorny-aplikacji">
@@ -192,7 +195,7 @@ export function PasekGornyAplikacji({
           title={tytulPlaceholderaEksportu}
           onClick={naEksportuj}
         >
-          Eksportuj
+          {etykietaEksportu}
         </button>
       </div>
     </header>
@@ -317,11 +320,9 @@ export function ObszarRoboczy({
           <div className="obszar-roboczy__pusty">
             <strong>Dodaj media na oś czasu.</strong>
             <span>
-              Wybierz plik z panelu mediów i dodaj go jako klip na timeline.
+              Media sa w bibliotece projektu. Timeline pozostaje pusty, dopoki
+              nie ma klipow.
             </span>
-            <button type="button" disabled>
-              Dodawanie na timeline zostanie podłączone w następnym etapie.
-            </button>
           </div>
         ) : null}
 

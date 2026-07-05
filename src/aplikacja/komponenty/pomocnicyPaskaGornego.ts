@@ -21,7 +21,7 @@ export const tytulPlaceholderaHistorii =
   "Historia operacji zostanie dodana w późniejszym etapie.";
 
 export const tytulPlaceholderaEksportu =
-  "Eksport zostanie podłączony w etapie eksportu MVP.";
+  "Eksport nie jest dostepny w tym etapie MVP.";
 
 const etykietyStatusuProjektuUi: Record<StatusProjektuUi, string> = {
   gotowe: "Gotowe",
