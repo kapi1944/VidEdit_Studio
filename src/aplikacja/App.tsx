@@ -57,7 +57,8 @@ import type {
 } from "../domena/timeline/typyTimeline";
 import {
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
-  obliczCzasKoncaKlipu
+  obliczCzasKoncaKlipu,
+  przetnijKlipTimeline
 } from "../domena/timeline/typyTimeline";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
@@ -113,6 +114,8 @@ export function Aplikacja() {
   const [trybWygladu, ustawTrybWygladu] = useState(pobierzPoczatkowyTrybWygladu);
   const [podgladyMediow, ustawPodgladyMediow] = useState<PodgladyMediow>({});
   const [idAktywnegoSegmentuCiszy, ustawIdAktywnegoSegmentuCiszy] =
+    useState<string>();
+  const [idZaznaczonegoKlipuTimeline, ustawIdZaznaczonegoKlipuTimeline] =
     useState<string>();
   const [aktualnyCzasTimelineMs, ustawAktualnyCzasTimelineMs] = useState(0);
   const [ustawieniaSiatkiTimeline, ustawUstawieniaSiatkiTimeline] =
@@ -351,6 +354,42 @@ export function Aplikacja() {
     });
   }
 
+  function obsluzPrzeciecieZaznaczonegoKlipu() {
+    if (!idZaznaczonegoKlipuTimeline) {
+      return;
+    }
+
+    ustawProjekt((aktualnyProjekt) => {
+      const wynikCiecia = przetnijKlipTimeline(
+        aktualnyProjekt.timeline.klipy,
+        idZaznaczonegoKlipuTimeline,
+        czasAktualnyWZakresieMs / 1000,
+        ustawieniaSiatkiTimeline,
+        aktualnyProjekt.ustawienia.liczbaKlatekNaSekunde
+      );
+
+      if (!wynikCiecia.czySukces) {
+        ustawBladImportuMediow(
+          wynikCiecia.bledy[0]?.komunikat ??
+            "Nie udalo sie przeciac klipu timeline."
+        );
+        return aktualnyProjekt;
+      }
+
+      ustawBladImportuMediow(undefined);
+      ustawIdZaznaczonegoKlipuTimeline(undefined);
+
+      return {
+        ...aktualnyProjekt,
+        dataModyfikacjiIso: new Date().toISOString(),
+        timeline: {
+          ...aktualnyProjekt.timeline,
+          klipy: wynikCiecia.dane
+        }
+      };
+    });
+  }
+
   function obsluzZatwierdzeniePropozycjiCiecia(idPropozycjiCiecia: string) {
     zaktualizujPropozycjeCiec((propozycjeCiec) =>
       zatwierdzPropozycjeCiecia(propozycjeCiec, idPropozycjiCiecia)
@@ -494,11 +533,14 @@ export function Aplikacja() {
               czasAktualnyMs={czasAktualnyWZakresieMs}
               segmentyCiszy={segmentyCiszyTimeline}
               idAktywnegoSegmentuCiszy={idAktywnegoSegmentuCiszyTimeline}
+              idZaznaczonegoKlipuTimeline={idZaznaczonegoKlipuTimeline}
               uchwytWideoRef={uchwytWideoRef}
               formatujCzasTimeline={formatujCzasNaTimeline}
               ustawieniaSiatkiTimeline={ustawieniaSiatkiTimeline}
               naZmianeCzasuTimeline={obsluzZmianeCzasuOdtwarzania}
               naZmianeUstawienSiatkiTimeline={ustawUstawieniaSiatkiTimeline}
+              naZaznaczKlipTimeline={ustawIdZaznaczonegoKlipuTimeline}
+              naPrzetnijZaznaczonyKlip={obsluzPrzeciecieZaznaczonegoKlipu}
               naZmianePrzeciaganiaGlowicy={ustawCzyPrzeciaganieGlowicy}
               naWybranoSegmentCiszy={obsluzWybranieSegmentuCiszy}
             />

@@ -29,6 +29,7 @@ type WlasciwosciPaneluOsiCzasu = {
   czasAktualnyMs: number;
   segmentyCiszy: SegmentCiszy[];
   idAktywnegoSegmentuCiszy?: string;
+  idZaznaczonegoKlipuTimeline?: string;
   uchwytWideoRef: RefObject<HTMLVideoElement | null>;
   formatujCzasTimeline: (czasMs: number) => string;
   ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline;
@@ -37,6 +38,8 @@ type WlasciwosciPaneluOsiCzasu = {
   naZmianeUstawienSiatkiTimeline?: (
     ustawieniaSiatki: UstawieniaSiatkiTimeline
   ) => void;
+  naZaznaczKlipTimeline?: (idKlipu: string) => void;
+  naPrzetnijZaznaczonyKlip?: () => void;
   naZmianePrzeciaganiaGlowicy: (czyPrzeciaganieGlowicy: boolean) => void;
   naWybranoSegmentCiszy: (segmentCiszy: SegmentCiszy) => void;
 };
@@ -48,12 +51,15 @@ export function Panel_Osi_Czasu({
   czasAktualnyMs,
   segmentyCiszy,
   idAktywnegoSegmentuCiszy,
+  idZaznaczonegoKlipuTimeline,
   uchwytWideoRef,
   formatujCzasTimeline,
   ustawieniaSiatkiTimeline = DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   opcjeSiatkiTimeline = USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
   naZmianeCzasuTimeline,
   naZmianeUstawienSiatkiTimeline,
+  naZaznaczKlipTimeline,
+  naPrzetnijZaznaczonyKlip,
   naZmianePrzeciaganiaGlowicy,
   naWybranoSegmentCiszy
 }: WlasciwosciPaneluOsiCzasu) {
@@ -63,7 +69,13 @@ export function Panel_Osi_Czasu({
   const aktywnySegmentCiszy = segmentyCiszy.find(
     (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
   );
+  const zaznaczonyKlipTimeline = klipyTimeline.find(
+    (klipTimeline) => klipTimeline.id === idZaznaczonegoKlipuTimeline
+  );
   const czySaKlipyTimeline = klipyTimeline.length > 0;
+  const czyCiecieDostepne = Boolean(
+    zaznaczonyKlipTimeline && naPrzetnijZaznaczonyKlip
+  );
 
   const ustawCzasZPozycjiMyszy = useCallback(
     (pozycjaMyszyX: number) => {
@@ -186,6 +198,15 @@ export function Panel_Osi_Czasu({
             ))}
           </select>
         </label>
+        <div className="panel-osi-czasu__narzedzia">
+          <button
+            type="button"
+            disabled={!czyCiecieDostepne}
+            onClick={naPrzetnijZaznaczonyKlip}
+          >
+            Przetnij klip
+          </button>
+        </div>
       </div>
 
       <div className="panel-osi-czasu__tor">
@@ -201,7 +222,9 @@ export function Panel_Osi_Czasu({
                   key={klipTimeline.id}
                   klipTimeline={klipTimeline}
                   czasTrwaniaTimelineMs={czasTrwaniaMs}
+                  czyZaznaczony={klipTimeline.id === idZaznaczonegoKlipuTimeline}
                   formatujCzas={formatujCzasTimeline}
+                  naZaznacz={naZaznaczKlipTimeline}
                 />
               ))}
             </div>
@@ -235,6 +258,9 @@ export function Panel_Osi_Czasu({
 
       <div className="panel-osi-czasu__podsumowanie" aria-live="polite">
         <span>Siatka: {opiszTrybSiatkiTimeline(ustawieniaSiatkiTimeline)}</span>
+        <span>
+          Zaznaczony klip: {zaznaczonyKlipTimeline?.nazwa ?? "brak"}
+        </span>
         <span>Segmenty ciszy: {segmentyCiszy.length}</span>
         <span>
           Aktywny:{" "}

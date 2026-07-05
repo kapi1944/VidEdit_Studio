@@ -3,7 +3,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { KlipTimeline } from "../../../../src/domena/timeline/typyTimeline";
-import { DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE } from "../../../../src/domena/timeline/typyTimeline";
+import {
+  DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
+  przetnijKlipTimeline,
+  USTAWIENIA_DOCIAGANIA_TIMELINE_MVP
+} from "../../../../src/domena/timeline/typyTimeline";
 import { Panel_Osi_Czasu } from "../../../../src/moduly/timeline/komponenty/Panel_Osi_Czasu";
 
 let korzen: Root | undefined;
@@ -111,6 +115,59 @@ function wyrenderujPanelOsiCzasuZeStanemSiatki() {
   });
 }
 
+function PanelOsiCzasuZCieciem() {
+  const [klipyTimeline, ustawKlipyTimeline] = useState([klipTimeline]);
+  const [idZaznaczonegoKlipu, ustawIdZaznaczonegoKlipu] = useState<string>();
+  const ustawieniaSiatki = USTAWIENIA_DOCIAGANIA_TIMELINE_MVP[1];
+
+  function obsluzCiecie() {
+    if (!idZaznaczonegoKlipu) {
+      return;
+    }
+
+    const wynikCiecia = przetnijKlipTimeline(
+      klipyTimeline,
+      idZaznaczonegoKlipu,
+      4.4,
+      ustawieniaSiatki
+    );
+
+    if (wynikCiecia.czySukces) {
+      ustawKlipyTimeline(wynikCiecia.dane);
+      ustawIdZaznaczonegoKlipu(undefined);
+    }
+  }
+
+  return (
+    <Panel_Osi_Czasu
+      nazwaProjektu="Test"
+      klipyTimeline={klipyTimeline}
+      czasTrwaniaMs={10_000}
+      czasAktualnyMs={4400}
+      segmentyCiszy={[]}
+      idZaznaczonegoKlipuTimeline={idZaznaczonegoKlipu}
+      uchwytWideoRef={createRef<HTMLVideoElement>()}
+      formatujCzasTimeline={formatujCzasTestowy}
+      ustawieniaSiatkiTimeline={ustawieniaSiatki}
+      naZmianeCzasuTimeline={vi.fn()}
+      naZaznaczKlipTimeline={ustawIdZaznaczonegoKlipu}
+      naPrzetnijZaznaczonyKlip={obsluzCiecie}
+      naZmianePrzeciaganiaGlowicy={vi.fn()}
+      naWybranoSegmentCiszy={vi.fn()}
+    />
+  );
+}
+
+function wyrenderujPanelOsiCzasuZCieciem() {
+  kontener = document.createElement("div");
+  document.body.appendChild(kontener);
+  korzen = createRoot(kontener);
+
+  act(() => {
+    korzen?.render(<PanelOsiCzasuZCieciem />);
+  });
+}
+
 afterEach(() => {
   act(() => {
     korzen?.unmount();
@@ -178,6 +235,66 @@ describe("Panel_Osi_Czasu", () => {
     });
 
     expect(kontener?.textContent).toContain("Siatka: 0,5 s");
+  });
+
+  it("blokuje ciecie bez zaznaczonego klipu", () => {
+    wyrenderujPanelOsiCzasu(vi.fn());
+
+    const przyciskCiecia = Array.from(
+      kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
+    ).find((przycisk) => przycisk.textContent === "Przetnij klip");
+
+    expect(przyciskCiecia?.disabled).toBe(true);
+  });
+
+  it("pozwala zaznaczyc klip i uruchomic ciecie", () => {
+    wyrenderujPanelOsiCzasuZCieciem();
+    const pasekKlipu =
+      kontener?.querySelector<HTMLButtonElement>(".pasek-klipu");
+    const przyciskCiecia = Array.from(
+      kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
+    ).find((przycisk) => przycisk.textContent === "Przetnij klip");
+
+    if (!pasekKlipu || !przyciskCiecia) {
+      throw new Error("Brak elementow ciecia klipu w tescie.");
+    }
+
+    act(() => {
+      pasekKlipu.click();
+    });
+
+    expect(kontener?.textContent).toContain("Zaznaczony klip: Intro timeline");
+    expect(przyciskCiecia.disabled).toBe(false);
+
+    act(() => {
+      przyciskCiecia.click();
+    });
+
+    expect(kontener?.querySelectorAll(".pasek-klipu")).toHaveLength(2);
+  });
+
+  it("aktywny snap wplywa na czas ciecia", () => {
+    wyrenderujPanelOsiCzasuZCieciem();
+    const pasekKlipu =
+      kontener?.querySelector<HTMLButtonElement>(".pasek-klipu");
+    const przyciskCiecia = Array.from(
+      kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
+    ).find((przycisk) => przycisk.textContent === "Przetnij klip");
+
+    if (!pasekKlipu || !przyciskCiecia) {
+      throw new Error("Brak elementow ciecia klipu w tescie.");
+    }
+
+    act(() => {
+      pasekKlipu.click();
+    });
+
+    act(() => {
+      przyciskCiecia.click();
+    });
+
+    expect(kontener?.textContent).toContain("4000 ms");
+    expect(kontener?.textContent).toContain("6000 ms");
   });
 
   it("ustawia czas po kliknieciu w timeline", () => {

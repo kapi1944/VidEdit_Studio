@@ -28,6 +28,7 @@ export {
   obliczCzasKoncaKlipu,
   opiszTrybSiatkiTimeline,
   posortujKlipyTimeline,
+  przetnijKlipTimeline,
   przyciagnijCzasDoSiatki,
   USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
   utworzKlipTimeline,

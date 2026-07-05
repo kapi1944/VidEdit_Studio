@@ -1252,6 +1252,24 @@ h2 {
   background: var(--kolor-powierzchni);
 }
 
+.panel-osi-czasu__narzedzia button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: 6px;
+  color: var(--kolor-tekstu-mocny);
+  background: var(--kolor-powierzchni-akcent);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.panel-osi-czasu__narzedzia button:disabled {
+  color: var(--kolor-tekstu-slaby);
+  background: var(--kolor-powierzchni-delikatny);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .panel-osi-czasu__tor {
   position: relative;
   height: 132px;
@@ -1311,6 +1329,13 @@ h2 {
   border-radius: 6px;
   color: var(--kolor-klipu-tekstu);
   background: var(--kolor-klipu-tla);
+  cursor: pointer;
+  text-align: left;
+}
+
+.pasek-klipu--zaznaczony {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
 }
 
 .pasek-klipu__nazwa,

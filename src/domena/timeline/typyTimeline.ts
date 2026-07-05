@@ -1,6 +1,7 @@
 import type { CzasMs } from "../czas/typyCzasu";
 import type { PlikMediow } from "../media/typyMediow";
 import type { BladWalidacji } from "../../wspolne/bledy";
+import { blad, sukces, type Wynik } from "../../wspolne/wynik";
 
 export type SegmentCzasu = {
   id: string;
@@ -260,6 +261,137 @@ export function utworzKlipTimeline(
 
 export function obliczCzasKoncaKlipu(klip: KlipTimeline): CzasMs {
   return klip.czasStartuMs + klip.czasTrwaniaMs;
+}
+
+function utworzIdCzesciKlipuTimeline(
+  klip: KlipTimeline,
+  czasCieciaMs: CzasMs,
+  numerCzesci: number
+) {
+  return `${klip.id}-czesc-${numerCzesci}-${czasCieciaMs}`;
+}
+
+function utworzNazweCzesciKlipu(klip: KlipTimeline, numerCzesci: number) {
+  return `${klip.nazwa} ${numerCzesci}`;
+}
+
+function utworzCzesciKlipuTimeline(
+  klip: KlipTimeline,
+  czasCieciaMs: CzasMs
+): [KlipTimeline, KlipTimeline] {
+  const czasKoncaKlipuMs = obliczCzasKoncaKlipu(klip);
+  const czasTrwaniaPierwszejCzesciMs = czasCieciaMs - klip.czasStartuMs;
+  const czasTrwaniaDrugiejCzesciMs = czasKoncaKlipuMs - czasCieciaMs;
+  const pierwszaCzesc: KlipTimeline = {
+    ...klip,
+    id: utworzIdCzesciKlipuTimeline(klip, czasCieciaMs, 1),
+    nazwa: utworzNazweCzesciKlipu(klip, 1),
+    czasTrwaniaMs: czasTrwaniaPierwszejCzesciMs
+  };
+  const drugaCzesc: KlipTimeline = {
+    ...klip,
+    id: utworzIdCzesciKlipuTimeline(klip, czasCieciaMs, 2),
+    nazwa: utworzNazweCzesciKlipu(klip, 2),
+    czasStartuMs: czasCieciaMs,
+    czasTrwaniaMs: czasTrwaniaDrugiejCzesciMs
+  };
+
+  if (klip.rodzaj === "wideo") {
+    const zrodloStartMs = klip.zrodloStartMs ?? 0;
+    const zrodloCieciaMs = zrodloStartMs + czasTrwaniaPierwszejCzesciMs;
+    const zrodloKoniecMs = klip.zrodloKoniecMs ?? zrodloStartMs + klip.czasTrwaniaMs;
+
+    pierwszaCzesc.zrodloStartMs = zrodloStartMs;
+    pierwszaCzesc.zrodloKoniecMs = zrodloCieciaMs;
+    drugaCzesc.zrodloStartMs = zrodloCieciaMs;
+    drugaCzesc.zrodloKoniecMs = zrodloKoniecMs;
+  } else {
+    delete pierwszaCzesc.zrodloStartMs;
+    delete pierwszaCzesc.zrodloKoniecMs;
+    delete drugaCzesc.zrodloStartMs;
+    delete drugaCzesc.zrodloKoniecMs;
+  }
+
+  return [pierwszaCzesc, drugaCzesc];
+}
+
+function utworzBladCieciaKlipu(
+  pole: string,
+  komunikat: string
+): Wynik<KlipTimeline[], BladWalidacji> {
+  return blad({ pole, komunikat });
+}
+
+export function przetnijKlipTimeline(
+  klipy: KlipTimeline[],
+  idKlipu: string,
+  czasCieciaSekundy: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+): Wynik<KlipTimeline[], BladWalidacji> {
+  if (!Number.isFinite(czasCieciaSekundy)) {
+    return utworzBladCieciaKlipu(
+      "czasCiecia",
+      "Czas ciecia musi byc poprawna liczba."
+    );
+  }
+
+  const indeksKlipu = klipy.findIndex((klip) => klip.id === idKlipu);
+
+  if (indeksKlipu < 0) {
+    return utworzBladCieciaKlipu("idKlipu", "Nie znaleziono klipu timeline.");
+  }
+
+  const klip = klipy[indeksKlipu];
+  const czasPoSiatceSekundy = ustawieniaSiatkiTimeline
+    ? przyciagnijCzasDoSiatki(
+        czasCieciaSekundy,
+        ustawieniaSiatkiTimeline,
+        fps
+      )
+    : czasCieciaSekundy;
+  const czasCieciaMs = Math.round(czasPoSiatceSekundy * 1000);
+  const czasKoncaKlipuMs = obliczCzasKoncaKlipu(klip);
+
+  if (czasCieciaMs < klip.czasStartuMs) {
+    return utworzBladCieciaKlipu(
+      "czasCiecia",
+      "Czas ciecia jest przed klipem."
+    );
+  }
+
+  if (czasCieciaMs === klip.czasStartuMs) {
+    return utworzBladCieciaKlipu(
+      "czasCiecia",
+      "Nie mozna przeciac klipu na poczatku."
+    );
+  }
+
+  if (czasCieciaMs === czasKoncaKlipuMs) {
+    return utworzBladCieciaKlipu(
+      "czasCiecia",
+      "Nie mozna przeciac klipu na koncu."
+    );
+  }
+
+  if (czasCieciaMs > czasKoncaKlipuMs) {
+    return utworzBladCieciaKlipu(
+      "czasCiecia",
+      "Czas ciecia jest po klipie."
+    );
+  }
+
+  const [pierwszaCzesc, drugaCzesc] = utworzCzesciKlipuTimeline(
+    klip,
+    czasCieciaMs
+  );
+
+  return sukces([
+    ...klipy.slice(0, indeksKlipu),
+    pierwszaCzesc,
+    drugaCzesc,
+    ...klipy.slice(indeksKlipu + 1)
+  ]);
 }
 
 export function obliczDlugoscTimelineZKlipow(klipy: KlipTimeline[]): CzasMs {
