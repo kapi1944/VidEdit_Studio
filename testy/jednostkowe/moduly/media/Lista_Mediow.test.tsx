@@ -1,8 +1,13 @@
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Lista_Mediow } from "../../../../src/moduly/media/komponenty/Lista_Mediow";
 import type { PlikMediow } from "../../../../src/domena/media/typyMediow";
+
+let korzen: Root | undefined;
+let kontener: HTMLDivElement | undefined;
 
 const pierwszeMedium: PlikMediow = {
   id: "medium-1",
@@ -25,6 +30,16 @@ const drugieMedium: PlikMediow = {
   statusImportu: "zaimportowany",
   typ: "wideo"
 };
+
+afterEach(() => {
+  act(() => {
+    korzen?.unmount();
+  });
+
+  kontener?.remove();
+  korzen = undefined;
+  kontener = undefined;
+});
 
 describe("Lista_Mediow", () => {
   it("renderuje miniatury przypisane do wlasciwego id medium", () => {
@@ -60,5 +75,35 @@ describe("Lista_Mediow", () => {
     );
 
     expect(widok).toContain("Brak miniatury");
+  });
+
+  it("uruchamia akcje dodania medium na timeline", () => {
+    const obsluzDodanieNaTimeline = vi.fn();
+    kontener = document.createElement("div");
+    document.body.appendChild(kontener);
+    korzen = createRoot(kontener);
+
+    act(() => {
+      korzen?.render(
+        <Lista_Mediow
+          media={[pierwszeMedium]}
+          podgladyMediow={{}}
+          naDodajNaTimeline={obsluzDodanieNaTimeline}
+        />
+      );
+    });
+
+    const przycisk = kontener.querySelector<HTMLButtonElement>("button");
+
+    if (!przycisk) {
+      throw new Error("Brak przycisku dodania medium na timeline.");
+    }
+
+    act(() => {
+      przycisk.click();
+    });
+
+    expect(przycisk.textContent).toBe("Dodaj na os czasu");
+    expect(obsluzDodanieNaTimeline).toHaveBeenCalledWith("medium-1");
   });
 });

@@ -5,11 +5,13 @@ import type { PodgladyMediow } from "../typyPodgladuMediow";
 type WlasciwosciListaMediow = {
   media: PlikMediow[];
   podgladyMediow: PodgladyMediow;
+  naDodajNaTimeline?: (idMedium: string) => void;
 };
 
 export function Lista_Mediow({
   media,
-  podgladyMediow
+  podgladyMediow,
+  naDodajNaTimeline
 }: WlasciwosciListaMediow) {
   return (
     <section className="lista-mediow" aria-labelledby="lista-mediow">
@@ -28,6 +30,7 @@ export function Lista_Mediow({
                   plikMediow={plikMediow}
                   miniaturaDataUrl={podgladMedium?.miniaturaDataUrl}
                   status={podgladMedium?.statusMiniatury}
+                  naDodajNaTimeline={naDodajNaTimeline}
                 />
               </li>
             );

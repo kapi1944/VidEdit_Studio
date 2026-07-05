@@ -1,12 +1,14 @@
 import type { PlikMediow } from "../media/typyMediow";
 import type { ProjektMontazu } from "./typyProjektu";
 import {
+  dodajMediumNaTimeline,
   dodajMediumDoProjektu,
   zaktualizujMetadaneMediumWProjekcie,
   zaktualizujPropozycjeCiecWProjekcie
 } from "./operacjeProjektu";
 
 export {
+  dodajMediumNaTimeline,
   dodajMediumDoProjektu,
   zaktualizujMetadaneMediumWProjekcie,
   zaktualizujPropozycjeCiecWProjekcie

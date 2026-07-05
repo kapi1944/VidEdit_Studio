@@ -35,6 +35,7 @@ import {
   zaimportujPlikMediow
 } from "../moduly/media/indeksMediow";
 import {
+  dodajMediumNaTimeline,
   dodajMediumDoProjektu,
   utworzPustyProjekt,
   zaktualizujMetadaneMediumWProjekcie,
@@ -325,6 +326,23 @@ export function Aplikacja() {
     );
   }
 
+  function obsluzDodanieMediumNaTimeline(idMedium: string) {
+    ustawProjekt((aktualnyProjekt) => {
+      const wynikDodania = dodajMediumNaTimeline(aktualnyProjekt, idMedium);
+
+      if (!wynikDodania.czySukces) {
+        ustawBladImportuMediow(
+          wynikDodania.bledy[0]?.komunikat ??
+            "Nie udalo sie dodac medium na timeline."
+        );
+        return aktualnyProjekt;
+      }
+
+      ustawBladImportuMediow(undefined);
+      return wynikDodania.dane;
+    });
+  }
+
   function obsluzZatwierdzeniePropozycjiCiecia(idPropozycjiCiecia: string) {
     zaktualizujPropozycjeCiec((propozycjeCiec) =>
       zatwierdzPropozycjeCiecia(propozycjeCiec, idPropozycjiCiecia)
@@ -421,6 +439,7 @@ export function Aplikacja() {
                       <Lista_Mediow
                         media={projekt.media}
                         podgladyMediow={podgladyMediow}
+                        naDodajNaTimeline={obsluzDodanieMediumNaTimeline}
                       />
                     ) : null}
                   </>

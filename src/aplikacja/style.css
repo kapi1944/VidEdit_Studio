@@ -1091,6 +1091,23 @@ h2 {
   font-weight: 700;
 }
 
+.karta-medium__akcje {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
+.karta-medium__akcje button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: 6px;
+  color: var(--kolor-tekstu-mocny);
+  background: var(--kolor-powierzchni-akcent);
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .lista-mediow__nazwa {
   margin-bottom: 10px;
   color: var(--kolor-tekstu-mocny);

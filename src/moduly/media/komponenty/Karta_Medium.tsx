@@ -5,14 +5,20 @@ export type WlasciwosciKartyMedium = {
   plikMediow: PlikMediow;
   miniaturaDataUrl?: string;
   status?: string;
+  naDodajNaTimeline?: (idMedium: string) => void;
 };
 
 export function Karta_Medium({
   plikMediow,
   miniaturaDataUrl,
-  status
+  status,
+  naDodajNaTimeline
 }: WlasciwosciKartyMedium) {
   const daneKarty = utworzDaneKartyMedium(plikMediow, status);
+
+  function obsluzDodanieNaTimeline() {
+    naDodajNaTimeline?.(plikMediow.id);
+  }
 
   return (
     <article className="karta-medium" aria-label={daneKarty.nazwaPliku}>
@@ -58,6 +64,13 @@ export function Karta_Medium({
           </div>
         </dl>
         <p className="karta-medium__status">Status: {daneKarty.status}</p>
+        {naDodajNaTimeline ? (
+          <div className="karta-medium__akcje">
+            <button type="button" onClick={obsluzDodanieNaTimeline}>
+              Dodaj na os czasu
+            </button>
+          </div>
+        ) : null}
       </div>
     </article>
   );

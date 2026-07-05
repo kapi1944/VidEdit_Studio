@@ -1,6 +1,7 @@
 export { utworzPustyProjekt } from "../../domena/projekt/fabrykaProjektu";
 export {
   aktualizujMetadaneWideoPlikuMediow,
+  dodajMediumNaTimeline,
   dodajMediumDoProjektu,
   dodajPlikDoProjektu,
   zaktualizujMetadaneMediumWProjekcie,

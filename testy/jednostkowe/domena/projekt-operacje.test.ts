@@ -6,6 +6,7 @@ import type {
 import type { PropozycjaCiecia } from "../../../src/domena/timeline/typyTimeline";
 import { utworzPustyProjekt } from "../../../src/domena/projekt/fabrykaProjektu";
 import {
+  dodajMediumNaTimeline,
   dodajMediumDoProjektu,
   zaktualizujMetadaneMediumWProjekcie,
   zaktualizujPropozycjeCiecWProjekcie
@@ -23,6 +24,16 @@ function utworzPlikMediow(nadpisaneDane: Partial<PlikMediow> = {}): PlikMediow {
     typ: "wideo",
     ...nadpisaneDane
   };
+}
+
+function pobierzProjektZWynikuDodania(
+  wynik: ReturnType<typeof dodajMediumNaTimeline>
+) {
+  if (!wynik.czySukces) {
+    throw new Error("Oczekiwano poprawnego dodania medium na timeline.");
+  }
+
+  return wynik.dane;
 }
 
 function utworzMetadaneWideo(
@@ -242,6 +253,151 @@ describe("operacje projektu", () => {
     );
     expect(projektPoAktualizacji).not.toBe(projekt);
     expect(projekt.timeline.propozycjeCiec).toEqual([]);
+  });
+
+  it("dodaje pierwsze medium na pusty timeline", () => {
+    const plikMediow = utworzPlikMediow({
+      id: "media-1",
+      metadane: utworzMetadaneWideo({ czasTrwaniaMs: 9000 })
+    });
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [plikMediow]
+    };
+
+    const projektPoDodaniu = pobierzProjektZWynikuDodania(
+      dodajMediumNaTimeline(projekt, "media-1")
+    );
+
+    expect(projektPoDodaniu.timeline.klipy).toHaveLength(1);
+    expect(projektPoDodaniu.timeline.klipy[0]).toMatchObject({
+      idPlikuMediow: "media-1",
+      rodzaj: "wideo",
+      czasStartuMs: 0,
+      czasTrwaniaMs: 9000,
+      zrodloStartMs: 0,
+      zrodloKoniecMs: 9000
+    });
+    expect(projekt.timeline.klipy).toEqual([]);
+  });
+
+  it("dodaje drugie medium na koniec timeline", () => {
+    const pierwszyPlik = utworzPlikMediow({
+      id: "media-1",
+      metadane: utworzMetadaneWideo({ czasTrwaniaMs: 7000 })
+    });
+    const drugiPlik = utworzPlikMediow({
+      id: "media-2",
+      nazwaPliku: "drugie.mp4",
+      sciezkaPliku: "drugie.mp4",
+      metadane: utworzMetadaneWideo({ czasTrwaniaMs: 4000 })
+    });
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [pierwszyPlik, drugiPlik]
+    };
+    const projektZPierwszymKlipem = pobierzProjektZWynikuDodania(
+      dodajMediumNaTimeline(projekt, "media-1")
+    );
+
+    const projektZDrugimKlipem = pobierzProjektZWynikuDodania(
+      dodajMediumNaTimeline(projektZPierwszymKlipem, "media-2")
+    );
+
+    expect(projektZDrugimKlipem.timeline.klipy[1]).toMatchObject({
+      idPlikuMediow: "media-2",
+      czasStartuMs: 7000,
+      czasTrwaniaMs: 4000
+    });
+  });
+
+  it("dodaje to samo medium drugi raz jako nowy klip", () => {
+    const plikMediow = utworzPlikMediow({
+      id: "media-1",
+      metadane: utworzMetadaneWideo({ czasTrwaniaMs: 6000 })
+    });
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [plikMediow]
+    };
+    const projektZPierwszymKlipem = pobierzProjektZWynikuDodania(
+      dodajMediumNaTimeline(projekt, "media-1")
+    );
+
+    const projektZDrugimKlipem = pobierzProjektZWynikuDodania(
+      dodajMediumNaTimeline(projektZPierwszymKlipem, "media-1")
+    );
+
+    expect(projektZDrugimKlipem.timeline.klipy).toHaveLength(2);
+    expect(projektZDrugimKlipem.timeline.klipy[0]?.id).not.toBe(
+      projektZDrugimKlipem.timeline.klipy[1]?.id
+    );
+    expect(projektZDrugimKlipem.timeline.klipy[1]).toMatchObject({
+      idPlikuMediow: "media-1",
+      czasStartuMs: 6000,
+      czasTrwaniaMs: 6000
+    });
+  });
+
+  it("zwraca blad dla nieistniejacego id medium", () => {
+    const projekt = utworzPustyProjekt("Projekt testowy");
+
+    const wynik = dodajMediumNaTimeline(projekt, "brak-medium");
+
+    expect(wynik).toEqual({
+      czySukces: false,
+      bledy: [
+        {
+          pole: "idMedium",
+          komunikat: "Nie znaleziono medium w bibliotece projektu."
+        }
+      ]
+    });
+  });
+
+  it("dodaje grafike z domyslna dlugoscia", () => {
+    const plikGrafiki = utworzPlikMediow({
+      id: "grafika-1",
+      nazwaPliku: "plansza.png",
+      sciezkaPliku: "plansza.png",
+      rozszerzenie: ".png",
+      typMime: "image/png",
+      typ: "grafika"
+    });
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [plikGrafiki]
+    };
+
+    const projektPoDodaniu = pobierzProjektZWynikuDodania(
+      dodajMediumNaTimeline(projekt, "grafika-1")
+    );
+
+    expect(projektPoDodaniu.timeline.klipy[0]).toMatchObject({
+      idPlikuMediow: "grafika-1",
+      rodzaj: "grafika",
+      czasStartuMs: 0,
+      czasTrwaniaMs: 5000
+    });
+  });
+
+  it("dodaje wideo z dlugoscia z metadanych", () => {
+    const plikMediow = utworzPlikMediow({
+      id: "media-1",
+      czasTrwaniaMs: 3000,
+      metadane: utworzMetadaneWideo({ czasTrwaniaMs: 11_000 })
+    });
+    const projekt = {
+      ...utworzPustyProjekt("Projekt testowy"),
+      media: [plikMediow]
+    };
+
+    const projektPoDodaniu = pobierzProjektZWynikuDodania(
+      dodajMediumNaTimeline(projekt, "media-1")
+    );
+
+    expect(projektPoDodaniu.timeline.klipy[0]?.czasTrwaniaMs).toBe(11_000);
+    expect(projektPoDodaniu.timeline.klipy[0]?.zrodloKoniecMs).toBe(11_000);
   });
 
   it("odrzuca niepoprawne metadane bez zmiany projektu", () => {
