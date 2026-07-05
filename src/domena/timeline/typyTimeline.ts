@@ -73,6 +73,8 @@ export type UstawieniaDociaganiaTimeline = {
   fpsBazowy?: number;
 };
 
+export type UstawieniaSiatkiTimeline = UstawieniaDociaganiaTimeline;
+
 export type DaneUtworzeniaKlipuTimeline = {
   id?: string;
   plikMediow: PlikMediow & { typ: RodzajKlipuTimeline };
@@ -123,6 +125,81 @@ export const USTAWIENIA_DOCIAGANIA_TIMELINE_MVP: UstawieniaDociaganiaTimeline[] 
       liczbaKlatek: 10
     }
   ];
+
+const OPISY_SIATKI_TIMELINE: Record<JednostkaDociaganiaTimeline, string> = {
+  brak: "Bez dociagania",
+  sekunda: "1 s",
+  polSekundy: "0,5 s",
+  dziesiataSekundy: "0,1 s",
+  jednaKlatka: "1 klatka",
+  piecKlatek: "5 klatek",
+  dziesiecKlatek: "10 klatek"
+};
+
+function zaokraglijStabilnie(czasSekundy: number) {
+  return Number(Math.max(0, czasSekundy).toFixed(6));
+}
+
+function pobierzFpsSiatki(
+  ustawieniaSiatki: UstawieniaSiatkiTimeline,
+  fps?: number
+) {
+  const fpsDoUzycia = fps ?? ustawieniaSiatki.fpsBazowy ?? 25;
+
+  return Number.isFinite(fpsDoUzycia) && fpsDoUzycia > 0 ? fpsDoUzycia : 25;
+}
+
+function pobierzKrokSiatkiWSekundach(
+  ustawieniaSiatki: UstawieniaSiatkiTimeline,
+  fps?: number
+) {
+  if (
+    !ustawieniaSiatki.wlaczone ||
+    ustawieniaSiatki.tryb === "brak" ||
+    ustawieniaSiatki.jednostka === "brak"
+  ) {
+    return undefined;
+  }
+
+  if (ustawieniaSiatki.tryb === "czas") {
+    return (ustawieniaSiatki.krokMs ?? 0) / 1000;
+  }
+
+  if (ustawieniaSiatki.tryb === "klatki") {
+    return (
+      (ustawieniaSiatki.liczbaKlatek ?? 1) /
+      pobierzFpsSiatki(ustawieniaSiatki, fps)
+    );
+  }
+
+  return undefined;
+}
+
+export function przyciagnijCzasDoSiatki(
+  czasSekundy: number,
+  ustawieniaSiatki: UstawieniaSiatkiTimeline,
+  fps?: number
+) {
+  if (!Number.isFinite(czasSekundy)) {
+    return 0;
+  }
+
+  const krokSekundy = pobierzKrokSiatkiWSekundach(ustawieniaSiatki, fps);
+
+  if (!krokSekundy || !Number.isFinite(krokSekundy) || krokSekundy <= 0) {
+    return Math.max(0, czasSekundy);
+  }
+
+  return zaokraglijStabilnie(
+    Math.round(czasSekundy / krokSekundy) * krokSekundy
+  );
+}
+
+export function opiszTrybSiatkiTimeline(
+  ustawieniaSiatki: UstawieniaSiatkiTimeline
+) {
+  return OPISY_SIATKI_TIMELINE[ustawieniaSiatki.jednostka];
+}
 
 export type TimelineProjektu = {
   klipy: KlipTimeline[];

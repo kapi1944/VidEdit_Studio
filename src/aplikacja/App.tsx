@@ -52,9 +52,13 @@ import { odczytajMetadaneWideoZPliku } from "../infrastruktura/media/odczytajMet
 import { utworzDaneImportuZPlikuBrowserowego } from "../infrastruktura/media/utworzDaneImportuZPlikuBrowserowego";
 import type {
   PropozycjaCiecia,
-  SegmentCiszy
+  SegmentCiszy,
+  UstawieniaSiatkiTimeline
 } from "../domena/timeline/typyTimeline";
-import { obliczCzasKoncaKlipu } from "../domena/timeline/typyTimeline";
+import {
+  DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
+  obliczCzasKoncaKlipu
+} from "../domena/timeline/typyTimeline";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
@@ -111,6 +115,10 @@ export function Aplikacja() {
   const [idAktywnegoSegmentuCiszy, ustawIdAktywnegoSegmentuCiszy] =
     useState<string>();
   const [aktualnyCzasTimelineMs, ustawAktualnyCzasTimelineMs] = useState(0);
+  const [ustawieniaSiatkiTimeline, ustawUstawieniaSiatkiTimeline] =
+    useState<UstawieniaSiatkiTimeline>(
+      DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE
+    );
   const [czyPrzeciaganieGlowicy, ustawCzyPrzeciaganieGlowicy] =
     useState(false);
   const uchwytWideoRef = useRef<HTMLVideoElement>(null);
@@ -488,7 +496,9 @@ export function Aplikacja() {
               idAktywnegoSegmentuCiszy={idAktywnegoSegmentuCiszyTimeline}
               uchwytWideoRef={uchwytWideoRef}
               formatujCzasTimeline={formatujCzasNaTimeline}
+              ustawieniaSiatkiTimeline={ustawieniaSiatkiTimeline}
               naZmianeCzasuTimeline={obsluzZmianeCzasuOdtwarzania}
+              naZmianeUstawienSiatkiTimeline={ustawUstawieniaSiatkiTimeline}
               naZmianePrzeciaganiaGlowicy={ustawCzyPrzeciaganieGlowicy}
               naWybranoSegmentCiszy={obsluzWybranieSegmentuCiszy}
             />

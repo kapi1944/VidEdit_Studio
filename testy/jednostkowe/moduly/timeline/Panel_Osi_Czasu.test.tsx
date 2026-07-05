@@ -1,8 +1,9 @@
-import { act, createRef } from "react";
+import { act, createRef, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { KlipTimeline } from "../../../../src/domena/timeline/typyTimeline";
+import { DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE } from "../../../../src/domena/timeline/typyTimeline";
 import { Panel_Osi_Czasu } from "../../../../src/moduly/timeline/komponenty/Panel_Osi_Czasu";
 
 let korzen: Root | undefined;
@@ -77,6 +78,39 @@ function wyrenderujPanelOsiCzasu(
   return obszarTimeline;
 }
 
+function PanelOsiCzasuZeStanemSiatki() {
+  const [ustawieniaSiatki, ustawUstawieniaSiatki] = useState(
+    DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE
+  );
+
+  return (
+    <Panel_Osi_Czasu
+      nazwaProjektu="Test"
+      klipyTimeline={[klipTimeline]}
+      czasTrwaniaMs={10_000}
+      czasAktualnyMs={0}
+      segmentyCiszy={[]}
+      uchwytWideoRef={createRef<HTMLVideoElement>()}
+      formatujCzasTimeline={formatujCzasTestowy}
+      ustawieniaSiatkiTimeline={ustawieniaSiatki}
+      naZmianeCzasuTimeline={vi.fn()}
+      naZmianeUstawienSiatkiTimeline={ustawUstawieniaSiatki}
+      naZmianePrzeciaganiaGlowicy={vi.fn()}
+      naWybranoSegmentCiszy={vi.fn()}
+    />
+  );
+}
+
+function wyrenderujPanelOsiCzasuZeStanemSiatki() {
+  kontener = document.createElement("div");
+  document.body.appendChild(kontener);
+  korzen = createRoot(kontener);
+
+  act(() => {
+    korzen?.render(<PanelOsiCzasuZeStanemSiatki />);
+  });
+}
+
 afterEach(() => {
   act(() => {
     korzen?.unmount();
@@ -105,6 +139,45 @@ describe("Panel_Osi_Czasu", () => {
 
     expect(kontener?.textContent).toContain("Intro timeline");
     expect(kontener?.textContent).toContain("10000 ms");
+  });
+
+  it("renderuje wszystkie tryby siatki timeline", () => {
+    wyrenderujPanelOsiCzasu(vi.fn());
+
+    const opcjeSiatki = Array.from(
+      kontener?.querySelectorAll<HTMLOptionElement>(
+        ".panel-osi-czasu__siatka option"
+      ) ?? []
+    ).map((opcjaSiatki) => opcjaSiatki.textContent);
+
+    expect(opcjeSiatki).toEqual([
+      "Bez dociagania",
+      "1 s",
+      "0,5 s",
+      "0,1 s",
+      "1 klatka",
+      "5 klatek",
+      "10 klatek"
+    ]);
+  });
+
+  it("aktualizuje opis po zmianie trybu siatki", () => {
+    wyrenderujPanelOsiCzasuZeStanemSiatki();
+
+    const wyborSiatki = kontener?.querySelector<HTMLSelectElement>(
+      ".panel-osi-czasu__siatka select"
+    );
+
+    if (!wyborSiatki) {
+      throw new Error("Brak selektora siatki timeline.");
+    }
+
+    act(() => {
+      wyborSiatki.value = "polSekundy";
+      wyborSiatki.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    expect(kontener?.textContent).toContain("Siatka: 0,5 s");
   });
 
   it("ustawia czas po kliknieciu w timeline", () => {

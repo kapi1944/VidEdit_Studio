@@ -3,12 +3,19 @@ import {
   useEffect,
   useRef,
   useState,
+  type ChangeEvent,
   type MouseEvent as ZdarzenieMyszy,
   type RefObject
 } from "react";
 import type {
   KlipTimeline,
-  SegmentCiszy
+  SegmentCiszy,
+  UstawieniaSiatkiTimeline
+} from "../../../domena/timeline/typyTimeline";
+import {
+  DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
+  opiszTrybSiatkiTimeline,
+  USTAWIENIA_DOCIAGANIA_TIMELINE_MVP
 } from "../../../domena/timeline/typyTimeline";
 import { przeliczPozycjeNaCzas } from "../przeliczCzasNaPozycje";
 import { Pasek_Klipu } from "./Pasek_Klipu";
@@ -24,7 +31,12 @@ type WlasciwosciPaneluOsiCzasu = {
   idAktywnegoSegmentuCiszy?: string;
   uchwytWideoRef: RefObject<HTMLVideoElement | null>;
   formatujCzasTimeline: (czasMs: number) => string;
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline;
+  opcjeSiatkiTimeline?: UstawieniaSiatkiTimeline[];
   naZmianeCzasuTimeline: (czasMs: number) => void;
+  naZmianeUstawienSiatkiTimeline?: (
+    ustawieniaSiatki: UstawieniaSiatkiTimeline
+  ) => void;
   naZmianePrzeciaganiaGlowicy: (czyPrzeciaganieGlowicy: boolean) => void;
   naWybranoSegmentCiszy: (segmentCiszy: SegmentCiszy) => void;
 };
@@ -38,7 +50,10 @@ export function Panel_Osi_Czasu({
   idAktywnegoSegmentuCiszy,
   uchwytWideoRef,
   formatujCzasTimeline,
+  ustawieniaSiatkiTimeline = DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
+  opcjeSiatkiTimeline = USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
   naZmianeCzasuTimeline,
+  naZmianeUstawienSiatkiTimeline,
   naZmianePrzeciaganiaGlowicy,
   naWybranoSegmentCiszy
 }: WlasciwosciPaneluOsiCzasu) {
@@ -77,6 +92,19 @@ export function Panel_Osi_Czasu({
   function ustawStanPrzeciaganiaGlowicy(czyPrzeciaganie: boolean) {
     ustawCzyPrzeciaganieGlowicy(czyPrzeciaganie);
     naZmianePrzeciaganiaGlowicy(czyPrzeciaganie);
+  }
+
+  function obsluzZmianeSiatkiTimeline(
+    zdarzenie: ChangeEvent<HTMLSelectElement>
+  ) {
+    const wybraneUstawienia = opcjeSiatkiTimeline.find(
+      (ustawieniaSiatki) =>
+        ustawieniaSiatki.jednostka === zdarzenie.currentTarget.value
+    );
+
+    if (wybraneUstawienia) {
+      naZmianeUstawienSiatkiTimeline?.(wybraneUstawienia);
+    }
   }
 
   function obsluzKlikniecieTimeline(zdarzenie: ZdarzenieMyszy<HTMLDivElement>) {
@@ -142,6 +170,22 @@ export function Panel_Osi_Czasu({
           </span>
           <span>Aktualny czas: {formatujCzasTimeline(czasAktualnyMs)}</span>
         </div>
+        <label className="panel-osi-czasu__siatka">
+          <span>Siatka</span>
+          <select
+            value={ustawieniaSiatkiTimeline.jednostka}
+            onChange={obsluzZmianeSiatkiTimeline}
+          >
+            {opcjeSiatkiTimeline.map((ustawieniaSiatki) => (
+              <option
+                key={ustawieniaSiatki.jednostka}
+                value={ustawieniaSiatki.jednostka}
+              >
+                {opiszTrybSiatkiTimeline(ustawieniaSiatki)}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="panel-osi-czasu__tor">
@@ -190,6 +234,7 @@ export function Panel_Osi_Czasu({
       </div>
 
       <div className="panel-osi-czasu__podsumowanie" aria-live="polite">
+        <span>Siatka: {opiszTrybSiatkiTimeline(ustawieniaSiatkiTimeline)}</span>
         <span>Segmenty ciszy: {segmentyCiszy.length}</span>
         <span>
           Aktywny:{" "}

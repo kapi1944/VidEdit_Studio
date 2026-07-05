@@ -1235,6 +1235,23 @@ h2 {
   font-weight: 700;
 }
 
+.panel-osi-czasu__siatka {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--kolor-etykiety);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.panel-osi-czasu__siatka select {
+  min-height: 30px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: 6px;
+  color: var(--kolor-tekstu-mocny);
+  background: var(--kolor-powierzchni);
+}
+
 .panel-osi-czasu__tor {
   position: relative;
   height: 132px;

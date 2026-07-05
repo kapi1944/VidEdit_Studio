@@ -17,7 +17,8 @@ export type {
   SegmentCzasu,
   TimelineProjektu,
   TrybDociaganiaTimeline,
-  UstawieniaDociaganiaTimeline
+  UstawieniaDociaganiaTimeline,
+  UstawieniaSiatkiTimeline
 } from "../../domena/timeline/typyTimeline";
 export {
   czyKlipTimelineJestPoprawny,
@@ -25,7 +26,9 @@ export {
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   obliczDlugoscTimelineZKlipow,
   obliczCzasKoncaKlipu,
+  opiszTrybSiatkiTimeline,
   posortujKlipyTimeline,
+  przyciagnijCzasDoSiatki,
   USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
   utworzKlipTimeline,
   walidujKlipTimeline,
