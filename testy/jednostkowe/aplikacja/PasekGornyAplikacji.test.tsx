@@ -80,8 +80,10 @@ describe("PasekGornyAplikacji", () => {
       <PasekGornyAplikacji
         statusProjektuUi="brak_mediow"
         trybWygladu="ciemny"
+        motywInterfejsu="black-red"
         liczbaMediow={0}
         naZmianeTrybuWygladu={vi.fn()}
+        naZmianeMotywuInterfejsu={vi.fn()}
       />
     );
 
@@ -99,8 +101,10 @@ describe("PasekGornyAplikacji", () => {
         nazwaProjektu="Kurs montazu"
         statusProjektuUi="gotowe"
         trybWygladu="ciemny"
+        motywInterfejsu="black-red"
         liczbaMediow={1}
         naZmianeTrybuWygladu={vi.fn()}
+        naZmianeMotywuInterfejsu={vi.fn()}
       />
     );
 
@@ -122,5 +126,27 @@ describe("PasekGornyAplikacji", () => {
         czyRealnyEksportDostepny: true
       })
     ).toBe(true);
+  });
+
+  it("pokazuje wybor motywu interfejsu", () => {
+    const widok = renderToStaticMarkup(
+      <PasekGornyAplikacji
+        statusProjektuUi="brak_mediow"
+        trybWygladu="ciemny"
+        motywInterfejsu="sharp"
+        liczbaMediow={0}
+        naZmianeTrybuWygladu={vi.fn()}
+        naZmianeMotywuInterfejsu={vi.fn()}
+      />
+    );
+
+    expect(widok).toContain("Motyw");
+    expect(widok).toContain("Black&amp;Red");
+    expect(widok).toContain("Sharp");
+    expect(widok).toContain("Soft");
+    expect(widok).toContain("Neon");
+    expect(widok).toContain("Flame");
+    expect(widok).toContain("Glass");
+    expect(widok).toContain("value=\"sharp\" selected");
   });
 });

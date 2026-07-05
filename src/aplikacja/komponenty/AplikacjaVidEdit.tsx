@@ -6,6 +6,10 @@ import {
 import type { PlikMediow } from "../../domena/media/typyMediow";
 import type { KlipTimeline } from "../../domena/timeline/typyTimeline";
 import type { PodgladyMediow } from "../../moduly/media/typyPodgladuMediow";
+import {
+  etykietyMotywuInterfejsu,
+  type MotywInterfejsu
+} from "../ustawieniaInterfejsu";
 import { PodgladWideo } from "./PodgladWideo";
 import {
   obliczCzasPodgladuKlipu,
@@ -40,8 +44,10 @@ type WlasciwosciPaskaGornegoAplikacji = {
   nazwaProjektu?: string;
   statusProjektuUi: StatusProjektuUi;
   trybWygladu: string;
+  motywInterfejsu: MotywInterfejsu;
   liczbaMediow: number;
   naZmianeTrybuWygladu: (trybWygladu: string) => void;
+  naZmianeMotywuInterfejsu: (motywInterfejsu: string) => void;
   naEksportuj?: () => void;
 };
 
@@ -122,8 +128,10 @@ export function PasekGornyAplikacji({
   nazwaProjektu,
   statusProjektuUi,
   trybWygladu,
+  motywInterfejsu,
   liczbaMediow,
   naZmianeTrybuWygladu,
+  naZmianeMotywuInterfejsu,
   naEksportuj
 }: WlasciwosciPaskaGornegoAplikacji) {
   const nazwaProjektuDoPaska = pobierzNazweProjektuDoPaska(nazwaProjektu);
@@ -186,6 +194,23 @@ export function PasekGornyAplikacji({
                 {etykieta}
               </option>
             ))}
+          </select>
+        </label>
+        <label className="pasek-gorny-aplikacji__wybor">
+          <span>Motyw</span>
+          <select
+            value={motywInterfejsu}
+            onChange={(zdarzenie) =>
+              naZmianeMotywuInterfejsu(zdarzenie.currentTarget.value)
+            }
+          >
+            {Object.entries(etykietyMotywuInterfejsu).map(
+              ([wartosc, etykieta]) => (
+                <option key={wartosc} value={wartosc}>
+                  {etykieta}
+                </option>
+              )
+            )}
           </select>
         </label>
         <button

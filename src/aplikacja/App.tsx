@@ -64,11 +64,16 @@ import {
   skrocKoniecKlipuTimeline,
   skrocPoczatekKlipuTimeline
 } from "../domena/timeline/typyTimeline";
+import {
+  domyslnyMotywInterfejsu,
+  sprawdzCzyMotywInterfejsuJestPoprawny,
+  type MotywInterfejsu
+} from "./ustawieniaInterfejsu";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
 const kluczTrybuWygladu = "videdit-studio.tryb-wygladu";
-const domyslnyMotywUi = "black-red";
+const kluczMotywuInterfejsu = "videdit-studio.motyw-interfejsu";
 const minimalnyCzasTechnicznyTimelineMs = 10_000;
 
 function obliczKoniecZakresowTimeline(
@@ -109,6 +114,16 @@ function pobierzPoczatkowyTrybWygladu(): TrybWygladu {
   return "ciemny";
 }
 
+function pobierzPoczatkowyMotywInterfejsu(): MotywInterfejsu {
+  const zapisanyMotywInterfejsu = localStorage.getItem(kluczMotywuInterfejsu);
+
+  if (sprawdzCzyMotywInterfejsuJestPoprawny(zapisanyMotywInterfejsu)) {
+    return zapisanyMotywInterfejsu;
+  }
+
+  return domyslnyMotywInterfejsu;
+}
+
 export function Aplikacja() {
   const [projekt, ustawProjekt] = useState(() =>
     utworzPustyProjekt("Nowy projekt")
@@ -117,6 +132,9 @@ export function Aplikacja() {
   const [statusImportuMediow, ustawStatusImportuMediow] =
     useState<StatusImportuMediow>("bezczynny");
   const [trybWygladu, ustawTrybWygladu] = useState(pobierzPoczatkowyTrybWygladu);
+  const [motywInterfejsu, ustawMotywInterfejsu] = useState(
+    pobierzPoczatkowyMotywInterfejsu
+  );
   const [podgladyMediow, ustawPodgladyMediow] = useState<PodgladyMediow>({});
   const [idAktywnegoSegmentuCiszy, ustawIdAktywnegoSegmentuCiszy] =
     useState<string>();
@@ -133,10 +151,14 @@ export function Aplikacja() {
   const podgladyMediowRef = useRef<PodgladyMediow>({});
 
   useEffect(() => {
-    document.documentElement.dataset.motyw = domyslnyMotywUi;
     document.documentElement.dataset.trybWygladu = trybWygladu;
     localStorage.setItem(kluczTrybuWygladu, trybWygladu);
   }, [trybWygladu]);
+
+  useEffect(() => {
+    document.documentElement.dataset.motyw = motywInterfejsu;
+    localStorage.setItem(kluczMotywuInterfejsu, motywInterfejsu);
+  }, [motywInterfejsu]);
 
   useEffect(() => {
     podgladyMediowRef.current = podgladyMediow;
@@ -539,6 +561,12 @@ export function Aplikacja() {
     }
   }
 
+  function obsluzZmianeMotywuInterfejsu(nowyMotywInterfejsu: string) {
+    if (sprawdzCzyMotywInterfejsuJestPoprawny(nowyMotywInterfejsu)) {
+      ustawMotywInterfejsu(nowyMotywInterfejsu);
+    }
+  }
+
   const liczbaPropozycjiCiec = projekt.timeline.propozycjeCiec.length;
   const liczbaPropozycjiOczekujacych =
     projekt.timeline.propozycjeCiec.filter(
@@ -567,8 +595,10 @@ export function Aplikacja() {
           nazwaProjektu={projekt.nazwa}
           statusProjektuUi={statusProjektuUi}
           trybWygladu={trybWygladu}
+          motywInterfejsu={motywInterfejsu}
           liczbaMediow={projekt.media.length}
           naZmianeTrybuWygladu={obsluzZmianeTrybuWygladu}
+          naZmianeMotywuInterfejsu={obsluzZmianeMotywuInterfejsu}
         />
       }
       panelLewy={
