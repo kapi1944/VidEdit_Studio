@@ -5,9 +5,11 @@ import { OBSLUGIWANE_FORMATY_CZASU } from "../czas/typyCzasu";
 import type { CzasMs } from "../czas/typyCzasu";
 import {
   POWODY_PROPOZYCJI_CIEC,
-  STATUSY_PROPOZYCJI_CIEC
+  STATUSY_PROPOZYCJI_CIEC,
+  walidujKlipTimeline
 } from "../timeline/typyTimeline";
 import type {
+  KlipTimeline,
   PropozycjaCiecia,
   SegmentCzasu
 } from "../timeline/typyTimeline";
@@ -207,6 +209,25 @@ export function sprawdzCzyProjektJestPoprawny(
     bledy.push({
       pole: "liczbaKlatekNaSekunde",
       komunikat: "Liczba klatek na sekundę musi być większa od zera."
+    });
+  }
+
+  if (projekt.timeline && !Array.isArray(projekt.timeline.klipy)) {
+    bledy.push({
+      pole: "timeline.klipy",
+      komunikat: "Klipy timeline musza byc tablica."
+    });
+  } else {
+    const idPlikowMediow = projekt.media.map((medium) => medium.id);
+    const klipyTimeline = projekt.timeline?.klipy ?? [];
+
+    klipyTimeline.forEach((klip: KlipTimeline) => {
+      bledy.push(
+        ...walidujKlipTimeline(klip, idPlikowMediow).map((blad) => ({
+          ...blad,
+          pole: `timeline.klipy.${blad.pole}`
+        }))
+      );
     });
   }
 

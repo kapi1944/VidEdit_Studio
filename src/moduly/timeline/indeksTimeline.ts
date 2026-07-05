@@ -21,8 +21,14 @@ export type {
 } from "../../domena/timeline/typyTimeline";
 export {
   czyKlipTimelineJestPoprawny,
+  DOMYSLNY_CZAS_TRWANIA_GRAFIKI_MS,
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
+  obliczDlugoscTimelineZKlipow,
   obliczCzasKoncaKlipu,
+  posortujKlipyTimeline,
   USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
+  utworzKlipTimeline,
+  walidujKlipTimeline,
+  znajdzKlipTimelinePoId,
   utworzKlipTimelineZDodanegoMedium
 } from "../../domena/timeline/typyTimeline";

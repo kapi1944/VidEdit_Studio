@@ -51,6 +51,8 @@ export type KlipTimeline = {
   czyZablokowany?: boolean;
 };
 
+export const DOMYSLNY_CZAS_TRWANIA_GRAFIKI_MS = 5000;
+
 export type TrybDociaganiaTimeline = "czas" | "klatki" | "brak";
 
 export type JednostkaDociaganiaTimeline =
@@ -155,13 +157,16 @@ export function utworzKlipTimelineZDodanegoMedium({
   const czasTrwaniaKlipuMs =
     czasTrwaniaMs ??
     (koniecZrodlaMs !== undefined ? koniecZrodlaMs - zrodloStartMs : 0);
+  const czasTrwaniaGrafikiMs =
+    czasTrwaniaMs ?? DOMYSLNY_CZAS_TRWANIA_GRAFIKI_MS;
 
   return {
     id: id ?? utworzIdKlipuTimeline(plikMediow, czasStartuMs),
     idPlikuMediow: plikMediow.id,
     rodzaj: plikMediow.typ,
     czasStartuMs,
-    czasTrwaniaMs: czasTrwaniaKlipuMs,
+    czasTrwaniaMs:
+      plikMediow.typ === "grafika" ? czasTrwaniaGrafikiMs : czasTrwaniaKlipuMs,
     ...(plikMediow.typ === "wideo" ? { zrodloStartMs, zrodloKoniecMs: koniecZrodlaMs } : {}),
     sciezka,
     nazwa: nazwa ?? plikMediow.nazwaPliku,
@@ -170,11 +175,42 @@ export function utworzKlipTimelineZDodanegoMedium({
   };
 }
 
+export function utworzKlipTimeline(
+  daneKlipu: DaneUtworzeniaKlipuTimeline
+): KlipTimeline {
+  return utworzKlipTimelineZDodanegoMedium(daneKlipu);
+}
+
 export function obliczCzasKoncaKlipu(klip: KlipTimeline): CzasMs {
   return klip.czasStartuMs + klip.czasTrwaniaMs;
 }
 
-export function czyKlipTimelineJestPoprawny(
+export function obliczDlugoscTimelineZKlipow(klipy: KlipTimeline[]): CzasMs {
+  return klipy.reduce(
+    (najpozniejszyKoniecMs, klip) =>
+      Math.max(najpozniejszyKoniecMs, obliczCzasKoncaKlipu(klip)),
+    0
+  );
+}
+
+export function posortujKlipyTimeline(klipy: KlipTimeline[]): KlipTimeline[] {
+  return [...klipy].sort((pierwszyKlip, drugiKlip) => {
+    if (pierwszyKlip.czasStartuMs !== drugiKlip.czasStartuMs) {
+      return pierwszyKlip.czasStartuMs - drugiKlip.czasStartuMs;
+    }
+
+    return pierwszyKlip.id.localeCompare(drugiKlip.id);
+  });
+}
+
+export function znajdzKlipTimelinePoId(
+  klipy: KlipTimeline[],
+  idKlipu: string
+): KlipTimeline | undefined {
+  return klipy.find((klip) => klip.id === idKlipu);
+}
+
+export function walidujKlipTimeline(
   klip: KlipTimeline,
   istniejaceIdPlikowMediow?: string[]
 ): BladWalidacji[] {
@@ -252,4 +288,11 @@ export function czyKlipTimelineJestPoprawny(
   }
 
   return bledy;
+}
+
+export function czyKlipTimelineJestPoprawny(
+  klip: KlipTimeline,
+  istniejaceIdPlikowMediow?: string[]
+): BladWalidacji[] {
+  return walidujKlipTimeline(klip, istniejaceIdPlikowMediow);
 }

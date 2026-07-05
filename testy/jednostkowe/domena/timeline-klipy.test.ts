@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { PlikMediow } from "../../../src/domena/media/typyMediow";
 import {
   czyKlipTimelineJestPoprawny,
+  obliczDlugoscTimelineZKlipow,
   obliczCzasKoncaKlipu,
+  posortujKlipyTimeline,
   type RodzajKlipuTimeline,
+  utworzKlipTimeline,
   utworzKlipTimelineZDodanegoMedium
 } from "../../../src/domena/timeline/typyTimeline";
 
@@ -86,6 +89,32 @@ describe("klipy timeline", () => {
     expect(klip.zrodloKoniecMs).toBeUndefined();
   });
 
+  it("tworzy klip z grafiki z domyslnym czasem trwania", () => {
+    const plikMediow = utworzPlikMediow({
+      id: "grafika-1",
+      nazwaPliku: "plansza.png",
+      sciezkaPliku: "plansza.png",
+      rozszerzenie: ".png",
+      typMime: "image/png",
+      typ: "grafika",
+      czasTrwaniaMs: undefined
+    });
+
+    const klip = utworzKlipTimeline({
+      id: "klip-grafika-1",
+      plikMediow
+    });
+
+    expect(klip).toMatchObject({
+      id: "klip-grafika-1",
+      idPlikuMediow: "grafika-1",
+      rodzaj: "grafika",
+      czasStartuMs: 0,
+      czasTrwaniaMs: 5000
+    });
+    expect(czyKlipTimelineJestPoprawny(klip, ["grafika-1"])).toEqual([]);
+  });
+
   it("oblicza poprawny czas konca klipu", () => {
     const klip = utworzKlipTimelineZDodanegoMedium({
       id: "klip-1",
@@ -123,6 +152,104 @@ describe("klipy timeline", () => {
       pole: "czasTrwaniaMs",
       komunikat: "Czas trwania klipu musi byc wiekszy od zera."
     });
+  });
+
+  it("odrzuca ujemny czas trwania", () => {
+    const klip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-1",
+      plikMediow: utworzPlikMediow(),
+      czasStartuMs: 0,
+      czasTrwaniaMs: -100
+    });
+
+    expect(czyKlipTimelineJestPoprawny(klip)).toContainEqual({
+      pole: "czasTrwaniaMs",
+      komunikat: "Czas trwania klipu musi byc wiekszy od zera."
+    });
+  });
+
+  it("odrzuca bledny zakres zrodla", () => {
+    const klip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-1",
+      plikMediow: utworzPlikMediow(),
+      czasStartuMs: 0,
+      zrodloStartMs: 4000,
+      zrodloKoniecMs: 4000
+    });
+
+    expect(czyKlipTimelineJestPoprawny(klip)).toContainEqual({
+      pole: "czasTrwaniaMs",
+      komunikat: "Czas trwania klipu musi byc wiekszy od zera."
+    });
+    expect(czyKlipTimelineJestPoprawny(klip)).toContainEqual({
+      pole: "zrodloKoniecMs",
+      komunikat: "Czas wyjscia zrodla musi byc po czasie wejscia."
+    });
+  });
+
+  it("oblicza zerowa dlugosc timeline bez klipow", () => {
+    expect(obliczDlugoscTimelineZKlipow([])).toBe(0);
+  });
+
+  it("oblicza dlugosc timeline z jednym klipem", () => {
+    const klip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-1",
+      plikMediow: utworzPlikMediow(),
+      czasStartuMs: 2000,
+      czasTrwaniaMs: 4000
+    });
+
+    expect(obliczDlugoscTimelineZKlipow([klip])).toBe(6000);
+  });
+
+  it("oblicza dlugosc timeline z wielu klipow", () => {
+    const pierwszyKlip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-1",
+      plikMediow: utworzPlikMediow({ id: "media-1" }),
+      czasStartuMs: 2000,
+      czasTrwaniaMs: 4000
+    });
+    const drugiKlip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-2",
+      plikMediow: utworzPlikMediow({ id: "media-2" }),
+      czasStartuMs: 10_000,
+      czasTrwaniaMs: 3000
+    });
+    const trzeciKlip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-3",
+      plikMediow: utworzPlikMediow({ id: "media-3" }),
+      czasStartuMs: 500,
+      czasTrwaniaMs: 1000
+    });
+
+    expect(
+      obliczDlugoscTimelineZKlipow([pierwszyKlip, drugiKlip, trzeciKlip])
+    ).toBe(13_000);
+  });
+
+  it("sortuje klipy po czasie startu", () => {
+    const pierwszyKlip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-1",
+      plikMediow: utworzPlikMediow({ id: "media-1" }),
+      czasStartuMs: 3000,
+      czasTrwaniaMs: 1000
+    });
+    const drugiKlip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-2",
+      plikMediow: utworzPlikMediow({ id: "media-2" }),
+      czasStartuMs: 1000,
+      czasTrwaniaMs: 1000
+    });
+    const trzeciKlip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-3",
+      plikMediow: utworzPlikMediow({ id: "media-3" }),
+      czasStartuMs: 2000,
+      czasTrwaniaMs: 1000
+    });
+
+    expect(posortujKlipyTimeline([pierwszyKlip, drugiKlip, trzeciKlip])).toEqual(
+      [drugiKlip, trzeciKlip, pierwszyKlip]
+    );
   });
 
   it("pilnuje, ze klip wskazuje istniejace id pliku mediow projektu", () => {
