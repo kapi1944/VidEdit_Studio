@@ -32,6 +32,11 @@ input,
 textarea,
 select {
   font: inherit;
+  transition:
+    background-color var(--czas-animacji-krotki),
+    border-color var(--czas-animacji-krotki),
+    color var(--czas-animacji-krotki),
+    box-shadow var(--czas-animacji-krotki);
 }
 
 button:focus-visible,
@@ -122,7 +127,7 @@ select:focus-visible {
 .pasek-gorny-aplikacji select {
   min-height: 30px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
   background: var(--kolor-powierzchni);
 }
@@ -220,7 +225,7 @@ select:focus-visible {
   align-items: start;
   padding: 10px;
   border: 1px solid var(--kolor-obramowania);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   background: var(--kolor-powierzchni-delikatny);
   color: var(--kolor-tekstu-drugi);
   font-size: 0.92rem;
@@ -256,7 +261,7 @@ select:focus-visible {
   margin: 0;
   padding: 10px;
   border: 1px dashed var(--kolor-obramowania-akcent);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-slaby);
   background: var(--kolor-powierzchni-delikatny);
   font-size: 0.9rem;
@@ -291,7 +296,7 @@ select:focus-visible {
   overflow: auto;
   padding: 14px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-tla-podgladu);
 }
 
@@ -322,7 +327,7 @@ select:focus-visible {
   margin-top: 6px;
   padding: 0 12px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-slaby);
   background: var(--kolor-powierzchni-delikatny);
   cursor: not-allowed;
@@ -399,7 +404,7 @@ select:focus-visible {
   place-items: center;
   overflow: hidden;
   border: 1px solid var(--kolor-obramowania-na-ciemnym);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   background: var(--kolor-tla-wideo);
 }
 
@@ -444,7 +449,7 @@ select:focus-visible {
   place-items: center;
   overflow: hidden;
   border: 1px solid var(--kolor-obramowania-na-ciemnym);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   background: var(--kolor-tla-wideo);
 }
 
@@ -504,14 +509,14 @@ select:focus-visible {
   width: 8px;
   height: 8px;
   flex: 0 0 auto;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .znacznik-statusu {
   width: fit-content;
   padding: 3px 7px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--kolor-tekstu-slaby);
   background: var(--kolor-powierzchni-akcent);
   font-size: 0.75rem;
@@ -722,7 +727,7 @@ select:focus-visible {
   margin: 0 0 12px;
   padding: 6px 10px;
   border: 1px solid var(--kolor-znacznika-obramowania);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-znacznika-tekstu);
   background: var(--kolor-znacznika-tla);
   font-size: 0.875rem;
@@ -742,7 +747,7 @@ select:focus-visible {
 .przelacznik-wygladu select {
   min-height: 38px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
   background: var(--kolor-powierzchni);
 }
@@ -792,7 +797,7 @@ h2 {
   min-height: 52px;
   padding: 14px 16px;
   border: 1px solid var(--kolor-obramowania);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
 }
 
@@ -804,7 +809,7 @@ h2 {
   margin-bottom: 28px;
   padding: 20px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
 }
 
@@ -831,7 +836,7 @@ h2 {
   gap: 10px;
   padding: 16px;
   border: 1px dashed var(--kolor-obramowania-akcent);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni-akcent);
 }
 
@@ -842,7 +847,7 @@ h2 {
 .panel-importu-mediow__przycisk {
   min-height: 44px;
   border: 1px solid var(--kolor-przycisku-obramowania);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-przycisku-tekstu);
   background: var(--kolor-przycisku);
   font-weight: 700;
@@ -864,7 +869,7 @@ h2 {
   margin: 0;
   padding: 12px 14px;
   border: 1px solid var(--kolor-bledu-obramowania);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-bledu-tekstu);
   background: var(--kolor-bledu-tla);
   font-weight: 700;
@@ -918,7 +923,7 @@ h2 {
   align-items: start;
   padding: 14px;
   border: 1px solid var(--kolor-obramowania);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
 }
 
@@ -928,7 +933,7 @@ h2 {
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   background: var(--kolor-tla-mediow);
 }
 
@@ -1005,7 +1010,7 @@ h2 {
   min-height: 32px;
   padding: 0 12px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
   background: var(--kolor-powierzchni-akcent);
   font-weight: 800;
@@ -1055,14 +1060,14 @@ h2 {
   align-items: start;
   padding: 14px;
   border: 1px solid var(--kolor-obramowania);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni-delikatny);
 }
 
 .plik-mediow__podglad {
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   background: var(--kolor-tla-mediow);
 }
 
@@ -1112,7 +1117,7 @@ h2 {
 .panel-osi-czasu {
   padding: 20px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
 }
 
@@ -1151,7 +1156,7 @@ h2 {
 .panel-osi-czasu__siatka select {
   min-height: 30px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
   background: var(--kolor-powierzchni);
 }
@@ -1160,7 +1165,7 @@ h2 {
   min-height: 30px;
   padding: 0 12px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
   background: var(--kolor-powierzchni-akcent);
   font-weight: 800;
@@ -1179,14 +1184,14 @@ h2 {
   height: 132px;
   overflow: hidden;
   border: 1px solid var(--kolor-obramowania-akcent);
-  border-radius: 6px;
+  border-radius: var(--radius-timeline);
   background:
     repeating-linear-gradient(
       to right,
       var(--kolor-toru-linia) 0,
       var(--kolor-toru-linia) 1px,
       transparent 1px,
-      transparent 48px
+      transparent var(--rozstaw-siatki-timeline)
     ),
     linear-gradient(180deg, var(--kolor-toru-start), var(--kolor-toru-koniec));
 }
@@ -1214,7 +1219,7 @@ h2 {
   min-height: 36px;
   padding: 8px 12px;
   border: 1px dashed var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-slaby);
   font-size: 0.9rem;
   font-weight: 800;
@@ -1230,7 +1235,7 @@ h2 {
   min-height: 36px;
   padding: 8px 12px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 6px;
+  border-radius: var(--radius-klipu);
   color: var(--kolor-klipu-tekstu);
   background: var(--kolor-klipu-tla);
   cursor: pointer;
@@ -1271,7 +1276,7 @@ h2 {
   padding: 0 6px;
   overflow: hidden;
   border: 1px solid var(--kolor-obramowania-markerow);
-  border-radius: 5px;
+  border-radius: var(--radius-maly);
   color: var(--kolor-ciszy-tekstu);
   background: var(--kolor-ciszy-tla);
   cursor: pointer;
@@ -1318,7 +1323,7 @@ h2 {
   bottom: 0;
   left: 50%;
   width: 3px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--kolor-toru-znacznik);
   content: "";
   transform: translateX(-50%);
@@ -1344,7 +1349,7 @@ h2 {
   margin-top: 20px;
   padding: 20px;
   border: 1px solid var(--kolor-obramowania-mocny);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni);
 }
 
@@ -1389,7 +1394,7 @@ h2 {
   align-items: center;
   padding: 12px;
   border: 1px solid var(--kolor-obramowania);
-  border-radius: 8px;
+  border-radius: var(--radius-panelu);
   background: var(--kolor-powierzchni-delikatny);
 }
 
@@ -1410,7 +1415,7 @@ h2 {
 .panel-propozycji-ciec__status {
   padding: 4px 8px;
   border: 1px solid var(--kolor-znacznika-obramowania);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-znacznika-tekstu);
   background: var(--kolor-znacznika-tla);
   font-size: 0.82rem;
@@ -1452,7 +1457,7 @@ h2 {
   min-height: 36px;
   padding: 7px 10px;
   border: 1px solid var(--kolor-przycisku-obramowania);
-  border-radius: 6px;
+  border-radius: var(--radius-elementu);
   color: var(--kolor-przycisku-tekstu);
   background: var(--kolor-przycisku);
   font-weight: 700;
