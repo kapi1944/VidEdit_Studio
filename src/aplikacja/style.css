@@ -283,7 +283,7 @@ select {
   padding: 14px;
   border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: 8px;
-  background: #070b12;
+  background: var(--kolor-tla-podgladu);
 }
 
 .obszar-roboczy__podglad video {
@@ -291,7 +291,7 @@ select {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #000000;
+  background: var(--kolor-tla-wideo);
 }
 
 .obszar-roboczy__pusty {
@@ -341,7 +341,7 @@ select {
   align-items: baseline;
   justify-content: space-between;
   min-width: 0;
-  color: #d6deea;
+  color: var(--kolor-tekstu-na-ciemnym);
 }
 
 .podglad-wideo__nazwa,
@@ -360,7 +360,7 @@ select {
 
 .podglad-wideo__etykieta {
   width: fit-content;
-  color: #92a0b6;
+  color: var(--kolor-tekstu-na-ciemnym-wygaszony);
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -371,12 +371,12 @@ select {
 }
 
 .podglad-wideo__czas {
-  color: #aebbd0;
+  color: var(--kolor-tekstu-na-ciemnym-drugorzedny);
   font-variant-numeric: tabular-nums;
 }
 
 .podglad-wideo__zrodlo {
-  color: #aebbd0;
+  color: var(--kolor-tekstu-na-ciemnym-drugorzedny);
   font-size: 0.86rem;
   overflow-wrap: anywhere;
 }
@@ -389,9 +389,9 @@ select {
   max-height: 100%;
   place-items: center;
   overflow: hidden;
-  border: 1px solid #202a3a;
+  border: 1px solid var(--kolor-obramowania-na-ciemnym);
   border-radius: 6px;
-  background: #000000;
+  background: var(--kolor-tla-wideo);
 }
 
 .podglad-grafiki {
@@ -401,7 +401,7 @@ select {
   width: min(100%, 820px);
   min-width: 0;
   height: 100%;
-  color: #d6deea;
+  color: var(--kolor-tekstu-na-ciemnym);
 }
 
 .podglad-grafiki__naglowek {
@@ -418,13 +418,13 @@ select {
 }
 
 .podglad-grafiki__nazwa {
-  color: #d6deea;
+  color: var(--kolor-tekstu-na-ciemnym);
   font-weight: 800;
 }
 
 .podglad-grafiki__zrodlo,
 .podglad-grafiki__czas {
-  color: #aebbd0;
+  color: var(--kolor-tekstu-na-ciemnym-drugorzedny);
   font-weight: 700;
 }
 
@@ -434,9 +434,9 @@ select {
   min-height: 0;
   place-items: center;
   overflow: hidden;
-  border: 1px solid #202a3a;
+  border: 1px solid var(--kolor-obramowania-na-ciemnym);
   border-radius: 6px;
-  background: #000000;
+  background: var(--kolor-tla-wideo);
 }
 
 .podglad-grafiki__ramka img {
@@ -451,7 +451,7 @@ select {
   flex-wrap: wrap;
   gap: 8px 14px;
   margin: 0;
-  color: #d6deea;
+  color: var(--kolor-tekstu-na-ciemnym);
 }
 
 .podglad-wideo__metadane div {
@@ -459,7 +459,7 @@ select {
 }
 
 .podglad-wideo__metadane dt {
-  color: #92a0b6;
+  color: var(--kolor-tekstu-na-ciemnym-wygaszony);
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -510,69 +510,69 @@ select {
 }
 
 .znacznik-statusu--gotowe {
-  border-color: #43885b;
-  color: #b9f3c9;
-  background: #173521;
+  border-color: var(--kolor-sukcesu-obramowania-ciemne);
+  color: var(--kolor-sukcesu-tekstu-ciemny);
+  background: var(--kolor-sukcesu-tla-ciemne);
 }
 
 .znacznik-statusu--oczekuje {
-  border-color: #b8942e;
-  color: #ffe08a;
-  background: #3a2f12;
+  border-color: var(--kolor-ostrzezenia);
+  color: var(--kolor-ostrzezenia-tekstu);
+  background: var(--kolor-ostrzezenia-tla);
 }
 
 .znacznik-statusu--projekt_roboczy,
 .znacznik-statusu--trwa_operacja {
-  border-color: #b8942e;
-  color: #ffe08a;
-  background: #3a2f12;
+  border-color: var(--kolor-ostrzezenia);
+  color: var(--kolor-ostrzezenia-tekstu);
+  background: var(--kolor-ostrzezenia-tla);
 }
 
 .znacznik-statusu--aktywny {
-  border-color: #4a8bd1;
-  color: #d7e9ff;
-  background: #16375d;
+  border-color: var(--kolor-stanu-aktywnego-obramowania);
+  color: var(--kolor-stanu-aktywnego-tekstu);
+  background: var(--kolor-stanu-aktywnego-tla);
 }
 
 .znacznik-statusu--blad {
-  border-color: #9a4b55;
-  color: #ffb8c0;
-  background: #351b22;
+  border-color: var(--kolor-bledu-obramowania);
+  color: var(--kolor-bledu-tekstu);
+  background: var(--kolor-bledu-tla);
 }
 
 .znacznik-statusu--nieaktywne,
 .znacznik-statusu--placeholder,
 .znacznik-statusu--brak_mediow {
-  border-color: #536173;
-  color: #b8c2d1;
-  background: #222936;
+  border-color: var(--kolor-statusu-nieaktywnego-obramowania);
+  color: var(--kolor-statusu-nieaktywnego-tekstu);
+  background: var(--kolor-statusu-nieaktywnego-tla);
 }
 
 .pasek-statusu__kropka--gotowe {
-  background: #42c46d;
+  background: var(--kolor-sukcesu);
 }
 
 .pasek-statusu__kropka--oczekuje {
-  background: #f2c94c;
+  background: var(--kolor-markerow);
 }
 
 .pasek-statusu__kropka--projekt_roboczy,
 .pasek-statusu__kropka--trwa_operacja {
-  background: #f2c94c;
+  background: var(--kolor-markerow);
 }
 
 .pasek-statusu__kropka--aktywny {
-  background: #4a8bd1;
+  background: var(--kolor-stanu-aktywnego);
 }
 
 .pasek-statusu__kropka--blad {
-  background: #f06f60;
+  background: var(--kolor-playheada);
 }
 
 .pasek-statusu__kropka--nieaktywne,
 .pasek-statusu__kropka--placeholder,
 .pasek-statusu__kropka--brak_mediow {
-  background: #8a96a8;
+  background: var(--kolor-statusu-nieaktywnego);
 }
 
 .panel-boczny-lewy .panel-importu-mediow {
@@ -920,7 +920,7 @@ h2 {
   overflow: hidden;
   border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: 6px;
-  background: #1f2937;
+  background: var(--kolor-tla-mediow);
 }
 
 .karta-medium__miniatura img {
@@ -936,10 +936,10 @@ h2 {
   height: 100%;
   place-items: center;
   padding: 12px;
-  color: #d6deea;
+  color: var(--kolor-tekstu-na-ciemnym);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent),
-    #1f2937;
+    var(--gradient-tla-mediow),
+    var(--kolor-tla-mediow);
   font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
@@ -1054,7 +1054,7 @@ h2 {
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 6px;
-  background: #1f2937;
+  background: var(--kolor-tla-mediow);
 }
 
 .plik-mediow__sekcje {
@@ -1229,8 +1229,8 @@ h2 {
 }
 
 .pasek-klipu--zaznaczony {
-  border-color: #fbbf24;
-  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
+  border-color: var(--kolor-klipu-zaznaczenia);
+  box-shadow: var(--cien-zaznaczenia-klipu);
 }
 
 .pasek-klipu__nazwa,
@@ -1261,7 +1261,7 @@ h2 {
   height: 28px;
   padding: 0 6px;
   overflow: hidden;
-  border: 1px solid rgba(63, 50, 16, 0.35);
+  border: 1px solid var(--kolor-obramowania-markerow);
   border-radius: 5px;
   color: var(--kolor-ciszy-tekstu);
   background: var(--kolor-ciszy-tla);
@@ -1409,9 +1409,9 @@ h2 {
 }
 
 .panel-propozycji-ciec__status--zatwierdzona {
-  border-color: #8fc09d;
-  color: #1d6b35;
-  background: #eef9f1;
+  border-color: var(--kolor-sukcesu-obramowania);
+  color: var(--kolor-sukcesu);
+  background: var(--kolor-sukcesu-tla);
 }
 
 .panel-propozycji-ciec__status--odrzucona {
@@ -1421,14 +1421,14 @@ h2 {
 }
 
 :root[data-tryb-wygladu="ciemny"] .panel-propozycji-ciec__status--zatwierdzona {
-  color: #b9f3c9;
-  background: #173521;
+  color: var(--kolor-sukcesu-tekstu-ciemny);
+  background: var(--kolor-sukcesu-tla-ciemne);
 }
 
 @media (prefers-color-scheme: dark) {
   :root[data-tryb-wygladu="systemowy"] .panel-propozycji-ciec__status--zatwierdzona {
-    color: #b9f3c9;
-    background: #173521;
+    color: var(--kolor-sukcesu-tekstu-ciemny);
+    background: var(--kolor-sukcesu-tla-ciemne);
   }
 }
 
