@@ -202,6 +202,17 @@ export function opiszTrybSiatkiTimeline(
   return OPISY_SIATKI_TIMELINE[ustawieniaSiatki.jednostka];
 }
 
+export function pobierzKrokEdycjiTimeline(
+  ustawieniaSiatki?: UstawieniaSiatkiTimeline,
+  fps?: number
+) {
+  if (!ustawieniaSiatki) {
+    return 0.5;
+  }
+
+  return pobierzKrokSiatkiWSekundach(ustawieniaSiatki, fps) ?? 0.5;
+}
+
 export type TimelineProjektu = {
   klipy: KlipTimeline[];
   ustawieniaDociagania: UstawieniaDociaganiaTimeline;
@@ -322,6 +333,57 @@ function utworzBladCieciaKlipu(
   return blad({ pole, komunikat });
 }
 
+function utworzBladEdycjiKlipu(
+  pole: string,
+  komunikat: string
+): Wynik<KlipTimeline[], BladWalidacji> {
+  return blad({ pole, komunikat });
+}
+
+function znajdzIndeksKlipuAlboBlad(
+  klipy: KlipTimeline[],
+  idKlipu: string
+): Wynik<number, BladWalidacji> {
+  const indeksKlipu = klipy.findIndex((klip) => klip.id === idKlipu);
+
+  if (indeksKlipu < 0) {
+    return blad({
+      pole: "idKlipu",
+      komunikat: "Nie znaleziono klipu timeline."
+    });
+  }
+
+  return sukces(indeksKlipu);
+}
+
+function przeliczCzasEdycjiNaMs(
+  czasSekundy: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+) {
+  if (!Number.isFinite(czasSekundy)) {
+    return undefined;
+  }
+
+  const czasPoSiatceSekundy = ustawieniaSiatkiTimeline
+    ? przyciagnijCzasDoSiatki(czasSekundy, ustawieniaSiatkiTimeline, fps)
+    : czasSekundy;
+
+  return Math.max(0, Math.round(czasPoSiatceSekundy * 1000));
+}
+
+function zaktualizujKlipWTablicy(
+  klipy: KlipTimeline[],
+  indeksKlipu: number,
+  klipPoZmianie: KlipTimeline
+) {
+  return [
+    ...klipy.slice(0, indeksKlipu),
+    klipPoZmianie,
+    ...klipy.slice(indeksKlipu + 1)
+  ];
+}
+
 export function przetnijKlipTimeline(
   klipy: KlipTimeline[],
   idKlipu: string,
@@ -392,6 +454,167 @@ export function przetnijKlipTimeline(
     drugaCzesc,
     ...klipy.slice(indeksKlipu + 1)
   ]);
+}
+
+export function przesunKlipTimeline(
+  klipy: KlipTimeline[],
+  idKlipu: string,
+  nowyCzasStartuSekundy: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+): Wynik<KlipTimeline[], BladWalidacji> {
+  const wynikIndeksu = znajdzIndeksKlipuAlboBlad(klipy, idKlipu);
+
+  if (!wynikIndeksu.czySukces) {
+    return wynikIndeksu;
+  }
+
+  const nowyCzasStartuMs = przeliczCzasEdycjiNaMs(
+    nowyCzasStartuSekundy,
+    ustawieniaSiatkiTimeline,
+    fps
+  );
+
+  if (nowyCzasStartuMs === undefined) {
+    return utworzBladEdycjiKlipu(
+      "czasStartu",
+      "Czas startu musi byc poprawna liczba."
+    );
+  }
+
+  const klip = klipy[wynikIndeksu.dane];
+
+  return sukces(
+    zaktualizujKlipWTablicy(klipy, wynikIndeksu.dane, {
+      ...klip,
+      czasStartuMs: nowyCzasStartuMs
+    })
+  );
+}
+
+export function skrocPoczatekKlipuTimeline(
+  klipy: KlipTimeline[],
+  idKlipu: string,
+  nowyCzasStartuSekundy: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+): Wynik<KlipTimeline[], BladWalidacji> {
+  const wynikIndeksu = znajdzIndeksKlipuAlboBlad(klipy, idKlipu);
+
+  if (!wynikIndeksu.czySukces) {
+    return wynikIndeksu;
+  }
+
+  const nowyCzasStartuMs = przeliczCzasEdycjiNaMs(
+    nowyCzasStartuSekundy,
+    ustawieniaSiatkiTimeline,
+    fps
+  );
+
+  if (nowyCzasStartuMs === undefined) {
+    return utworzBladEdycjiKlipu(
+      "czasStartu",
+      "Czas startu musi byc poprawna liczba."
+    );
+  }
+
+  const klip = klipy[wynikIndeksu.dane];
+  const czasKoncaKlipuMs = obliczCzasKoncaKlipu(klip);
+
+  if (nowyCzasStartuMs <= klip.czasStartuMs) {
+    return utworzBladEdycjiKlipu(
+      "czasStartu",
+      "Nowy poczatek musi byc po obecnym poczatku klipu."
+    );
+  }
+
+  if (nowyCzasStartuMs >= czasKoncaKlipuMs) {
+    return utworzBladEdycjiKlipu(
+      "czasStartu",
+      "Skrocenie poczatku nie moze wyzerowac klipu."
+    );
+  }
+
+  const przesunieciePoczatkuMs = nowyCzasStartuMs - klip.czasStartuMs;
+  const klipPoZmianie: KlipTimeline = {
+    ...klip,
+    czasStartuMs: nowyCzasStartuMs,
+    czasTrwaniaMs: czasKoncaKlipuMs - nowyCzasStartuMs
+  };
+
+  if (klip.rodzaj === "wideo") {
+    klipPoZmianie.zrodloStartMs =
+      (klip.zrodloStartMs ?? 0) + przesunieciePoczatkuMs;
+  } else {
+    delete klipPoZmianie.zrodloStartMs;
+    delete klipPoZmianie.zrodloKoniecMs;
+  }
+
+  return sukces(
+    zaktualizujKlipWTablicy(klipy, wynikIndeksu.dane, klipPoZmianie)
+  );
+}
+
+export function skrocKoniecKlipuTimeline(
+  klipy: KlipTimeline[],
+  idKlipu: string,
+  nowyCzasKoncaSekundy: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+): Wynik<KlipTimeline[], BladWalidacji> {
+  const wynikIndeksu = znajdzIndeksKlipuAlboBlad(klipy, idKlipu);
+
+  if (!wynikIndeksu.czySukces) {
+    return wynikIndeksu;
+  }
+
+  const nowyCzasKoncaMs = przeliczCzasEdycjiNaMs(
+    nowyCzasKoncaSekundy,
+    ustawieniaSiatkiTimeline,
+    fps
+  );
+
+  if (nowyCzasKoncaMs === undefined) {
+    return utworzBladEdycjiKlipu(
+      "czasKonca",
+      "Czas konca musi byc poprawna liczba."
+    );
+  }
+
+  const klip = klipy[wynikIndeksu.dane];
+  const obecnyCzasKoncaMs = obliczCzasKoncaKlipu(klip);
+
+  if (nowyCzasKoncaMs >= obecnyCzasKoncaMs) {
+    return utworzBladEdycjiKlipu(
+      "czasKonca",
+      "Nowy koniec musi byc przed obecnym koncem klipu."
+    );
+  }
+
+  if (nowyCzasKoncaMs <= klip.czasStartuMs) {
+    return utworzBladEdycjiKlipu(
+      "czasKonca",
+      "Skrocenie konca nie moze wyzerowac klipu."
+    );
+  }
+
+  const nowyCzasTrwaniaMs = nowyCzasKoncaMs - klip.czasStartuMs;
+  const klipPoZmianie: KlipTimeline = {
+    ...klip,
+    czasTrwaniaMs: nowyCzasTrwaniaMs
+  };
+
+  if (klip.rodzaj === "wideo") {
+    klipPoZmianie.zrodloKoniecMs =
+      (klip.zrodloStartMs ?? 0) + nowyCzasTrwaniaMs;
+  } else {
+    delete klipPoZmianie.zrodloStartMs;
+    delete klipPoZmianie.zrodloKoniecMs;
+  }
+
+  return sukces(
+    zaktualizujKlipWTablicy(klipy, wynikIndeksu.dane, klipPoZmianie)
+  );
 }
 
 export function obliczDlugoscTimelineZKlipow(klipy: KlipTimeline[]): CzasMs {

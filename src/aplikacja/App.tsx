@@ -58,7 +58,11 @@ import type {
 import {
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   obliczCzasKoncaKlipu,
-  przetnijKlipTimeline
+  pobierzKrokEdycjiTimeline,
+  przetnijKlipTimeline,
+  przesunKlipTimeline,
+  skrocKoniecKlipuTimeline,
+  skrocPoczatekKlipuTimeline
 } from "../domena/timeline/typyTimeline";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
@@ -390,6 +394,114 @@ export function Aplikacja() {
     });
   }
 
+  function zastosujEdycjeKlipowTimeline(
+    edytujKlipy: (
+      aktualnyProjekt: typeof projekt,
+      idKlipu: string,
+      krokEdycjiSekundy: number
+    ) => ReturnType<typeof przetnijKlipTimeline>
+  ) {
+    if (!idZaznaczonegoKlipuTimeline) {
+      return;
+    }
+
+    ustawProjekt((aktualnyProjekt) => {
+      const krokEdycjiSekundy = pobierzKrokEdycjiTimeline(
+        ustawieniaSiatkiTimeline,
+        aktualnyProjekt.ustawienia.liczbaKlatekNaSekunde
+      );
+      const wynikEdycji = edytujKlipy(
+        aktualnyProjekt,
+        idZaznaczonegoKlipuTimeline,
+        krokEdycjiSekundy
+      );
+
+      if (!wynikEdycji.czySukces) {
+        ustawBladImportuMediow(
+          wynikEdycji.bledy[0]?.komunikat ??
+            "Nie udalo sie edytowac klipu timeline."
+        );
+        return aktualnyProjekt;
+      }
+
+      ustawBladImportuMediow(undefined);
+
+      return {
+        ...aktualnyProjekt,
+        dataModyfikacjiIso: new Date().toISOString(),
+        timeline: {
+          ...aktualnyProjekt.timeline,
+          klipy: wynikEdycji.dane
+        }
+      };
+    });
+  }
+
+  function obsluzPrzesuniecieKlipuWLewo() {
+    zastosujEdycjeKlipowTimeline((aktualnyProjekt, idKlipu, krokEdycji) => {
+      const klip = aktualnyProjekt.timeline.klipy.find(
+        (klipTimeline) => klipTimeline.id === idKlipu
+      );
+
+      return przesunKlipTimeline(
+        aktualnyProjekt.timeline.klipy,
+        idKlipu,
+        ((klip?.czasStartuMs ?? 0) / 1000) - krokEdycji,
+        ustawieniaSiatkiTimeline,
+        aktualnyProjekt.ustawienia.liczbaKlatekNaSekunde
+      );
+    });
+  }
+
+  function obsluzPrzesuniecieKlipuWPrawo() {
+    zastosujEdycjeKlipowTimeline((aktualnyProjekt, idKlipu, krokEdycji) => {
+      const klip = aktualnyProjekt.timeline.klipy.find(
+        (klipTimeline) => klipTimeline.id === idKlipu
+      );
+
+      return przesunKlipTimeline(
+        aktualnyProjekt.timeline.klipy,
+        idKlipu,
+        ((klip?.czasStartuMs ?? 0) / 1000) + krokEdycji,
+        ustawieniaSiatkiTimeline,
+        aktualnyProjekt.ustawienia.liczbaKlatekNaSekunde
+      );
+    });
+  }
+
+  function obsluzSkroceniePoczatkuKlipu() {
+    zastosujEdycjeKlipowTimeline((aktualnyProjekt, idKlipu, krokEdycji) => {
+      const klip = aktualnyProjekt.timeline.klipy.find(
+        (klipTimeline) => klipTimeline.id === idKlipu
+      );
+
+      return skrocPoczatekKlipuTimeline(
+        aktualnyProjekt.timeline.klipy,
+        idKlipu,
+        ((klip?.czasStartuMs ?? 0) / 1000) + krokEdycji,
+        ustawieniaSiatkiTimeline,
+        aktualnyProjekt.ustawienia.liczbaKlatekNaSekunde
+      );
+    });
+  }
+
+  function obsluzSkrocenieKoncaKlipu() {
+    zastosujEdycjeKlipowTimeline((aktualnyProjekt, idKlipu, krokEdycji) => {
+      const klip = aktualnyProjekt.timeline.klipy.find(
+        (klipTimeline) => klipTimeline.id === idKlipu
+      );
+      const czasKoncaKlipuMs = klip ? obliczCzasKoncaKlipu(klip) : 0;
+
+      return skrocKoniecKlipuTimeline(
+        aktualnyProjekt.timeline.klipy,
+        idKlipu,
+        czasKoncaKlipuMs / 1000 - krokEdycji,
+        ustawieniaSiatkiTimeline,
+        aktualnyProjekt.ustawienia.liczbaKlatekNaSekunde
+      );
+    });
+  }
+
   function obsluzZatwierdzeniePropozycjiCiecia(idPropozycjiCiecia: string) {
     zaktualizujPropozycjeCiec((propozycjeCiec) =>
       zatwierdzPropozycjeCiecia(propozycjeCiec, idPropozycjiCiecia)
@@ -541,6 +653,10 @@ export function Aplikacja() {
               naZmianeUstawienSiatkiTimeline={ustawUstawieniaSiatkiTimeline}
               naZaznaczKlipTimeline={ustawIdZaznaczonegoKlipuTimeline}
               naPrzetnijZaznaczonyKlip={obsluzPrzeciecieZaznaczonegoKlipu}
+              naPrzesunZaznaczonyKlipWLewo={obsluzPrzesuniecieKlipuWLewo}
+              naPrzesunZaznaczonyKlipWPrawo={obsluzPrzesuniecieKlipuWPrawo}
+              naSkrocPoczatekZaznaczonegoKlipu={obsluzSkroceniePoczatkuKlipu}
+              naSkrocKoniecZaznaczonegoKlipu={obsluzSkrocenieKoncaKlipu}
               naZmianePrzeciaganiaGlowicy={ustawCzyPrzeciaganieGlowicy}
               naWybranoSegmentCiszy={obsluzWybranieSegmentuCiszy}
             />

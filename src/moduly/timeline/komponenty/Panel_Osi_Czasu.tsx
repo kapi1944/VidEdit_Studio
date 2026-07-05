@@ -40,6 +40,10 @@ type WlasciwosciPaneluOsiCzasu = {
   ) => void;
   naZaznaczKlipTimeline?: (idKlipu: string) => void;
   naPrzetnijZaznaczonyKlip?: () => void;
+  naPrzesunZaznaczonyKlipWLewo?: () => void;
+  naPrzesunZaznaczonyKlipWPrawo?: () => void;
+  naSkrocPoczatekZaznaczonegoKlipu?: () => void;
+  naSkrocKoniecZaznaczonegoKlipu?: () => void;
   naZmianePrzeciaganiaGlowicy: (czyPrzeciaganieGlowicy: boolean) => void;
   naWybranoSegmentCiszy: (segmentCiszy: SegmentCiszy) => void;
 };
@@ -60,6 +64,10 @@ export function Panel_Osi_Czasu({
   naZmianeUstawienSiatkiTimeline,
   naZaznaczKlipTimeline,
   naPrzetnijZaznaczonyKlip,
+  naPrzesunZaznaczonyKlipWLewo,
+  naPrzesunZaznaczonyKlipWPrawo,
+  naSkrocPoczatekZaznaczonegoKlipu,
+  naSkrocKoniecZaznaczonegoKlipu,
   naZmianePrzeciaganiaGlowicy,
   naWybranoSegmentCiszy
 }: WlasciwosciPaneluOsiCzasu) {
@@ -76,6 +84,7 @@ export function Panel_Osi_Czasu({
   const czyCiecieDostepne = Boolean(
     zaznaczonyKlipTimeline && naPrzetnijZaznaczonyKlip
   );
+  const czyEdycjaKlipuDostepna = Boolean(zaznaczonyKlipTimeline);
 
   const ustawCzasZPozycjiMyszy = useCallback(
     (pozycjaMyszyX: number) => {
@@ -199,6 +208,42 @@ export function Panel_Osi_Czasu({
           </select>
         </label>
         <div className="panel-osi-czasu__narzedzia">
+          <button
+            type="button"
+            disabled={
+              !czyEdycjaKlipuDostepna || !naPrzesunZaznaczonyKlipWLewo
+            }
+            onClick={naPrzesunZaznaczonyKlipWLewo}
+          >
+            Przesun w lewo
+          </button>
+          <button
+            type="button"
+            disabled={
+              !czyEdycjaKlipuDostepna || !naPrzesunZaznaczonyKlipWPrawo
+            }
+            onClick={naPrzesunZaznaczonyKlipWPrawo}
+          >
+            Przesun w prawo
+          </button>
+          <button
+            type="button"
+            disabled={
+              !czyEdycjaKlipuDostepna || !naSkrocPoczatekZaznaczonegoKlipu
+            }
+            onClick={naSkrocPoczatekZaznaczonegoKlipu}
+          >
+            Skroc poczatek
+          </button>
+          <button
+            type="button"
+            disabled={
+              !czyEdycjaKlipuDostepna || !naSkrocKoniecZaznaczonegoKlipu
+            }
+            onClick={naSkrocKoniecZaznaczonegoKlipu}
+          >
+            Skroc koniec
+          </button>
           <button
             type="button"
             disabled={!czyCiecieDostepne}

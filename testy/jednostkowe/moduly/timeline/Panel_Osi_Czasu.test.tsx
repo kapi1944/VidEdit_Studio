@@ -5,7 +5,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { KlipTimeline } from "../../../../src/domena/timeline/typyTimeline";
 import {
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
+  pobierzKrokEdycjiTimeline,
   przetnijKlipTimeline,
+  przesunKlipTimeline,
+  skrocKoniecKlipuTimeline,
   USTAWIENIA_DOCIAGANIA_TIMELINE_MVP
 } from "../../../../src/domena/timeline/typyTimeline";
 import { Panel_Osi_Czasu } from "../../../../src/moduly/timeline/komponenty/Panel_Osi_Czasu";
@@ -168,6 +171,87 @@ function wyrenderujPanelOsiCzasuZCieciem() {
   });
 }
 
+function PanelOsiCzasuZEdycja() {
+  const [klipyTimeline, ustawKlipyTimeline] = useState([klipTimeline]);
+  const [idZaznaczonegoKlipu, ustawIdZaznaczonegoKlipu] = useState<string>();
+  const ustawieniaSiatki = DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE;
+  const krokEdycji = pobierzKrokEdycjiTimeline(ustawieniaSiatki);
+
+  function zastosujWynikEdycji(wynik: ReturnType<typeof przesunKlipTimeline>) {
+    if (wynik.czySukces) {
+      ustawKlipyTimeline(wynik.dane);
+    }
+  }
+
+  function obsluzPrzesuniecieWPrawo() {
+    const klip = klipyTimeline.find(
+      (klipTimelineDoEdycji) => klipTimelineDoEdycji.id === idZaznaczonegoKlipu
+    );
+
+    if (!klip || !idZaznaczonegoKlipu) {
+      return;
+    }
+
+    zastosujWynikEdycji(
+      przesunKlipTimeline(
+        klipyTimeline,
+        idZaznaczonegoKlipu,
+        klip.czasStartuMs / 1000 + krokEdycji,
+        ustawieniaSiatki
+      )
+    );
+  }
+
+  function obsluzSkrocenieKonca() {
+    const klip = klipyTimeline.find(
+      (klipTimelineDoEdycji) => klipTimelineDoEdycji.id === idZaznaczonegoKlipu
+    );
+
+    if (!klip || !idZaznaczonegoKlipu) {
+      return;
+    }
+
+    zastosujWynikEdycji(
+      skrocKoniecKlipuTimeline(
+        klipyTimeline,
+        idZaznaczonegoKlipu,
+        (klip.czasStartuMs + klip.czasTrwaniaMs) / 1000 - krokEdycji,
+        ustawieniaSiatki
+      )
+    );
+  }
+
+  return (
+    <Panel_Osi_Czasu
+      nazwaProjektu="Test"
+      klipyTimeline={klipyTimeline}
+      czasTrwaniaMs={12_000}
+      czasAktualnyMs={0}
+      segmentyCiszy={[]}
+      idZaznaczonegoKlipuTimeline={idZaznaczonegoKlipu}
+      uchwytWideoRef={createRef<HTMLVideoElement>()}
+      formatujCzasTimeline={formatujCzasTestowy}
+      ustawieniaSiatkiTimeline={ustawieniaSiatki}
+      naZmianeCzasuTimeline={vi.fn()}
+      naZaznaczKlipTimeline={ustawIdZaznaczonegoKlipu}
+      naPrzesunZaznaczonyKlipWPrawo={obsluzPrzesuniecieWPrawo}
+      naSkrocKoniecZaznaczonegoKlipu={obsluzSkrocenieKonca}
+      naZmianePrzeciaganiaGlowicy={vi.fn()}
+      naWybranoSegmentCiszy={vi.fn()}
+    />
+  );
+}
+
+function wyrenderujPanelOsiCzasuZEdycja() {
+  kontener = document.createElement("div");
+  document.body.appendChild(kontener);
+  korzen = createRoot(kontener);
+
+  act(() => {
+    korzen?.render(<PanelOsiCzasuZEdycja />);
+  });
+}
+
 afterEach(() => {
   act(() => {
     korzen?.unmount();
@@ -245,6 +329,78 @@ describe("Panel_Osi_Czasu", () => {
     ).find((przycisk) => przycisk.textContent === "Przetnij klip");
 
     expect(przyciskCiecia?.disabled).toBe(true);
+  });
+
+  it("blokuje edycje bez zaznaczonego klipu", () => {
+    wyrenderujPanelOsiCzasuZEdycja();
+    const przyciskPrzesuniecia = Array.from(
+      kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
+    ).find((przycisk) => przycisk.textContent === "Przesun w prawo");
+
+    expect(przyciskPrzesuniecia?.disabled).toBe(true);
+  });
+
+  it("zaznaczenie klipu pokazuje podstawowe akcje edycji", () => {
+    wyrenderujPanelOsiCzasuZEdycja();
+    const pasekKlipu =
+      kontener?.querySelector<HTMLButtonElement>(".pasek-klipu");
+
+    if (!pasekKlipu) {
+      throw new Error("Brak paska klipu w tescie.");
+    }
+
+    act(() => {
+      pasekKlipu.click();
+    });
+
+    expect(kontener?.textContent).toContain("Przesun w lewo");
+    expect(kontener?.textContent).toContain("Przesun w prawo");
+    expect(kontener?.textContent).toContain("Skroc poczatek");
+    expect(kontener?.textContent).toContain("Skroc koniec");
+  });
+
+  it("przesuniecie w prawo aktualizuje pozycje klipu", () => {
+    wyrenderujPanelOsiCzasuZEdycja();
+    const pasekKlipu =
+      kontener?.querySelector<HTMLButtonElement>(".pasek-klipu");
+    const przyciskPrzesuniecia = Array.from(
+      kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
+    ).find((przycisk) => przycisk.textContent === "Przesun w prawo");
+
+    if (!pasekKlipu || !przyciskPrzesuniecia) {
+      throw new Error("Brak elementow edycji klipu w tescie.");
+    }
+
+    act(() => {
+      pasekKlipu.click();
+    });
+    act(() => {
+      przyciskPrzesuniecia.click();
+    });
+
+    expect(pasekKlipu.style.left).toBe("4.166666666666666%");
+  });
+
+  it("skrocenie konca aktualizuje dlugosc klipu", () => {
+    wyrenderujPanelOsiCzasuZEdycja();
+    const pasekKlipu =
+      kontener?.querySelector<HTMLButtonElement>(".pasek-klipu");
+    const przyciskSkrocenia = Array.from(
+      kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
+    ).find((przycisk) => przycisk.textContent === "Skroc koniec");
+
+    if (!pasekKlipu || !przyciskSkrocenia) {
+      throw new Error("Brak elementow skrocenia klipu w tescie.");
+    }
+
+    act(() => {
+      pasekKlipu.click();
+    });
+    act(() => {
+      przyciskSkrocenia.click();
+    });
+
+    expect(kontener?.textContent).toContain("9500 ms");
   });
 
   it("pozwala zaznaczyc klip i uruchomic ciecie", () => {
