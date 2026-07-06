@@ -79,10 +79,12 @@ function wyrenderujObszarRoboczy(
       media={[]}
       klipyTimeline={[]}
       podgladyMediow={{}}
+      trybPodgladu="timeline"
       czasAktualnyMs={0}
       uchwytWideoRef={createRef<HTMLVideoElement>()}
       czyPrzeciaganieGlowicy={false}
       formatujCzasPodgladu={formatujCzasTestowy}
+      naZmianeTrybuPodgladu={vi.fn()}
       naZmianeCzasuOdtwarzania={vi.fn()}
       {...wlasciwosci}
     />
@@ -96,13 +98,44 @@ describe("ObszarRoboczy", () => {
     );
   });
 
+
+
+  it("renderuje przelacznik trybu podgladu", () => {
+    const widok = wyrenderujObszarRoboczy();
+
+    expect(widok).toContain("Klip");
+    expect(widok).toContain("Timeline");
+    expect(widok).toContain("Dzielony");
+    expect(widok).toContain('aria-pressed="true"');
+  });
+
+  it("pokazuje pusty stan klipu bez aktywnego medium", () => {
+    const widok = wyrenderujObszarRoboczy({
+      media: [plikWideo],
+      trybPodgladu: "klip"
+    });
+
+    expect(widok).toContain(
+      "Wybierz medium z biblioteki, aby zobaczyc podglad klipu."
+    );
+  });
+
+  it("pokazuje widok dzielony", () => {
+    const widok = wyrenderujObszarRoboczy({
+      media: [plikWideo],
+      trybPodgladu: "dzielony"
+    });
+
+    expect(widok).toContain("Klip z biblioteki");
+    expect(widok).toContain("Timeline projektu");
+  });
+
+
   it("pokazuje pusty stan przy braku mediow", () => {
     const widok = wyrenderujObszarRoboczy();
 
-    expect(widok).toContain("Zaimportuj media, aby rozpocząć montaż.");
-    expect(widok).toContain(
-      "Możesz dodać kilka plików wideo lub grafik, a potem ułożyć je na osi czasu."
-    );
+    expect(widok).toContain("Zaimportuj media, aby rozpoczac montaz.");
+    expect(widok).toContain("Mozesz dodac kilka plikow wideo lub grafik");
   });
 
   it("pokazuje stan mediow bez klipow timeline", () => {
@@ -110,10 +143,10 @@ describe("ObszarRoboczy", () => {
       media: [plikWideo]
     });
 
-    expect(widok).toContain("Dodaj media na oś czasu.");
+    expect(widok).toContain("Dodaj media na os czasu.");
     expect(widok).toContain("Media sa w bibliotece projektu.");
     expect(widok).toContain("Timeline pozostaje pusty");
-    expect(widok).not.toContain("Podgląd aktywnego klipu");
+    expect(widok).not.toContain("Podglad aktywnego klipu");
   });
 
   it("pokazuje aktywny klip wideo z gotowym objectUrl", () => {
@@ -130,7 +163,7 @@ describe("ObszarRoboczy", () => {
       czasAktualnyMs: 3250
     });
 
-    expect(widok).toContain("Podgląd aktywnego klipu");
+    expect(widok).toContain("Podglad aktywnego klipu");
     expect(widok).toContain("Intro kursu");
     expect(widok).toContain("Zrodlo: lekcja.mp4");
     expect(widok).toContain("blob:http://localhost/medium-wideo-1");
@@ -165,9 +198,9 @@ describe("ObszarRoboczy", () => {
       czasAktualnyMs: 1000
     });
 
-    expect(widok).toContain("Podgląd aktywnego klipu nie jest jeszcze gotowy.");
+    expect(widok).toContain("Podglad aktywnego klipu nie jest jeszcze gotowy.");
     expect(widok).toContain("Intro kursu");
-    expect(widok).toContain("Źródło: lekcja.mp4");
+    expect(widok).toContain("Zrodlo: lekcja.mp4");
   });
 });
 

@@ -1,8 +1,9 @@
-import type {
-  CSSProperties,
-  PointerEvent as ZdarzenieWskaznika,
-  ReactNode,
-  RefObject
+﻿import {
+  useRef,
+  type CSSProperties,
+  type PointerEvent as ZdarzenieWskaznika,
+  type ReactNode,
+  type RefObject
 } from "react";
 import {
   pobierzCzasTrwaniaMedium,
@@ -18,6 +19,10 @@ import {
   type RozmiaryLayoutu,
   type TrybInterfejsu
 } from "../ustawieniaInterfejsu";
+import {
+  etykietyTrybuPodgladu,
+  type TrybPodgladu
+} from "../trybyPodgladu";
 import { PodgladWideo } from "./PodgladWideo";
 import {
   obliczCzasPodgladuKlipu,
@@ -79,11 +84,14 @@ type WlasciwosciObszaruRoboczego = {
   media: PlikMediow[];
   klipyTimeline: KlipTimeline[];
   podgladyMediow: PodgladyMediow;
+  trybPodgladu: TrybPodgladu;
+  idAktywnegoMediumBiblioteki?: string;
   czasAktualnyMs: number;
   uchwytWideoRef: RefObject<HTMLVideoElement | null>;
   czyPrzeciaganieGlowicy: boolean;
   opisAktywnegoSegmentuCiszy?: string;
   formatujCzasPodgladu: (czasMs: number) => string;
+  naZmianeTrybuPodgladu: (trybPodgladu: TrybPodgladu) => void;
   naZmianeCzasuOdtwarzania: (czasMs: number) => void;
 };
 
@@ -460,27 +468,44 @@ export function ObszarRoboczy({
   media,
   klipyTimeline,
   podgladyMediow,
+  trybPodgladu,
+  idAktywnegoMediumBiblioteki,
   czasAktualnyMs,
   uchwytWideoRef,
   czyPrzeciaganieGlowicy,
   opisAktywnegoSegmentuCiszy,
   formatujCzasPodgladu,
+  naZmianeTrybuPodgladu,
   naZmianeCzasuOdtwarzania
 }: WlasciwosciObszaruRoboczego) {
+  const uchwytPodgladuKlipuRef = useRef<HTMLVideoElement>(null);
   const aktywnyKlip = znajdzAktywnyKlipTimeline(klipyTimeline, czasAktualnyMs);
   const aktywneMedium = znajdzMediumDlaKlipu(media, aktywnyKlip);
+  const aktywneMediumBiblioteki = media.find(
+    (medium) => medium.id === idAktywnegoMediumBiblioteki
+  );
   const podgladAktywnegoMedium = pobierzPodgladDlaMedium(
     podgladyMediow,
     aktywneMedium
   );
+  const podgladAktywnegoMediumBiblioteki = pobierzPodgladDlaMedium(
+    podgladyMediow,
+    aktywneMediumBiblioteki
+  );
   const daneKartyMedium = aktywneMedium
     ? utworzDaneKartyMedium(aktywneMedium)
+    : undefined;
+  const daneKartyMediumBiblioteki = aktywneMediumBiblioteki
+    ? utworzDaneKartyMedium(aktywneMediumBiblioteki)
     : undefined;
   const czasTrwaniaPodgladuMs = aktywnyKlip?.czasTrwaniaMs
     ? aktywnyKlip.czasTrwaniaMs
     : aktywneMedium
       ? pobierzCzasTrwaniaMedium(aktywneMedium)
       : undefined;
+  const czasTrwaniaMediumBibliotekiMs = aktywneMediumBiblioteki
+    ? pobierzCzasTrwaniaMedium(aktywneMediumBiblioteki)
+    : undefined;
   const czasPodgladuMs = aktywnyKlip
     ? obliczCzasPodgladuKlipu(aktywnyKlip, czasAktualnyMs)
     : czasAktualnyMs;
@@ -492,26 +517,85 @@ export function ObszarRoboczy({
     ? formatujCzasPodgladu(aktywnyKlip.czasTrwaniaMs)
     : undefined;
 
-  return (
-    <section className="obszar-roboczy" aria-labelledby="obszar-roboczy-tytul">
-      <div className="obszar-roboczy__naglowek">
-        <p className="etykieta-panelu">Podglad</p>
-        <h2 id="obszar-roboczy-tytul">Obszar roboczy</h2>
+  function wyrenderujPustyStanKlipu() {
+    return (
+      <div className="obszar-roboczy__pusty">
+        <strong>Wybierz medium z biblioteki, aby zobaczyc podglad klipu.</strong>
       </div>
+    );
+  }
 
-      <div className="obszar-roboczy__podglad">
+  function wyrenderujPodgladKlipuBiblioteki() {
+    if (!aktywneMediumBiblioteki) {
+      return wyrenderujPustyStanKlipu();
+    }
+
+    if (!podgladAktywnegoMediumBiblioteki) {
+      return (
+        <div className="obszar-roboczy__pusty">
+          <strong>Podglad medium nie jest jeszcze gotowy.</strong>
+          <span>{aktywneMediumBiblioteki.nazwaPliku}</span>
+        </div>
+      );
+    }
+
+    if (aktywneMediumBiblioteki.typ === "grafika") {
+      return (
+        <div className="podglad-grafiki">
+          <div className="podglad-grafiki__naglowek">
+            <span className="podglad-wideo__etykieta">Klip z biblioteki</span>
+            <p className="podglad-grafiki__nazwa">
+              {aktywneMediumBiblioteki.nazwaPliku}
+            </p>
+          </div>
+          <div className="podglad-grafiki__ramka">
+            <img
+              src={podgladAktywnegoMediumBiblioteki.objectUrl}
+              alt={`Podglad grafiki ${aktywneMediumBiblioteki.nazwaPliku}`}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (!daneKartyMediumBiblioteki) {
+      return wyrenderujPustyStanKlipu();
+    }
+
+    return (
+      <PodgladWideo
+        objectUrl={podgladAktywnegoMediumBiblioteki.objectUrl}
+        nazwaPliku={aktywneMediumBiblioteki.nazwaPliku}
+        etykietaAktywnegoKlipu="Klip z biblioteki"
+        czasAktualnyMs={0}
+        czasTrwaniaMs={czasTrwaniaMediumBibliotekiMs}
+        uchwytWideoRef={uchwytPodgladuKlipuRef}
+        czyPrzeciaganieGlowicy={false}
+        rozdzielczosc={daneKartyMediumBiblioteki.rozdzielczosc}
+        fps={daneKartyMediumBiblioteki.fps}
+        audio={daneKartyMediumBiblioteki.audio}
+        formatujCzasPodgladu={formatujCzasPodgladu}
+        naZmianeCzasuOdtwarzania={() => undefined}
+      />
+    );
+  }
+
+  function wyrenderujPodgladTimeline() {
+    return (
+      <>
         {!czySaMedia ? (
           <div className="obszar-roboczy__pusty">
-            <strong>Zaimportuj media, aby rozpocząć montaż.</strong>
+            <strong>Zaimportuj media, aby rozpoczac montaz.</strong>
             <span>
-              Możesz dodać kilka plików wideo lub grafik, a potem ułożyć je na osi czasu.
+              Mozesz dodac kilka plikow wideo lub grafik, a potem ulozyc je na
+              osi czasu.
             </span>
           </div>
         ) : null}
 
         {czySaMedia && !czySaKlipyTimeline ? (
           <div className="obszar-roboczy__pusty">
-            <strong>Dodaj media na oś czasu.</strong>
+            <strong>Dodaj media na os czasu.</strong>
             <span>
               Media sa w bibliotece projektu. Timeline pozostaje pusty, dopoki
               nie ma klipow.
@@ -521,7 +605,7 @@ export function ObszarRoboczy({
 
         {czySaKlipyTimeline && aktywnyKlip && !aktywneMedium ? (
           <div className="obszar-roboczy__pusty">
-            <strong>Klip nie ma dostępnego pliku źródłowego.</strong>
+            <strong>Klip nie ma dostepnego pliku zrodlowego.</strong>
             <span>{aktywnyKlip.nazwa}</span>
           </div>
         ) : null}
@@ -538,9 +622,9 @@ export function ObszarRoboczy({
         aktywneMedium &&
         !podgladAktywnegoMedium ? (
           <div className="obszar-roboczy__pusty">
-            <strong>Podgląd aktywnego klipu nie jest jeszcze gotowy.</strong>
+            <strong>Podglad aktywnego klipu nie jest jeszcze gotowy.</strong>
             <span>{aktywnyKlip.nazwa}</span>
-            <span>Źródło: {aktywneMedium.nazwaPliku}</span>
+            <span>Zrodlo: {aktywneMedium.nazwaPliku}</span>
           </div>
         ) : null}
 
@@ -553,7 +637,7 @@ export function ObszarRoboczy({
             objectUrl={podgladAktywnegoMedium.objectUrl}
             nazwaKlipu={aktywnyKlip.nazwa}
             nazwaPliku={aktywneMedium.nazwaPliku}
-            etykietaAktywnegoKlipu="Podgląd aktywnego klipu"
+            etykietaAktywnegoKlipu="Podglad aktywnego klipu"
             czasAktualnyMs={czasPodgladuMs}
             czasTrwaniaMs={czasTrwaniaPodgladuMs}
             uchwytWideoRef={uchwytWideoRef}
@@ -590,6 +674,48 @@ export function ObszarRoboczy({
                 src={podgladAktywnegoMedium.objectUrl}
                 alt={`Podglad grafiki ${aktywneMedium.nazwaPliku}`}
               />
+            </div>
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
+  return (
+    <section className="obszar-roboczy" aria-labelledby="obszar-roboczy-tytul">
+      <div className="obszar-roboczy__naglowek">
+        <div>
+          <p className="etykieta-panelu">Podglad</p>
+          <h2 id="obszar-roboczy-tytul">Obszar roboczy</h2>
+        </div>
+        <div className="obszar-roboczy__tryby" aria-label="Tryb podgladu">
+          {(Object.keys(etykietyTrybuPodgladu) as TrybPodgladu[]).map(
+            (tryb) => (
+              <button
+                key={tryb}
+                type="button"
+                aria-pressed={tryb === trybPodgladu}
+                onClick={() => naZmianeTrybuPodgladu(tryb)}
+              >
+                {etykietyTrybuPodgladu[tryb]}
+              </button>
+            )
+          )}
+        </div>
+      </div>
+
+      <div className="obszar-roboczy__podglad">
+        {trybPodgladu === "klip" ? wyrenderujPodgladKlipuBiblioteki() : null}
+        {trybPodgladu === "timeline" ? wyrenderujPodgladTimeline() : null}
+        {trybPodgladu === "dzielony" ? (
+          <div className="obszar-roboczy__podglad-dzielony">
+            <div className="obszar-roboczy__panel-podgladu">
+              <h3>Klip z biblioteki</h3>
+              {wyrenderujPodgladKlipuBiblioteki()}
+            </div>
+            <div className="obszar-roboczy__panel-podgladu">
+              <h3>Timeline projektu</h3>
+              {wyrenderujPodgladTimeline()}
             </div>
           </div>
         ) : null}

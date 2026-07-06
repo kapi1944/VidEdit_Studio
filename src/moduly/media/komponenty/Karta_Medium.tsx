@@ -5,6 +5,8 @@ export type WlasciwosciKartyMedium = {
   plikMediow: PlikMediow;
   miniaturaDataUrl?: string;
   status?: string;
+  czyAktywne?: boolean;
+  naWybierzDoPodgladu?: (idMedium: string) => void;
   naDodajNaTimeline?: (idMedium: string) => void;
 };
 
@@ -12,6 +14,8 @@ export function Karta_Medium({
   plikMediow,
   miniaturaDataUrl,
   status,
+  czyAktywne = false,
+  naWybierzDoPodgladu,
   naDodajNaTimeline
 }: WlasciwosciKartyMedium) {
   const daneKarty = utworzDaneKartyMedium(plikMediow, status);
@@ -20,8 +24,15 @@ export function Karta_Medium({
     naDodajNaTimeline?.(plikMediow.id);
   }
 
+  function obsluzWybranieDoPodgladu() {
+    naWybierzDoPodgladu?.(plikMediow.id);
+  }
+
   return (
-    <article className="karta-medium" aria-label={daneKarty.nazwaPliku}>
+    <article
+      className={`karta-medium${czyAktywne ? " karta-medium--aktywna" : ""}`}
+      aria-label={daneKarty.nazwaPliku}
+    >
       <div className="karta-medium__miniatura">
         {miniaturaDataUrl ? (
           <img
@@ -64,11 +75,22 @@ export function Karta_Medium({
           </div>
         </dl>
         <p className="karta-medium__status">Status: {daneKarty.status}</p>
-        {naDodajNaTimeline ? (
+        {naDodajNaTimeline || naWybierzDoPodgladu ? (
           <div className="karta-medium__akcje">
-            <button type="button" onClick={obsluzDodanieNaTimeline}>
-              Dodaj na os czasu
-            </button>
+            {naWybierzDoPodgladu ? (
+              <button
+                type="button"
+                aria-pressed={czyAktywne}
+                onClick={obsluzWybranieDoPodgladu}
+              >
+                Podglad
+              </button>
+            ) : null}
+            {naDodajNaTimeline ? (
+              <button type="button" onClick={obsluzDodanieNaTimeline}>
+                Dodaj na os czasu
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>

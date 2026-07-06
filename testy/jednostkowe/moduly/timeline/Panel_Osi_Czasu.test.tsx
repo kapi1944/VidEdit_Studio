@@ -275,6 +275,21 @@ describe("Panel_Osi_Czasu", () => {
     expect(kontener?.textContent).toContain("Dlugosc: brak klipow");
   });
 
+
+
+  it("renderuje etykiety sciezek w gutterze poza siatka", () => {
+    wyrenderujPanelOsiCzasu(vi.fn());
+
+    const gutter = kontener?.querySelector(".panel-osi-czasu__gutter-sciezek");
+    const siatka = kontener?.querySelector(".panel-osi-czasu__obszar");
+
+    expect(gutter?.textContent).toContain("Wideo 1");
+    expect(gutter?.textContent).toContain("Obrazy");
+    expect(gutter?.textContent).toContain("Audio 1");
+    expect(siatka?.querySelector(".panel-osi-czasu__etykieta-sciezki")).toBeNull();
+  });
+
+
   it("pokazuje klip z timeline", () => {
     wyrenderujPanelOsiCzasu(vi.fn());
 

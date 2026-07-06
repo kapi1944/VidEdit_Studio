@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import {
   AplikacjaVidEdit,
   ObszarRoboczy,
@@ -93,6 +93,10 @@ import {
   czySkrotCieciaTimeline,
   czySkrotyTimelineDozwolone
 } from "./skrotyTimeline";
+import {
+  domyslnyTrybPodgladu,
+  type TrybPodgladu
+} from "./trybyPodgladu";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
@@ -220,6 +224,10 @@ export function Aplikacja() {
     );
   const [czyPrzeciaganieGlowicy, ustawCzyPrzeciaganieGlowicy] =
     useState(false);
+  const [trybPodgladu, ustawTrybPodgladu] =
+    useState<TrybPodgladu>(domyslnyTrybPodgladu);
+  const [idAktywnegoMediumBiblioteki, ustawIdAktywnegoMediumBiblioteki] =
+    useState<string>();
   const uchwytWideoRef = useRef<HTMLVideoElement>(null);
   const podgladyMediowRef = useRef<PodgladyMediow>({});
 
@@ -402,6 +410,7 @@ export function Aplikacja() {
 
     ustawAktualnyCzasTimelineMs(0);
     ustawCzyPrzeciaganieGlowicy(false);
+    ustawIdAktywnegoMediumBiblioteki(idMedium);
     ustawProjekt((aktualnyProjekt) =>
       dodajMediumDoProjektu(aktualnyProjekt, wynikImportu.dane)
     );
@@ -820,7 +829,7 @@ export function Aplikacja() {
   });
   const komunikatPaskaStatusu =
     bladImportuMediow ??
-    `Media: ${projekt.media.length} | Segmenty ciszy: ${segmentyCiszyTimeline.length} | Propozycje cięć: ${projekt.timeline.propozycjeCiec.length} | Status: ${pobierzEtykieteStatusuProjektuUi(statusProjektuUi).toLowerCase()}`;
+    `Media: ${projekt.media.length} | Segmenty ciszy: ${segmentyCiszyTimeline.length} | Propozycje ciÄ™Ä‡: ${projekt.timeline.propozycjeCiec.length} | Status: ${pobierzEtykieteStatusuProjektuUi(statusProjektuUi).toLowerCase()}`;
 
   return (
     <AplikacjaVidEdit
@@ -875,6 +884,8 @@ export function Aplikacja() {
                       <Lista_Mediow
                         media={projekt.media}
                         podgladyMediow={podgladyMediow}
+                        idAktywnegoMedium={idAktywnegoMediumBiblioteki}
+                        naWybierzDoPodgladu={ustawIdAktywnegoMediumBiblioteki}
                         naDodajNaTimeline={obsluzDodanieMediumNaTimeline}
                       />
                     ) : null}
@@ -890,11 +901,14 @@ export function Aplikacja() {
           media={projekt.media}
           klipyTimeline={klipyTimeline}
           podgladyMediow={podgladyMediow}
+          trybPodgladu={trybPodgladu}
+          idAktywnegoMediumBiblioteki={idAktywnegoMediumBiblioteki}
           czasAktualnyMs={czasAktualnyWZakresieMs}
           uchwytWideoRef={uchwytWideoRef}
           czyPrzeciaganieGlowicy={czyPrzeciaganieGlowicy}
           opisAktywnegoSegmentuCiszy={opisAktywnegoSegmentuCiszy}
           formatujCzasPodgladu={formatujCzasNaTimeline}
+          naZmianeTrybuPodgladu={ustawTrybPodgladu}
           naZmianeCzasuOdtwarzania={obsluzZmianeCzasuOdtwarzania}
         />
       }

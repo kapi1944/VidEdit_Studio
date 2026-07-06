@@ -4,7 +4,10 @@ import {
   type MouseEvent as ZdarzenieMyszy,
   type RefObject
 } from "react";
-import { przeliczCzasNaProcent } from "../przeliczCzasNaPozycje";
+import {
+  ograniczCzasDoZakresu,
+  przeliczCzasNaProcent
+} from "../przeliczCzasNaPozycje";
 
 type WlasciwosciZnacznikaCzasu = {
   czasAktualnyMs: number;
@@ -38,8 +41,10 @@ export function Znacznik_Czasu({
       return;
     }
 
+    const czasWZakresieMs = ograniczCzasDoZakresu(czasMs, czasTrwaniaMs);
+
     znacznik.style.left = `${przeliczCzasNaProcent(
-      czasMs,
+      czasWZakresieMs,
       czasTrwaniaMs
     )}%`;
   }

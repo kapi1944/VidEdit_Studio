@@ -1,4 +1,4 @@
-@import "./tokeny.css";
+﻿@import "./tokeny.css";
 
 :root {
   color: var(--kolor-tekstu);
@@ -410,6 +410,11 @@ select:focus-visible {
 }
 
 .obszar-roboczy__naglowek {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  justify-content: space-between;
   min-width: 0;
 }
 
@@ -439,6 +444,63 @@ select:focus-visible {
   height: 100%;
   object-fit: contain;
   background: var(--kolor-tla-wideo);
+}
+
+.obszar-roboczy__tryby {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--kolor-obramowania-selecta);
+  border-radius: var(--radius-elementu);
+  background: var(--kolor-powierzchni-delikatny);
+}
+
+.obszar-roboczy__tryby button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-elementu);
+  color: var(--kolor-tekstu-mocny);
+  background: transparent;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.obszar-roboczy__tryby button[aria-pressed="true"] {
+  border-color: var(--kolor-obramowania-akcent);
+  color: var(--kolor-przycisku-tekstu);
+  background: var(--kolor-przycisku);
+}
+
+.obszar-roboczy__podglad-dzielony {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  min-height: 0;
+}
+
+.obszar-roboczy__panel-podgladu {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+  min-height: 260px;
+  padding: 10px;
+  border: 1px solid var(--kolor-obramowania-na-ciemnym);
+  border-radius: var(--radius-elementu);
+  background: color-mix(in srgb, var(--kolor-tla-wideo) 82%, transparent);
+}
+
+.obszar-roboczy__panel-podgladu h3 {
+  margin: 0;
+  color: var(--kolor-tekstu-na-ciemnym);
+  font-size: 0.9rem;
+}
+
+.obszar-roboczy__panel-podgladu .podglad-wideo,
+.obszar-roboczy__panel-podgladu .podglad-grafiki {
+  width: 100%;
 }
 
 .obszar-roboczy__pusty {
@@ -1079,6 +1141,11 @@ h2 {
   box-shadow: var(--cien-panelu);
 }
 
+.karta-medium--aktywna {
+  border-color: var(--kolor-obramowania-akcent);
+  box-shadow: var(--cien-elementu-aktywnego);
+}
+
 .karta-medium__miniatura {
   display: block;
   width: 100%;
@@ -1154,6 +1221,8 @@ h2 {
 
 .karta-medium__akcje {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: flex-start;
   margin-top: 12px;
 }
@@ -1169,7 +1238,8 @@ h2 {
   cursor: pointer;
 }
 
-.karta-medium__akcje button:hover {
+.karta-medium__akcje button:hover,
+.karta-medium__akcje button[aria-pressed="true"] {
   border-color: var(--kolor-obramowania-akcent);
   background: var(--kolor-tla-przycisku-drugorzednego-hover);
 }
@@ -1343,11 +1413,40 @@ h2 {
 }
 
 .panel-osi-czasu__tor {
-  position: relative;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 10px;
   height: 240px;
   overflow: hidden;
+  padding: 18px 16px;
   border: 1px solid var(--kolor-timeline-obramowania);
   border-radius: var(--radius-timeline);
+  background: linear-gradient(180deg, var(--kolor-toru-start), var(--kolor-toru-koniec));
+}
+
+.panel-osi-czasu__gutter-sciezek {
+  display: grid;
+  grid-template-rows: 26px minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+}
+
+.panel-osi-czasu__gutter-markerow {
+  min-height: 26px;
+}
+
+.panel-osi-czasu__etykiety-sciezek {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.panel-osi-czasu__obszar {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   background:
     repeating-linear-gradient(
       to right,
@@ -1356,12 +1455,7 @@ h2 {
       transparent 1px,
       transparent var(--rozstaw-siatki-timeline)
     ),
-    linear-gradient(180deg, var(--kolor-toru-start), var(--kolor-toru-koniec));
-}
-
-.panel-osi-czasu__obszar {
-  position: absolute;
-  inset: 18px 16px;
+    linear-gradient(180deg, transparent, rgb(0 0 0 / 5%));
 }
 
 .panel-osi-czasu__pasek-markerow {
@@ -1423,10 +1517,7 @@ h2 {
 }
 
 .panel-osi-czasu__sciezka {
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: 8px;
-  align-items: stretch;
+  display: block;
   min-height: 32px;
 }
 

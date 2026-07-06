@@ -374,6 +374,21 @@ export function Panel_Osi_Czasu({
       </div>
 
       <div className="panel-osi-czasu__tor">
+        <div className="panel-osi-czasu__gutter-sciezek" aria-hidden="true">
+          <div className="panel-osi-czasu__gutter-markerow" />
+          {czySaKlipyTimeline ? (
+            <div className="panel-osi-czasu__etykiety-sciezek">
+              {uporzadkowaneSciezkiTimeline.map((sciezkaTimeline) => (
+                <div
+                  key={sciezkaTimeline.id}
+                  className="panel-osi-czasu__etykieta-sciezki"
+                >
+                  {sciezkaTimeline.nazwa}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
         <div
           className="panel-osi-czasu__obszar"
           ref={uchwytTimelineRef}
@@ -404,9 +419,6 @@ export function Panel_Osi_Czasu({
                     key={sciezkaTimeline.id}
                     className="panel-osi-czasu__sciezka"
                   >
-                    <div className="panel-osi-czasu__etykieta-sciezki">
-                      {sciezkaTimeline.nazwa}
-                    </div>
                     <div className="panel-osi-czasu__klipy-sciezki">
                       {klipySciezki.map((klipTimeline) => (
                         <Pasek_Klipu
