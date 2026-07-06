@@ -6,7 +6,7 @@ import type {
 } from "./typyMediow";
 import {
   pobierzRozszerzeniePliku,
-  sprawdzCzyRozszerzenieWideoJestObslugiwane
+  sprawdzCzyRozszerzenieMediowJestObslugiwane
 } from "./rozszerzeniaWideo";
 
 export function walidujPlikMediow(
@@ -24,7 +24,7 @@ export function walidujPlikMediow(
   const bledy: BladWalidacji[] = [];
   const rozszerzenie = pobierzRozszerzeniePliku(plik.name);
 
-  if (!sprawdzCzyRozszerzenieWideoJestObslugiwane(rozszerzenie)) {
+  if (!sprawdzCzyRozszerzenieMediowJestObslugiwane(rozszerzenie)) {
     bledy.push({
       pole: "rozszerzenie",
       komunikat: "Nieobsługiwany format pliku."
@@ -65,7 +65,7 @@ export function sprawdzCzyDaneImportuMediowSaPoprawne(
   if (nazwaPliku.length > 0) {
     const rozszerzenie = pobierzRozszerzeniePliku(nazwaPliku);
 
-    if (!sprawdzCzyRozszerzenieWideoJestObslugiwane(rozszerzenie)) {
+    if (!sprawdzCzyRozszerzenieMediowJestObslugiwane(rozszerzenie)) {
       bledy.push({
         pole: "rozszerzenie",
         komunikat: "Nieobsługiwany format pliku."

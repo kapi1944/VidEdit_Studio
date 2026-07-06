@@ -1,5 +1,12 @@
-export { utworzPlikWideoZDanychImportu } from "../../domena/media/fabrykaMediow";
-export { OBSLUGIWANE_ROZSZERZENIA_WIDEO } from "../../domena/media/rozszerzeniaWideo";
+export {
+  utworzPlikMediowZDanychImportu,
+  utworzPlikWideoZDanychImportu
+} from "../../domena/media/fabrykaMediow";
+export {
+  OBSLUGIWANE_ROZSZERZENIA_GRAFIK,
+  OBSLUGIWANE_ROZSZERZENIA_MEDIOW,
+  OBSLUGIWANE_ROZSZERZENIA_WIDEO
+} from "../../domena/media/rozszerzeniaWideo";
 export { zaimportujPlikMediow } from "./importMediow";
 export {
   sprawdzCzyDaneImportuMediowSaPoprawne,

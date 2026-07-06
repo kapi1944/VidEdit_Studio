@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { utworzPlikWideoZDanychImportu } from "../../../src/domena/media/fabrykaMediow";
+import {
+  utworzPlikMediowZDanychImportu,
+  utworzPlikWideoZDanychImportu
+} from "../../../src/domena/media/fabrykaMediow";
 import {
   pobierzRozszerzeniePliku,
+  sprawdzCzyRozszerzenieMediowJestObslugiwane,
   sprawdzCzyRozszerzenieWideoJestObslugiwane
 } from "../../../src/domena/media/rozszerzeniaWideo";
 import {
   sprawdzCzyDaneImportuMediowSaPoprawne,
   walidujPlikMediow
 } from "../../../src/domena/media/walidacjaMediow";
+import { formatujFpsMedium } from "../../../src/domena/media/formatowanieKartyMedium";
 import type {
   DaneImportuPlikuMediow,
   PlikDoWalidacjiMediow
@@ -46,6 +51,18 @@ describe("import mediow", () => {
 
   it("akceptuje poprawny plik mp4", () => {
     expect(walidujPlikMediow(utworzTestowyPlik())).toEqual([]);
+  });
+
+  it("akceptuje poprawny plik graficzny", () => {
+    expect(
+      walidujPlikMediow(
+        utworzTestowyPlik({
+          name: "plansza.png",
+          type: "image/png"
+        })
+      )
+    ).toEqual([]);
+    expect(sprawdzCzyRozszerzenieMediowJestObslugiwane(".PNG")).toBe(true);
   });
 
   it("akceptuje poprawny plik z polskimi znakami w nazwie", () => {
@@ -145,6 +162,35 @@ describe("import mediow", () => {
         czasTrwaniaMs: 120000
       });
     }
+  });
+
+  it("tworzy plik grafiki na podstawie danych importu", () => {
+    const wynik = utworzPlikMediowZDanychImportu({
+      id: "media-grafika-1",
+      nazwaPliku: "plansza.png",
+      sciezkaPliku: "plansza.png",
+      rozszerzenie: ".png",
+      typMime: "image/png",
+      rozmiarBajtow: 1024
+    });
+
+    expect(wynik.czySukces).toBe(true);
+
+    if (wynik.czySukces) {
+      expect(wynik.dane.typ).toBe("grafika");
+      expect(formatujFpsMedium(wynik.dane)).toBe("brak");
+    }
+  });
+
+  it("nie tworzy pliku wideo z danych grafiki", () => {
+    const wynik = utworzPlikWideoZDanychImportu({
+      ...poprawneDaneImportu,
+      nazwaPliku: "plansza.png",
+      rozszerzenie: ".png",
+      typMime: "image/png"
+    });
+
+    expect(wynik.czySukces).toBe(false);
   });
 
   it("nie tworzy pliku wideo z niepoprawnych danych importu", () => {

@@ -50,6 +50,10 @@ export function formatujRozdzielczoscMedium(
 }
 
 export function formatujFpsMedium(plikMediow: PlikMediow): string {
+  if (plikMediow.typ === "grafika") {
+    return "brak";
+  }
+
   const fps = plikMediow.metadane?.liczbaKlatekNaSekunde;
 
   if (fps === undefined) {
@@ -62,6 +66,10 @@ export function formatujFpsMedium(plikMediow: PlikMediow): string {
 }
 
 export function formatujAudioMedium(plikMediow: PlikMediow): string {
+  if (plikMediow.typ === "grafika") {
+    return "brak";
+  }
+
   const liczbaSciezekAudio = plikMediow.metadane?.liczbaSciezekAudio;
 
   if (liczbaSciezekAudio === undefined) {

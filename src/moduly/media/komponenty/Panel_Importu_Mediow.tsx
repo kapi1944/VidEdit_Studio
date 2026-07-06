@@ -8,7 +8,7 @@ export type StatusImportuMediow =
   | "blad";
 
 type WlasciwosciPaneluImportuMediow = {
-  rozszerzeniaWideo: readonly string[];
+  rozszerzeniaMediow: readonly string[];
   bladImportuMediow?: string;
   statusImportuMediow: StatusImportuMediow;
   naWybranoPlik: (plik: File) => void;
@@ -33,7 +33,7 @@ function pobierzKomunikatStatusuImportu(
 }
 
 export function Panel_Importu_Mediow({
-  rozszerzeniaWideo,
+  rozszerzeniaMediow,
   bladImportuMediow,
   statusImportuMediow,
   naWybranoPlik
@@ -63,7 +63,7 @@ export function Panel_Importu_Mediow({
         <p className="panel-importu-mediow__etykieta">Media projektu</p>
         <h2 id="import-mediow">Import mediow</h2>
         <p className="panel-importu-mediow__opis">
-          Obecnie import dziala dla pojedynczego pliku wideo.
+          Obecnie import dziala dla pojedynczego pliku wideo lub grafiki.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export function Panel_Importu_Mediow({
           ref={polePliku}
           className="panel-importu-mediow__input"
           type="file"
-          accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.mkv"
+          accept="video/mp4,video/webm,video/quicktime,image/png,image/jpeg,image/webp,image/gif,.mp4,.webm,.mov,.mkv,.avi,.m4v,.png,.jpg,.jpeg,.webp,.gif"
           onChange={obsluzZmianePliku}
         />
         <button
@@ -80,10 +80,10 @@ export function Panel_Importu_Mediow({
           type="button"
           onClick={otworzWyborPliku}
         >
-          Wybierz plik wideo
+          Wybierz plik
         </button>
         <span className="panel-importu-mediow__formaty">
-          {rozszerzeniaWideo.join(", ")}
+          {rozszerzeniaMediow.join(", ")}
         </span>
       </div>
 

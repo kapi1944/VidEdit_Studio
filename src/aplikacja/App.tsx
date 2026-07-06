@@ -38,7 +38,7 @@ import {
 } from "../moduly/cisza/indeksCiszy";
 import { Panel_Ustawien_Ciszy } from "../moduly/cisza/komponenty/Panel_Ustawien_Ciszy";
 import {
-  OBSLUGIWANE_ROZSZERZENIA_WIDEO,
+  OBSLUGIWANE_ROZSZERZENIA_MEDIOW,
   walidujPlikMediow,
   zaimportujPlikMediow
 } from "../moduly/media/indeksMediow";
@@ -50,6 +50,7 @@ import {
   zaktualizujPropozycjeCiecWProjekcie
 } from "../moduly/projekt/indeksProjektu";
 import { formatujCzas } from "../domena/czas/formatowanieCzasu";
+import type { MetadaneWideo } from "../domena/media/typyMediow";
 import type {
   PodgladMedium,
   PodgladyMediow
@@ -122,6 +123,31 @@ function zwolnijObjectUrlPodgladu(podgladMedium?: PodgladMedium) {
   }
 
   URL.revokeObjectURL(podgladMedium.objectUrl);
+}
+
+function odczytajMetadaneGrafikiZObjectUrl(
+  objectUrl: string
+): Promise<MetadaneWideo> {
+  return new Promise((resolve, reject) => {
+    const obraz = new Image();
+
+    obraz.onload = () => {
+      if (obraz.naturalWidth <= 0 || obraz.naturalHeight <= 0) {
+        reject(new Error("Nie udalo sie odczytac wymiarow grafiki."));
+        return;
+      }
+
+      resolve({
+        szerokoscPx: obraz.naturalWidth,
+        wysokoscPx: obraz.naturalHeight,
+        czyMetadanePelne: true
+      });
+    };
+    obraz.onerror = () => {
+      reject(new Error("Nie udalo sie odczytac wymiarow grafiki."));
+    };
+    obraz.src = objectUrl;
+  });
 }
 
 function sprawdzCzyTrybWygladuJestPoprawny(
@@ -401,11 +427,13 @@ export function Aplikacja() {
     }
 
     const idMedium = wynikImportu.dane.id;
+    const czyImportGrafiki = wynikImportu.dane.typ === "grafika";
     const objectUrlPodgladu = URL.createObjectURL(plik);
     const nowyPodgladMedium: PodgladMedium = {
       idMedium,
       objectUrl: objectUrlPodgladu,
-      statusMiniatury: "Przygotowanie miniatury"
+      statusMiniatury: czyImportGrafiki ? "gotowe" : "Przygotowanie miniatury",
+      ...(czyImportGrafiki ? { miniaturaDataUrl: objectUrlPodgladu } : {})
     };
 
     ustawAktualnyCzasTimelineMs(0);
@@ -434,6 +462,31 @@ export function Aplikacja() {
     });
     ustawBladImportuMediow(undefined);
     ustawStatusImportuMediow("odczyt_metadanych");
+
+    if (czyImportGrafiki) {
+      try {
+        const metadane = await odczytajMetadaneGrafikiZObjectUrl(
+          objectUrlPodgladu
+        );
+
+        ustawProjekt((aktualnyProjekt) =>
+          zaktualizujMetadaneMediumWProjekcie(
+            aktualnyProjekt,
+            idMedium,
+            metadane
+          )
+        );
+        ustawStatusImportuMediow("gotowe");
+      } catch {
+        ustawBladImportuMediow(
+          "Zaimportowano, ale nie udalo sie odczytac wymiarow grafiki."
+        );
+        ustawStatusImportuMediow("blad");
+      }
+
+      return;
+    }
+
     void przygotujMiniatureMedium(idMedium, plik);
 
     try {
@@ -875,7 +928,7 @@ export function Aplikacja() {
                 dzieci={
                   <>
                     <Panel_Importu_Mediow
-                      rozszerzeniaWideo={OBSLUGIWANE_ROZSZERZENIA_WIDEO}
+                      rozszerzeniaMediow={OBSLUGIWANE_ROZSZERZENIA_MEDIOW}
                       bladImportuMediow={bladImportuMediow}
                       statusImportuMediow={statusImportuMediow}
                       naWybranoPlik={obsluzWybraniePliku}

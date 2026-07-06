@@ -1,7 +1,14 @@
 import { blad, sukces, type Wynik } from "../../wspolne/wynik";
 import type { BladWalidacji } from "../../wspolne/bledy";
-import type { DaneImportuPlikuMediow, PlikMediow } from "./typyMediow";
-import { pobierzRozszerzeniePliku } from "./rozszerzeniaWideo";
+import type {
+  DaneImportuPlikuMediow,
+  PlikMediow,
+  TypPlikuMediow
+} from "./typyMediow";
+import {
+  okreslTypMediowPoRozszerzeniu,
+  pobierzRozszerzeniePliku
+} from "./rozszerzeniaWideo";
 import { sprawdzCzyDaneImportuMediowSaPoprawne } from "./walidacjaMediow";
 
 function utworzIdPlikuMediow(): string {
@@ -12,7 +19,35 @@ function utworzIdPlikuMediow(): string {
   return `media-${Date.now()}`;
 }
 
-export function utworzPlikWideoZDanychImportu(
+function utworzBladNieobslugiwanegoFormatu(): BladWalidacji {
+  return {
+    pole: "rozszerzenie",
+    komunikat: "Nieobslugiwany format pliku."
+  };
+}
+
+function utworzPlikMediow(
+  daneImportu: DaneImportuPlikuMediow,
+  typMediow: TypPlikuMediow,
+  rozszerzenie: string
+): PlikMediow {
+  return {
+    id: daneImportu.id ?? utworzIdPlikuMediow(),
+    nazwaPliku: daneImportu.nazwaPliku.trim(),
+    sciezkaPliku: daneImportu.sciezkaPliku.trim(),
+    rozszerzenie,
+    typMime: daneImportu.typMime?.trim() ?? "",
+    rozmiarBajtow: daneImportu.rozmiarBajtow,
+    statusImportu: daneImportu.statusImportu ?? "zaimportowany",
+    typ: typMediow,
+    ...(daneImportu.dataModyfikacjiPlikuIso
+      ? { dataModyfikacjiPlikuIso: daneImportu.dataModyfikacjiPlikuIso }
+      : {}),
+    czasTrwaniaMs: daneImportu.czasTrwaniaMs
+  };
+}
+
+export function utworzPlikMediowZDanychImportu(
   daneImportu: DaneImportuPlikuMediow
 ): Wynik<PlikMediow, BladWalidacji> {
   const bledy = sprawdzCzyDaneImportuMediowSaPoprawne(daneImportu);
@@ -21,20 +56,30 @@ export function utworzPlikWideoZDanychImportu(
     return blad(bledy);
   }
 
-  return sukces({
-    id: daneImportu.id ?? utworzIdPlikuMediow(),
-    nazwaPliku: daneImportu.nazwaPliku.trim(),
-    sciezkaPliku: daneImportu.sciezkaPliku.trim(),
-    rozszerzenie:
-      daneImportu.rozszerzenie?.trim() ||
-      pobierzRozszerzeniePliku(daneImportu.nazwaPliku),
-    typMime: daneImportu.typMime?.trim() ?? "",
-    rozmiarBajtow: daneImportu.rozmiarBajtow,
-    statusImportu: daneImportu.statusImportu ?? "zaimportowany",
-    typ: "wideo",
-    ...(daneImportu.dataModyfikacjiPlikuIso
-      ? { dataModyfikacjiPlikuIso: daneImportu.dataModyfikacjiPlikuIso }
-      : {}),
-    czasTrwaniaMs: daneImportu.czasTrwaniaMs
-  });
+  const rozszerzenie =
+    daneImportu.rozszerzenie?.trim() ||
+    pobierzRozszerzeniePliku(daneImportu.nazwaPliku);
+  const typMediow = okreslTypMediowPoRozszerzeniu(rozszerzenie);
+
+  if (!typMediow) {
+    return blad(utworzBladNieobslugiwanegoFormatu());
+  }
+
+  return sukces(utworzPlikMediow(daneImportu, typMediow, rozszerzenie));
+}
+
+export function utworzPlikWideoZDanychImportu(
+  daneImportu: DaneImportuPlikuMediow
+): Wynik<PlikMediow, BladWalidacji> {
+  const wynik = utworzPlikMediowZDanychImportu(daneImportu);
+
+  if (!wynik.czySukces) {
+    return wynik;
+  }
+
+  if (wynik.dane.typ !== "wideo") {
+    return blad(utworzBladNieobslugiwanegoFormatu());
+  }
+
+  return wynik;
 }
