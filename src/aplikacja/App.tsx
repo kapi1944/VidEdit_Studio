@@ -16,6 +16,8 @@ import {
   pobierzEtykieteStatusuProjektuUi
 } from "./komponenty/pomocnicyPaskaGornego";
 import { Panel_Osi_Czasu } from "../moduly/timeline/komponenty/Panel_Osi_Czasu";
+import { Inspektor_Klipu } from "../moduly/timeline/komponenty/Inspektor_Klipu";
+import { utworzDaneInspektoraKlipu } from "../moduly/timeline/inspektorKlipu";
 import { ograniczCzasDoZakresu } from "../moduly/timeline/przeliczCzasNaPozycje";
 import {
   Panel_Importu_Mediow,
@@ -785,6 +787,16 @@ export function Aplikacja() {
   });
   const widocznoscFunkcji =
     pobierzWidocznoscFunkcjiDlaTrybu(trybInterfejsu);
+  const zaznaczonyKlipTimeline = klipyTimeline.find(
+    (klipTimeline) => klipTimeline.id === idZaznaczonegoKlipuTimeline
+  );
+  const daneInspektoraKlipu = utworzDaneInspektoraKlipu({
+    klipTimeline: zaznaczonyKlipTimeline,
+    media: projekt.media,
+    sciezkiTimeline,
+    ustawieniaSiatkiTimeline,
+    formatujCzasTimeline: formatujCzasNaTimeline
+  });
   const komunikatPaskaStatusu =
     bladImportuMediow ??
     `Media: ${projekt.media.length} | Segmenty ciszy: ${segmentyCiszyTimeline.length} | Propozycje cięć: ${projekt.timeline.propozycjeCiec.length} | Status: ${pobierzEtykieteStatusuProjektuUi(statusProjektuUi).toLowerCase()}`;
@@ -869,16 +881,19 @@ export function Aplikacja() {
         widocznoscFunkcji.pokazPelnyInspektor ? (
           <PanelBocznyPrawy
             dzieci={
-              <Panel_Propozycji_Ciec
-                propozycjeCiec={projekt.timeline.propozycjeCiec}
-                formatujCzasCiecia={formatujCzasNaTimeline}
-                naZatwierdz={obsluzZatwierdzeniePropozycjiCiecia}
-                naOdrzuc={obsluzOdrzuceniePropozycjiCiecia}
-                naCofnijDecyzje={obsluzCofniecieDecyzjiPropozycjiCiecia}
-                naZatwierdzWszystkie={
-                  obsluzZatwierdzenieWszystkichPropozycjiCiec
-                }
-              />
+              <>
+                <Inspektor_Klipu daneInspektoraKlipu={daneInspektoraKlipu} />
+                <Panel_Propozycji_Ciec
+                  propozycjeCiec={projekt.timeline.propozycjeCiec}
+                  formatujCzasCiecia={formatujCzasNaTimeline}
+                  naZatwierdz={obsluzZatwierdzeniePropozycjiCiecia}
+                  naOdrzuc={obsluzOdrzuceniePropozycjiCiecia}
+                  naCofnijDecyzje={obsluzCofniecieDecyzjiPropozycjiCiecia}
+                  naZatwierdzWszystkie={
+                    obsluzZatwierdzenieWszystkichPropozycjiCiec
+                  }
+                />
+              </>
             }
           />
         ) : null

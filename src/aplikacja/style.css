@@ -291,6 +291,10 @@ select:focus-visible {
   border-left: 1px solid var(--kolor-obramowania-sekcji);
 }
 
+.panel-boczny-prawy > * {
+  min-width: 0;
+}
+
 .panel-workflow,
 .panel-mediow-projektu,
 .panel-szybkich-akcji-lite {
@@ -775,6 +779,10 @@ select:focus-visible {
 
 .panel-boczny-prawy .panel-propozycji-ciec {
   margin-top: 0;
+  padding: 14px;
+}
+
+.panel-boczny-prawy .inspektor-klipu {
   padding: 14px;
 }
 
@@ -1604,6 +1612,75 @@ h2 {
   color: var(--kolor-tekstu-slaby);
   font-size: 0.95rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.inspektor-klipu {
+  padding: 20px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: var(--radius-panelu);
+  background: var(--kolor-powierzchni);
+  box-shadow: var(--cien-panelu);
+}
+
+.inspektor-klipu__naglowek {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.inspektor-klipu__naglowek h2 {
+  margin: 0;
+}
+
+.inspektor-klipu__etykieta {
+  margin: 0;
+  color: var(--kolor-etykiety);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.inspektor-klipu__pusty {
+  margin: 0;
+  color: var(--kolor-tekstu-slaby);
+}
+
+.inspektor-klipu__lista {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.inspektor-klipu__wiersz {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--kolor-obramowania);
+}
+
+.inspektor-klipu__wiersz:first-child {
+  padding-top: 0;
+}
+
+.inspektor-klipu__wiersz:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.inspektor-klipu__wiersz dt {
+  color: var(--kolor-etykiety);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.inspektor-klipu__wiersz dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--kolor-tekstu-mocny);
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
