@@ -34,6 +34,7 @@ type WlasciwosciPaneluOsiCzasu = {
   formatujCzasTimeline: (czasMs: number) => string;
   ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline;
   opcjeSiatkiTimeline?: UstawieniaSiatkiTimeline[];
+  czyPokazacZaawansowaneUstawienia?: boolean;
   naZmianeCzasuTimeline: (czasMs: number) => void;
   naZmianeUstawienSiatkiTimeline?: (
     ustawieniaSiatki: UstawieniaSiatkiTimeline
@@ -60,6 +61,7 @@ export function Panel_Osi_Czasu({
   formatujCzasTimeline,
   ustawieniaSiatkiTimeline = DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   opcjeSiatkiTimeline = USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
+  czyPokazacZaawansowaneUstawienia = true,
   naZmianeCzasuTimeline,
   naZmianeUstawienSiatkiTimeline,
   naZaznaczKlipTimeline,
@@ -191,67 +193,71 @@ export function Panel_Osi_Czasu({
           </span>
           <span>Aktualny czas: {formatujCzasTimeline(czasAktualnyMs)}</span>
         </div>
-        <label className="panel-osi-czasu__siatka">
-          <span>Siatka</span>
-          <select
-            value={ustawieniaSiatkiTimeline.jednostka}
-            onChange={obsluzZmianeSiatkiTimeline}
-          >
-            {opcjeSiatkiTimeline.map((ustawieniaSiatki) => (
-              <option
-                key={ustawieniaSiatki.jednostka}
-                value={ustawieniaSiatki.jednostka}
+        {czyPokazacZaawansowaneUstawienia ? (
+          <>
+            <label className="panel-osi-czasu__siatka">
+              <span>Siatka</span>
+              <select
+                value={ustawieniaSiatkiTimeline.jednostka}
+                onChange={obsluzZmianeSiatkiTimeline}
               >
-                {opiszTrybSiatkiTimeline(ustawieniaSiatki)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="panel-osi-czasu__narzedzia">
-          <button
-            type="button"
-            disabled={
-              !czyEdycjaKlipuDostepna || !naPrzesunZaznaczonyKlipWLewo
-            }
-            onClick={naPrzesunZaznaczonyKlipWLewo}
-          >
-            Przesun w lewo
-          </button>
-          <button
-            type="button"
-            disabled={
-              !czyEdycjaKlipuDostepna || !naPrzesunZaznaczonyKlipWPrawo
-            }
-            onClick={naPrzesunZaznaczonyKlipWPrawo}
-          >
-            Przesun w prawo
-          </button>
-          <button
-            type="button"
-            disabled={
-              !czyEdycjaKlipuDostepna || !naSkrocPoczatekZaznaczonegoKlipu
-            }
-            onClick={naSkrocPoczatekZaznaczonegoKlipu}
-          >
-            Skroc poczatek
-          </button>
-          <button
-            type="button"
-            disabled={
-              !czyEdycjaKlipuDostepna || !naSkrocKoniecZaznaczonegoKlipu
-            }
-            onClick={naSkrocKoniecZaznaczonegoKlipu}
-          >
-            Skroc koniec
-          </button>
-          <button
-            type="button"
-            disabled={!czyCiecieDostepne}
-            onClick={naPrzetnijZaznaczonyKlip}
-          >
-            Przetnij klip
-          </button>
-        </div>
+                {opcjeSiatkiTimeline.map((ustawieniaSiatki) => (
+                  <option
+                    key={ustawieniaSiatki.jednostka}
+                    value={ustawieniaSiatki.jednostka}
+                  >
+                    {opiszTrybSiatkiTimeline(ustawieniaSiatki)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="panel-osi-czasu__narzedzia">
+              <button
+                type="button"
+                disabled={
+                  !czyEdycjaKlipuDostepna || !naPrzesunZaznaczonyKlipWLewo
+                }
+                onClick={naPrzesunZaznaczonyKlipWLewo}
+              >
+                Przesun w lewo
+              </button>
+              <button
+                type="button"
+                disabled={
+                  !czyEdycjaKlipuDostepna || !naPrzesunZaznaczonyKlipWPrawo
+                }
+                onClick={naPrzesunZaznaczonyKlipWPrawo}
+              >
+                Przesun w prawo
+              </button>
+              <button
+                type="button"
+                disabled={
+                  !czyEdycjaKlipuDostepna || !naSkrocPoczatekZaznaczonegoKlipu
+                }
+                onClick={naSkrocPoczatekZaznaczonegoKlipu}
+              >
+                Skroc poczatek
+              </button>
+              <button
+                type="button"
+                disabled={
+                  !czyEdycjaKlipuDostepna || !naSkrocKoniecZaznaczonegoKlipu
+                }
+                onClick={naSkrocKoniecZaznaczonegoKlipu}
+              >
+                Skroc koniec
+              </button>
+              <button
+                type="button"
+                disabled={!czyCiecieDostepne}
+                onClick={naPrzetnijZaznaczonyKlip}
+              >
+                Przetnij klip
+              </button>
+            </div>
+          </>
+        ) : null}
       </div>
 
       <div className="panel-osi-czasu__tor">

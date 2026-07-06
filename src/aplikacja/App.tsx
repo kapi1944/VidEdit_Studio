@@ -5,6 +5,7 @@ import {
   PanelBocznyLewy,
   PanelBocznyPrawy,
   PanelMediowProjektu,
+  PanelSzybkichAkcjiLite,
   PanelWorkflow,
   PasekGornyAplikacji,
   PasekStatusu,
@@ -66,14 +67,19 @@ import {
 } from "../domena/timeline/typyTimeline";
 import {
   domyslnyMotywInterfejsu,
+  domyslnyTrybInterfejsu,
+  pobierzWidocznoscFunkcjiDlaTrybu,
   sprawdzCzyMotywInterfejsuJestPoprawny,
-  type MotywInterfejsu
+  sprawdzCzyTrybInterfejsuJestPoprawny,
+  type MotywInterfejsu,
+  type TrybInterfejsu
 } from "./ustawieniaInterfejsu";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
 const kluczTrybuWygladu = "videdit-studio.tryb-wygladu";
 const kluczMotywuInterfejsu = "videdit-studio.motyw-interfejsu";
+const kluczTrybuInterfejsu = "videdit-studio.tryb-interfejsu";
 const minimalnyCzasTechnicznyTimelineMs = 10_000;
 
 function obliczKoniecZakresowTimeline(
@@ -124,6 +130,16 @@ function pobierzPoczatkowyMotywInterfejsu(): MotywInterfejsu {
   return domyslnyMotywInterfejsu;
 }
 
+function pobierzPoczatkowyTrybInterfejsu(): TrybInterfejsu {
+  const zapisanyTrybInterfejsu = localStorage.getItem(kluczTrybuInterfejsu);
+
+  if (sprawdzCzyTrybInterfejsuJestPoprawny(zapisanyTrybInterfejsu)) {
+    return zapisanyTrybInterfejsu;
+  }
+
+  return domyslnyTrybInterfejsu;
+}
+
 export function Aplikacja() {
   const [projekt, ustawProjekt] = useState(() =>
     utworzPustyProjekt("Nowy projekt")
@@ -134,6 +150,9 @@ export function Aplikacja() {
   const [trybWygladu, ustawTrybWygladu] = useState(pobierzPoczatkowyTrybWygladu);
   const [motywInterfejsu, ustawMotywInterfejsu] = useState(
     pobierzPoczatkowyMotywInterfejsu
+  );
+  const [trybInterfejsu, ustawTrybInterfejsu] = useState(
+    pobierzPoczatkowyTrybInterfejsu
   );
   const [podgladyMediow, ustawPodgladyMediow] = useState<PodgladyMediow>({});
   const [idAktywnegoSegmentuCiszy, ustawIdAktywnegoSegmentuCiszy] =
@@ -159,6 +178,11 @@ export function Aplikacja() {
     document.documentElement.dataset.motyw = motywInterfejsu;
     localStorage.setItem(kluczMotywuInterfejsu, motywInterfejsu);
   }, [motywInterfejsu]);
+
+  useEffect(() => {
+    document.documentElement.dataset.trybInterfejsu = trybInterfejsu;
+    localStorage.setItem(kluczTrybuInterfejsu, trybInterfejsu);
+  }, [trybInterfejsu]);
 
   useEffect(() => {
     podgladyMediowRef.current = podgladyMediow;
@@ -567,6 +591,10 @@ export function Aplikacja() {
     }
   }
 
+  function obsluzZmianeTrybuInterfejsu(nowyTrybInterfejsu: TrybInterfejsu) {
+    ustawTrybInterfejsu(nowyTrybInterfejsu);
+  }
+
   const liczbaPropozycjiCiec = projekt.timeline.propozycjeCiec.length;
   const liczbaPropozycjiOczekujacych =
     projekt.timeline.propozycjeCiec.filter(
@@ -584,6 +612,8 @@ export function Aplikacja() {
     liczbaMediow: projekt.media.length,
     statusImportuMediow
   });
+  const widocznoscFunkcji =
+    pobierzWidocznoscFunkcjiDlaTrybu(trybInterfejsu);
   const komunikatPaskaStatusu =
     bladImportuMediow ??
     `Media: ${projekt.media.length} | Segmenty ciszy: ${segmentyCiszyTimeline.length} | Propozycje cięć: ${projekt.timeline.propozycjeCiec.length} | Status: ${pobierzEtykieteStatusuProjektuUi(statusProjektuUi).toLowerCase()}`;
@@ -596,15 +626,23 @@ export function Aplikacja() {
           statusProjektuUi={statusProjektuUi}
           trybWygladu={trybWygladu}
           motywInterfejsu={motywInterfejsu}
+          trybInterfejsu={trybInterfejsu}
           liczbaMediow={projekt.media.length}
+          czyPokazacZaawansowaneParametryEksportu={
+            widocznoscFunkcji.pokazZaawansowaneParametryEksportu
+          }
           naZmianeTrybuWygladu={obsluzZmianeTrybuWygladu}
           naZmianeMotywuInterfejsu={obsluzZmianeMotywuInterfejsu}
+          naZmianeTrybuInterfejsu={obsluzZmianeTrybuInterfejsu}
         />
       }
       panelLewy={
         <PanelBocznyLewy
           dzieci={
             <>
+              {widocznoscFunkcji.pokazPanelSzybkichAkcji ? (
+                <PanelSzybkichAkcjiLite />
+              ) : null}
               <PanelWorkflow
                 liczbaMediow={projekt.media.length}
                 statusImportuMediow={statusImportuMediow}
@@ -654,18 +692,22 @@ export function Aplikacja() {
         />
       }
       panelPrawy={
-        <PanelBocznyPrawy
-          dzieci={
-            <Panel_Propozycji_Ciec
-              propozycjeCiec={projekt.timeline.propozycjeCiec}
-              formatujCzasCiecia={formatujCzasNaTimeline}
-              naZatwierdz={obsluzZatwierdzeniePropozycjiCiecia}
-              naOdrzuc={obsluzOdrzuceniePropozycjiCiecia}
-              naCofnijDecyzje={obsluzCofniecieDecyzjiPropozycjiCiecia}
-              naZatwierdzWszystkie={obsluzZatwierdzenieWszystkichPropozycjiCiec}
-            />
-          }
-        />
+        widocznoscFunkcji.pokazPelnyInspektor ? (
+          <PanelBocznyPrawy
+            dzieci={
+              <Panel_Propozycji_Ciec
+                propozycjeCiec={projekt.timeline.propozycjeCiec}
+                formatujCzasCiecia={formatujCzasNaTimeline}
+                naZatwierdz={obsluzZatwierdzeniePropozycjiCiecia}
+                naOdrzuc={obsluzOdrzuceniePropozycjiCiecia}
+                naCofnijDecyzje={obsluzCofniecieDecyzjiPropozycjiCiecia}
+                naZatwierdzWszystkie={
+                  obsluzZatwierdzenieWszystkichPropozycjiCiec
+                }
+              />
+            }
+          />
+        ) : null
       }
       timeline={
         <TimelineMontazu
@@ -681,6 +723,9 @@ export function Aplikacja() {
               uchwytWideoRef={uchwytWideoRef}
               formatujCzasTimeline={formatujCzasNaTimeline}
               ustawieniaSiatkiTimeline={ustawieniaSiatkiTimeline}
+              czyPokazacZaawansowaneUstawienia={
+                widocznoscFunkcji.pokazZaawansowaneUstawieniaTimeline
+              }
               naZmianeCzasuTimeline={obsluzZmianeCzasuOdtwarzania}
               naZmianeUstawienSiatkiTimeline={ustawUstawieniaSiatkiTimeline}
               naZaznaczKlipTimeline={ustawIdZaznaczonegoKlipuTimeline}

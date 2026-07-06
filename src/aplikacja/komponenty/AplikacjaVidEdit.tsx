@@ -8,7 +8,9 @@ import type { KlipTimeline } from "../../domena/timeline/typyTimeline";
 import type { PodgladyMediow } from "../../moduly/media/typyPodgladuMediow";
 import {
   etykietyMotywuInterfejsu,
-  type MotywInterfejsu
+  etykietyTrybuInterfejsu,
+  type MotywInterfejsu,
+  type TrybInterfejsu
 } from "../ustawieniaInterfejsu";
 import { PodgladWideo } from "./PodgladWideo";
 import {
@@ -35,7 +37,7 @@ type WlasciwosciAplikacjiVidEdit = {
   pasekGorny: ReactNode;
   panelLewy: ReactNode;
   obszarRoboczy: ReactNode;
-  panelPrawy: ReactNode;
+  panelPrawy?: ReactNode;
   timeline: ReactNode;
   pasekStatusu: ReactNode;
 };
@@ -45,9 +47,12 @@ type WlasciwosciPaskaGornegoAplikacji = {
   statusProjektuUi: StatusProjektuUi;
   trybWygladu: string;
   motywInterfejsu: MotywInterfejsu;
+  trybInterfejsu?: TrybInterfejsu;
   liczbaMediow: number;
+  czyPokazacZaawansowaneParametryEksportu?: boolean;
   naZmianeTrybuWygladu: (trybWygladu: string) => void;
   naZmianeMotywuInterfejsu: (motywInterfejsu: string) => void;
+  naZmianeTrybuInterfejsu?: (trybInterfejsu: TrybInterfejsu) => void;
   naEksportuj?: () => void;
 };
 
@@ -86,6 +91,14 @@ const etykietyTrybuWygladu = {
   systemowy: "Systemowy"
 };
 
+const zadaniaSzybkichAkcjiLite = [
+  "Wykryj cisze",
+  "Wygeneruj napisy",
+  "Dodaj znak wodny",
+  "Popraw obraz",
+  "Wycisz audio"
+];
+
 const etykietyStatusuWorkflow: Record<StatusKrokuWorkflow, string> = {
   gotowe: "Gotowe",
   aktywny: "Aktywny",
@@ -110,8 +123,15 @@ export function AplikacjaVidEdit({
   timeline,
   pasekStatusu
 }: WlasciwosciAplikacjiVidEdit) {
+  const klasyAplikacji = [
+    "aplikacja-videdit",
+    panelPrawy ? undefined : "aplikacja-videdit--bez-panelu-prawego"
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <main className="aplikacja-videdit">
+    <main className={klasyAplikacji}>
       {pasekGorny}
       <div className="aplikacja-videdit__srodek">
         {panelLewy}
@@ -129,9 +149,12 @@ export function PasekGornyAplikacji({
   statusProjektuUi,
   trybWygladu,
   motywInterfejsu,
+  trybInterfejsu = "pro",
   liczbaMediow,
+  czyPokazacZaawansowaneParametryEksportu = true,
   naZmianeTrybuWygladu,
   naZmianeMotywuInterfejsu,
+  naZmianeTrybuInterfejsu,
   naEksportuj
 }: WlasciwosciPaskaGornegoAplikacji) {
   const nazwaProjektuDoPaska = pobierzNazweProjektuDoPaska(nazwaProjektu);
@@ -167,6 +190,28 @@ export function PasekGornyAplikacji({
       </div>
 
       <div className="pasek-gorny-aplikacji__akcje">
+        <div
+          className="pasek-gorny-aplikacji__przelacznik-interfejsu"
+          aria-label="Tryb interfejsu"
+        >
+          {(Object.keys(etykietyTrybuInterfejsu) as TrybInterfejsu[]).map(
+            (tryb) => (
+              <button
+                type="button"
+                className={
+                  tryb === trybInterfejsu
+                    ? "pasek-gorny-aplikacji__tryb-interfejsu-aktywny"
+                    : undefined
+                }
+                aria-pressed={tryb === trybInterfejsu}
+                onClick={() => naZmianeTrybuInterfejsu?.(tryb)}
+                key={tryb}
+              >
+                {etykietyTrybuInterfejsu[tryb]}
+              </button>
+            )
+          )}
+        </div>
         <button
           type="button"
           disabled={!czyHistoriaDostepna}
@@ -213,15 +258,17 @@ export function PasekGornyAplikacji({
             )}
           </select>
         </label>
-        <button
-          type="button"
-          className="pasek-gorny-aplikacji__eksport"
-          disabled={!czyEksportDostepny}
-          title={tytulPlaceholderaEksportu}
-          onClick={naEksportuj}
-        >
-          {etykietaEksportu}
-        </button>
+        {czyPokazacZaawansowaneParametryEksportu ? (
+          <button
+            type="button"
+            className="pasek-gorny-aplikacji__eksport"
+            disabled={!czyEksportDostepny}
+            title={tytulPlaceholderaEksportu}
+            onClick={naEksportuj}
+          >
+            {etykietaEksportu}
+          </button>
+        ) : null}
       </div>
     </header>
   );
@@ -284,6 +331,22 @@ export function PanelMediowProjektu({
           Dodaj media, aby rozpoczac montaz.
         </p>
       ) : null}
+    </section>
+  );
+}
+
+export function PanelSzybkichAkcjiLite() {
+  return (
+    <section className="panel-szybkich-akcji-lite" aria-labelledby="lite-tytul">
+      <p className="etykieta-panelu">Tryb LITE</p>
+      <h2 id="lite-tytul">Szybkie akcje</h2>
+      <div className="panel-szybkich-akcji-lite__lista">
+        {zadaniaSzybkichAkcjiLite.map((zadanie) => (
+          <button type="button" disabled key={zadanie}>
+            {zadanie}
+          </button>
+        ))}
+      </div>
     </section>
   );
 }

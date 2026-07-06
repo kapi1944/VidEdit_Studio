@@ -67,6 +67,10 @@ select:focus-visible {
   border-bottom: 1px solid var(--kolor-obramowania-sekcji);
 }
 
+.aplikacja-videdit--bez-panelu-prawego .aplikacja-videdit__srodek {
+  grid-template-columns: minmax(240px, 300px) minmax(360px, 1fr);
+}
+
 .pasek-gorny-aplikacji {
   display: grid;
   grid-template-columns: auto minmax(220px, 1fr) auto minmax(300px, auto);
@@ -126,6 +130,15 @@ select:focus-visible {
   justify-content: flex-end;
 }
 
+.pasek-gorny-aplikacji__przelacznik-interfejsu {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--kolor-obramowania-selecta);
+  border-radius: var(--radius-elementu);
+  background: var(--kolor-powierzchni-delikatny);
+}
+
 .pasek-gorny-aplikacji button,
 .pasek-gorny-aplikacji select {
   min-height: 30px;
@@ -138,6 +151,17 @@ select:focus-visible {
 .pasek-gorny-aplikacji button {
   padding: 0 10px;
   font-weight: 700;
+}
+
+.pasek-gorny-aplikacji__przelacznik-interfejsu button {
+  border-color: transparent;
+  background: transparent;
+}
+
+.pasek-gorny-aplikacji__przelacznik-interfejsu button[aria-pressed="true"] {
+  border-color: var(--kolor-obramowania-akcent);
+  color: var(--kolor-przycisku-tekstu);
+  background: var(--kolor-przycisku);
 }
 
 .pasek-gorny-aplikacji button:not(:disabled):not(.pasek-gorny-aplikacji__eksport):hover {
@@ -206,9 +230,41 @@ select:focus-visible {
 }
 
 .panel-workflow,
-.panel-mediow-projektu {
+.panel-mediow-projektu,
+.panel-szybkich-akcji-lite {
   display: grid;
   gap: 12px;
+}
+
+.panel-szybkich-akcji-lite {
+  padding: 12px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: var(--radius-panelu);
+  background: var(--kolor-powierzchni);
+  box-shadow: var(--cien-panelu);
+}
+
+.panel-szybkich-akcji-lite h2 {
+  margin-bottom: 0;
+  font-size: 1rem;
+}
+
+.panel-szybkich-akcji-lite__lista {
+  display: grid;
+  gap: 8px;
+}
+
+.panel-szybkich-akcji-lite__lista button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--kolor-obramowania-selecta);
+  border-radius: var(--radius-elementu);
+  color: var(--kolor-tekstu-slaby);
+  background: var(--kolor-powierzchni-delikatny);
+  font-weight: 800;
+  text-align: left;
+  cursor: not-allowed;
+  opacity: 0.72;
 }
 
 .etykieta-panelu {
@@ -676,6 +732,10 @@ select:focus-visible {
   }
 
   .aplikacja-videdit__srodek {
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  }
+
+  .aplikacja-videdit--bez-panelu-prawego .aplikacja-videdit__srodek {
     grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
   }
 
