@@ -22,6 +22,7 @@ function pobierzTimelineProjektu(projekt: ProjektMontazu) {
   return (
     projekt.timeline ?? {
       klipy: [],
+      markery: [],
       ustawieniaDociagania: DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
       segmentyCiszy: [],
       propozycjeCiec: []

@@ -38,6 +38,11 @@ export type PropozycjaCiecia = SegmentCzasu & {
 
 export type RodzajKlipuTimeline = "wideo" | "grafika";
 
+export type MarkerTimeline = {
+  id: string;
+  czasMs: CzasMs;
+};
+
 export type KlipTimeline = {
   id: string;
   idPlikuMediow: string;
@@ -215,6 +220,7 @@ export function pobierzKrokEdycjiTimeline(
 
 export type TimelineProjektu = {
   klipy: KlipTimeline[];
+  markery: MarkerTimeline[];
   ustawieniaDociagania: UstawieniaDociaganiaTimeline;
   segmentyCiszy: SegmentCiszy[];
   propozycjeCiec: PropozycjaCiecia[];
@@ -340,6 +346,13 @@ function utworzBladEdycjiKlipu(
   return blad({ pole, komunikat });
 }
 
+function utworzBladMarkeraTimeline(
+  pole: string,
+  komunikat: string
+): Wynik<MarkerTimeline[], BladWalidacji> {
+  return blad({ pole, komunikat });
+}
+
 function znajdzIndeksKlipuAlboBlad(
   klipy: KlipTimeline[],
   idKlipu: string
@@ -382,6 +395,122 @@ function zaktualizujKlipWTablicy(
     klipPoZmianie,
     ...klipy.slice(indeksKlipu + 1)
   ];
+}
+
+function utworzIdMarkeraTimeline(czasMs: CzasMs) {
+  return `marker-${czasMs}`;
+}
+
+export function posortujMarkeryTimeline(
+  markery: MarkerTimeline[]
+): MarkerTimeline[] {
+  return [...markery].sort((pierwszyMarker, drugiMarker) => {
+    if (pierwszyMarker.czasMs !== drugiMarker.czasMs) {
+      return pierwszyMarker.czasMs - drugiMarker.czasMs;
+    }
+
+    return pierwszyMarker.id.localeCompare(drugiMarker.id);
+  });
+}
+
+export function dodajMarkerTimeline(
+  markery: MarkerTimeline[],
+  czasSekundy: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+): Wynik<MarkerTimeline[], BladWalidacji> {
+  const czasMs = przeliczCzasEdycjiNaMs(
+    czasSekundy,
+    ustawieniaSiatkiTimeline,
+    fps
+  );
+
+  if (czasMs === undefined) {
+    return utworzBladMarkeraTimeline(
+      "czas",
+      "Czas markera musi byc poprawna liczba."
+    );
+  }
+
+  if (markery.some((marker) => marker.czasMs === czasMs)) {
+    return utworzBladMarkeraTimeline(
+      "czas",
+      "Marker w tym miejscu juz istnieje."
+    );
+  }
+
+  return sukces(
+    posortujMarkeryTimeline([
+      ...markery,
+      {
+        id: utworzIdMarkeraTimeline(czasMs),
+        czasMs
+      }
+    ])
+  );
+}
+
+export function usunMarkerTimeline(
+  markery: MarkerTimeline[],
+  idMarkera: string
+): Wynik<MarkerTimeline[], BladWalidacji> {
+  if (!markery.some((marker) => marker.id === idMarkera)) {
+    return utworzBladMarkeraTimeline(
+      "idMarkera",
+      "Nie znaleziono markera timeline."
+    );
+  }
+
+  return sukces(markery.filter((marker) => marker.id !== idMarkera));
+}
+
+export function przesunMarkerTimeline(
+  markery: MarkerTimeline[],
+  idMarkera: string,
+  nowyCzasSekundy: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+): Wynik<MarkerTimeline[], BladWalidacji> {
+  const indeksMarkera = markery.findIndex((marker) => marker.id === idMarkera);
+
+  if (indeksMarkera < 0) {
+    return utworzBladMarkeraTimeline(
+      "idMarkera",
+      "Nie znaleziono markera timeline."
+    );
+  }
+
+  const czasMs = przeliczCzasEdycjiNaMs(
+    nowyCzasSekundy,
+    ustawieniaSiatkiTimeline,
+    fps
+  );
+
+  if (czasMs === undefined) {
+    return utworzBladMarkeraTimeline(
+      "czas",
+      "Czas markera musi byc poprawna liczba."
+    );
+  }
+
+  if (
+    markery.some(
+      (marker) => marker.id !== idMarkera && marker.czasMs === czasMs
+    )
+  ) {
+    return utworzBladMarkeraTimeline(
+      "czas",
+      "Marker w tym miejscu juz istnieje."
+    );
+  }
+
+  return sukces(
+    posortujMarkeryTimeline([
+      ...markery.slice(0, indeksMarkera),
+      { ...markery[indeksMarkera], czasMs },
+      ...markery.slice(indeksMarkera + 1)
+    ])
+  );
 }
 
 export function przetnijKlipTimeline(
@@ -716,6 +845,23 @@ export function walidujKlipTimeline(
     bledy.push({
       pole: "zrodloKoniecMs",
       komunikat: "Czas wyjscia zrodla musi byc po czasie wejscia."
+    });
+  }
+
+  return bledy;
+}
+
+export function walidujMarkerTimeline(marker: MarkerTimeline): BladWalidacji[] {
+  const bledy: BladWalidacji[] = [];
+
+  if (!marker.id) {
+    bledy.push({ pole: "id", komunikat: "Marker musi miec identyfikator." });
+  }
+
+  if (!Number.isInteger(marker.czasMs) || marker.czasMs < 0) {
+    bledy.push({
+      pole: "czasMs",
+      komunikat: "Czas markera nie moze byc ujemny."
     });
   }
 

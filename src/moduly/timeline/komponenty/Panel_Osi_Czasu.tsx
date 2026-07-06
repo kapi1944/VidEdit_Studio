@@ -9,6 +9,7 @@ import {
 } from "react";
 import type {
   KlipTimeline,
+  MarkerTimeline,
   SegmentCiszy,
   UstawieniaSiatkiTimeline
 } from "../../../domena/timeline/typyTimeline";
@@ -18,6 +19,7 @@ import {
   USTAWIENIA_DOCIAGANIA_TIMELINE_MVP
 } from "../../../domena/timeline/typyTimeline";
 import { przeliczPozycjeNaCzas } from "../przeliczCzasNaPozycje";
+import { Pasek_Markerow } from "./Pasek_Markerow";
 import { Pasek_Klipu } from "./Pasek_Klipu";
 import { Segment_Ciszy_Na_Timeline } from "./Segment_Ciszy_Na_Timeline";
 import { Znacznik_Czasu } from "./Znacznik_Czasu";
@@ -25,6 +27,7 @@ import { Znacznik_Czasu } from "./Znacznik_Czasu";
 type WlasciwosciPaneluOsiCzasu = {
   nazwaProjektu: string;
   klipyTimeline: KlipTimeline[];
+  markeryTimeline?: MarkerTimeline[];
   czasTrwaniaMs: number;
   czasAktualnyMs: number;
   segmentyCiszy: SegmentCiszy[];
@@ -39,6 +42,8 @@ type WlasciwosciPaneluOsiCzasu = {
   naZmianeUstawienSiatkiTimeline?: (
     ustawieniaSiatki: UstawieniaSiatkiTimeline
   ) => void;
+  naDodajMarkerTimeline?: () => void;
+  naUsunMarkerTimeline?: (idMarkera: string) => void;
   naZaznaczKlipTimeline?: (idKlipu: string) => void;
   naPrzetnijZaznaczonyKlip?: () => void;
   naPrzesunZaznaczonyKlipWLewo?: () => void;
@@ -52,6 +57,7 @@ type WlasciwosciPaneluOsiCzasu = {
 export function Panel_Osi_Czasu({
   nazwaProjektu,
   klipyTimeline,
+  markeryTimeline = [],
   czasTrwaniaMs,
   czasAktualnyMs,
   segmentyCiszy,
@@ -64,6 +70,8 @@ export function Panel_Osi_Czasu({
   czyPokazacZaawansowaneUstawienia = true,
   naZmianeCzasuTimeline,
   naZmianeUstawienSiatkiTimeline,
+  naDodajMarkerTimeline,
+  naUsunMarkerTimeline = () => undefined,
   naZaznaczKlipTimeline,
   naPrzetnijZaznaczonyKlip,
   naPrzesunZaznaczonyKlipWLewo,
@@ -132,13 +140,6 @@ export function Panel_Osi_Czasu({
 
   function obsluzKlikniecieTimeline(zdarzenie: ZdarzenieMyszy<HTMLDivElement>) {
     if (zdarzenie.button !== 0) {
-      return;
-    }
-
-    if (
-      (zdarzenie.target as Element).closest(".segment-ciszy-na-timeline") ||
-      (zdarzenie.target as Element).closest(".znacznik-czasu")
-    ) {
       return;
     }
 
@@ -214,6 +215,13 @@ export function Panel_Osi_Czasu({
             <div className="panel-osi-czasu__narzedzia">
               <button
                 type="button"
+                disabled={!naDodajMarkerTimeline || czasTrwaniaMs <= 0}
+                onClick={naDodajMarkerTimeline}
+              >
+                Dodaj marker
+              </button>
+              <button
+                type="button"
                 disabled={
                   !czyEdycjaKlipuDostepna || !naPrzesunZaznaczonyKlipWLewo
                 }
@@ -264,8 +272,19 @@ export function Panel_Osi_Czasu({
         <div
           className="panel-osi-czasu__obszar"
           ref={uchwytTimelineRef}
-          onMouseDown={obsluzKlikniecieTimeline}
         >
+          <div
+            className="panel-osi-czasu__pasek-markerow"
+            onMouseDown={obsluzKlikniecieTimeline}
+            aria-label="Pasek markerow timeline"
+          >
+            <Pasek_Markerow
+              markeryTimeline={markeryTimeline}
+              czasTrwaniaTimelineMs={czasTrwaniaMs}
+              formatujCzas={formatujCzasTimeline}
+              naUsunMarker={naUsunMarkerTimeline}
+            />
+          </div>
           {czySaKlipyTimeline ? (
             <div className="panel-osi-czasu__klipy">
               {klipyTimeline.map((klipTimeline) => (
@@ -312,6 +331,7 @@ export function Panel_Osi_Czasu({
         <span>
           Zaznaczony klip: {zaznaczonyKlipTimeline?.nazwa ?? "brak"}
         </span>
+        <span>Markery: {markeryTimeline.length}</span>
         <span>Segmenty ciszy: {segmentyCiszy.length}</span>
         <span>
           Aktywny:{" "}

@@ -6,10 +6,12 @@ import type { CzasMs } from "../czas/typyCzasu";
 import {
   POWODY_PROPOZYCJI_CIEC,
   STATUSY_PROPOZYCJI_CIEC,
-  walidujKlipTimeline
+  walidujKlipTimeline,
+  walidujMarkerTimeline
 } from "../timeline/typyTimeline";
 import type {
   KlipTimeline,
+  MarkerTimeline,
   PropozycjaCiecia,
   SegmentCzasu
 } from "../timeline/typyTimeline";
@@ -241,6 +243,24 @@ export function sprawdzCzyProjektJestPoprawny(
 
     segmentyCiszyTimeline.forEach((segment) => {
       bledy.push(...sprawdzCzySegmentCzasuJestPoprawny(segment));
+    });
+  }
+
+  if (projekt.timeline && !Array.isArray(projekt.timeline.markery)) {
+    bledy.push({
+      pole: "timeline.markery",
+      komunikat: "Markery timeline musza byc tablica."
+    });
+  } else {
+    const markeryTimeline = projekt.timeline?.markery ?? [];
+
+    markeryTimeline.forEach((marker: MarkerTimeline) => {
+      bledy.push(
+        ...walidujMarkerTimeline(marker).map((blad) => ({
+          ...blad,
+          pole: `timeline.markery.${blad.pole}`
+        }))
+      );
     });
   }
 

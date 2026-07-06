@@ -11,6 +11,7 @@ export type {
   DaneUtworzeniaKlipuTimeline,
   JednostkaDociaganiaTimeline,
   KlipTimeline,
+  MarkerTimeline,
   PropozycjaCiecia,
   RodzajKlipuTimeline,
   SegmentCiszy,
@@ -22,6 +23,7 @@ export type {
 } from "../../domena/timeline/typyTimeline";
 export {
   czyKlipTimelineJestPoprawny,
+  dodajMarkerTimeline,
   DOMYSLNY_CZAS_TRWANIA_GRAFIKI_MS,
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   obliczDlugoscTimelineZKlipow,
@@ -29,13 +31,17 @@ export {
   opiszTrybSiatkiTimeline,
   pobierzKrokEdycjiTimeline,
   posortujKlipyTimeline,
+  posortujMarkeryTimeline,
   przetnijKlipTimeline,
   przyciagnijCzasDoSiatki,
+  przesunMarkerTimeline,
   przesunKlipTimeline,
   skrocKoniecKlipuTimeline,
   skrocPoczatekKlipuTimeline,
   USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
+  usunMarkerTimeline,
   utworzKlipTimeline,
+  walidujMarkerTimeline,
   walidujKlipTimeline,
   znajdzKlipTimelinePoId,
   utworzKlipTimelineZDodanegoMedium

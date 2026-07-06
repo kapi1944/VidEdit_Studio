@@ -30,6 +30,7 @@ export function utworzPustyProjekt(nazwa: string): ProjektMontazu {
     },
     timeline: {
       klipy: [],
+      markery: [],
       ustawieniaDociagania: DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
       segmentyCiszy: [],
       propozycjeCiec: []

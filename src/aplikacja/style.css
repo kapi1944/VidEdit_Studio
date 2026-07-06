@@ -1336,7 +1336,7 @@ h2 {
 
 .panel-osi-czasu__tor {
   position: relative;
-  height: 132px;
+  height: 168px;
   overflow: hidden;
   border: 1px solid var(--kolor-timeline-obramowania);
   border-radius: var(--radius-timeline);
@@ -1356,9 +1356,41 @@ h2 {
   inset: 18px 16px;
 }
 
-.panel-osi-czasu__klipy {
+.panel-osi-czasu__pasek-markerow {
   position: absolute;
   top: 0;
+  right: 0;
+  left: 0;
+  height: 26px;
+  border: 1px solid var(--kolor-timeline-obramowania);
+  border-radius: var(--radius-maly);
+  background: var(--kolor-powierzchni-delikatny);
+  cursor: crosshair;
+}
+
+.marker-timeline {
+  position: absolute;
+  top: 3px;
+  width: 11px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--kolor-obramowania-akcent);
+  border-radius: var(--radius-maly);
+  background: var(--kolor-akcentu);
+  box-shadow: var(--cien-elementu-aktywnego);
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+.marker-timeline:focus-visible {
+  outline: 2px solid var(--kolor-focus);
+  outline-offset: 2px;
+  box-shadow: var(--glow-focus);
+}
+
+.panel-osi-czasu__klipy {
+  position: absolute;
+  top: 40px;
   right: 0;
   left: 0;
   height: 36px;
@@ -1366,7 +1398,7 @@ h2 {
 
 .panel-osi-czasu__pusty {
   position: absolute;
-  top: 0;
+  top: 40px;
   right: 0;
   left: 0;
   display: flex;
@@ -1422,7 +1454,7 @@ h2 {
 
 .panel-osi-czasu__segmenty {
   position: absolute;
-  top: 56px;
+  top: 96px;
   right: 0;
   left: 0;
   height: 28px;
@@ -1465,7 +1497,7 @@ h2 {
 
 .znacznik-czasu {
   position: absolute;
-  top: -8px;
+  top: 0;
   bottom: 0;
   z-index: 2;
   width: var(--rozmiar-uchwytu-playheada);
@@ -1476,9 +1508,23 @@ h2 {
   transform: translateX(calc(var(--rozmiar-uchwytu-playheada) / -2));
 }
 
+.znacznik-czasu::before {
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-right: 7px solid transparent;
+  border-left: 7px solid transparent;
+  border-top: 9px solid var(--kolor-tla-playheada);
+  content: "";
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 35%));
+  transform: translateX(-50%);
+}
+
 .znacznik-czasu::after {
   position: absolute;
-  top: 0;
+  top: 10px;
   bottom: 0;
   left: 50%;
   width: var(--szerokosc-playheada);

@@ -52,18 +52,21 @@ import { generujMiniatureWideoZPliku } from "../infrastruktura/media/generujMini
 import { odczytajMetadaneWideoZPliku } from "../infrastruktura/media/odczytajMetadaneWideoBrowser";
 import { utworzDaneImportuZPlikuBrowserowego } from "../infrastruktura/media/utworzDaneImportuZPlikuBrowserowego";
 import type {
+  MarkerTimeline,
   PropozycjaCiecia,
   SegmentCiszy,
   UstawieniaSiatkiTimeline
 } from "../domena/timeline/typyTimeline";
 import {
+  dodajMarkerTimeline,
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   obliczCzasKoncaKlipu,
   pobierzKrokEdycjiTimeline,
   przetnijKlipTimeline,
   przesunKlipTimeline,
   skrocKoniecKlipuTimeline,
-  skrocPoczatekKlipuTimeline
+  skrocPoczatekKlipuTimeline,
+  usunMarkerTimeline
 } from "../domena/timeline/typyTimeline";
 import {
   domyslnyMotywInterfejsu,
@@ -267,6 +270,7 @@ export function Aplikacja() {
       ? projekt.audio.segmentyCiszy
       : projekt.timeline.segmentyCiszy;
   const klipyTimeline = projekt.timeline.klipy ?? [];
+  const markeryTimeline = projekt.timeline.markery ?? [];
   const czasTrwaniaKlipowTimelineMs = klipyTimeline.reduce(
     (najdluzszyCzasMs, klipTimeline) =>
       Math.max(najdluzszyCzasMs, obliczCzasKoncaKlipu(klipTimeline)),
@@ -434,6 +438,27 @@ export function Aplikacja() {
     );
   }
 
+  function zaktualizujMarkeryTimeline(
+    zaktualizuj: (markery: MarkerTimeline[]) => MarkerTimeline[] | undefined
+  ) {
+    ustawProjekt((aktualnyProjekt) => {
+      const noweMarkery = zaktualizuj(aktualnyProjekt.timeline.markery ?? []);
+
+      if (!noweMarkery) {
+        return aktualnyProjekt;
+      }
+
+      return {
+        ...aktualnyProjekt,
+        dataModyfikacjiIso: new Date().toISOString(),
+        timeline: {
+          ...aktualnyProjekt.timeline,
+          markery: noweMarkery
+        }
+      };
+    });
+  }
+
   function obsluzDodanieMediumNaTimeline(idMedium: string) {
     ustawProjekt((aktualnyProjekt) => {
       const wynikDodania = dodajMediumNaTimeline(aktualnyProjekt, idMedium);
@@ -592,6 +617,45 @@ export function Aplikacja() {
         ustawieniaSiatkiTimeline,
         aktualnyProjekt.ustawienia.liczbaKlatekNaSekunde
       );
+    });
+  }
+
+  function obsluzDodanieMarkeraTimeline() {
+    zaktualizujMarkeryTimeline((aktualneMarkery) => {
+      const wynikDodania = dodajMarkerTimeline(
+        aktualneMarkery,
+        czasAktualnyWZakresieMs / 1000,
+        ustawieniaSiatkiTimeline,
+        projekt.ustawienia.liczbaKlatekNaSekunde
+      );
+
+      if (!wynikDodania.czySukces) {
+        ustawBladImportuMediow(
+          wynikDodania.bledy[0]?.komunikat ??
+            "Nie udalo sie dodac markera timeline."
+        );
+        return undefined;
+      }
+
+      ustawBladImportuMediow(undefined);
+      return wynikDodania.dane;
+    });
+  }
+
+  function obsluzUsuniecieMarkeraTimeline(idMarkera: string) {
+    zaktualizujMarkeryTimeline((aktualneMarkery) => {
+      const wynikUsuniecia = usunMarkerTimeline(aktualneMarkery, idMarkera);
+
+      if (!wynikUsuniecia.czySukces) {
+        ustawBladImportuMediow(
+          wynikUsuniecia.bledy[0]?.komunikat ??
+            "Nie udalo sie usunac markera timeline."
+        );
+        return undefined;
+      }
+
+      ustawBladImportuMediow(undefined);
+      return wynikUsuniecia.dane;
     });
   }
 
@@ -778,6 +842,7 @@ export function Aplikacja() {
             <Panel_Osi_Czasu
               nazwaProjektu={projekt.nazwa}
               klipyTimeline={klipyTimeline}
+              markeryTimeline={markeryTimeline}
               czasTrwaniaMs={czasTechnicznyTimelineMs}
               czasAktualnyMs={czasAktualnyWZakresieMs}
               segmentyCiszy={segmentyCiszyTimeline}
@@ -791,6 +856,8 @@ export function Aplikacja() {
               }
               naZmianeCzasuTimeline={obsluzZmianeCzasuOdtwarzania}
               naZmianeUstawienSiatkiTimeline={ustawUstawieniaSiatkiTimeline}
+              naDodajMarkerTimeline={obsluzDodanieMarkeraTimeline}
+              naUsunMarkerTimeline={obsluzUsuniecieMarkeraTimeline}
               naZaznaczKlipTimeline={ustawIdZaznaczonegoKlipuTimeline}
               naPrzetnijZaznaczonyKlip={obsluzPrzeciecieZaznaczonegoKlipu}
               naPrzesunZaznaczonyKlipWLewo={obsluzPrzesuniecieKlipuWLewo}

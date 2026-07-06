@@ -453,14 +453,21 @@ describe("Panel_Osi_Czasu", () => {
     expect(kontener?.textContent).toContain("6000 ms");
   });
 
-  it("ustawia czas po kliknieciu w timeline", () => {
+  it("ustawia czas po kliknieciu w pasek markerow", () => {
     const obsluzZmianeCzasuTimeline = vi.fn();
     const obszarTimeline = wyrenderujPanelOsiCzasu(
       obsluzZmianeCzasuTimeline
     );
+    const pasekMarkerow = obszarTimeline.querySelector<HTMLDivElement>(
+      ".panel-osi-czasu__pasek-markerow"
+    );
+
+    if (!pasekMarkerow) {
+      throw new Error("Brak paska markerow w tescie.");
+    }
 
     act(() => {
-      obszarTimeline.dispatchEvent(
+      pasekMarkerow.dispatchEvent(
         new MouseEvent("mousedown", {
           bubbles: true,
           button: 0,
@@ -470,6 +477,60 @@ describe("Panel_Osi_Czasu", () => {
     });
 
     expect(obsluzZmianeCzasuTimeline).toHaveBeenCalledWith(5_000);
+  });
+
+  it("klikniecie klipu nie przesuwa playheada", () => {
+    const obsluzZmianeCzasuTimeline = vi.fn();
+    const obszarTimeline = wyrenderujPanelOsiCzasu(
+      obsluzZmianeCzasuTimeline,
+      {
+        naZaznaczKlipTimeline: vi.fn()
+      }
+    );
+    const pasekKlipu =
+      obszarTimeline.querySelector<HTMLButtonElement>(".pasek-klipu");
+
+    if (!pasekKlipu) {
+      throw new Error("Brak paska klipu w tescie.");
+    }
+
+    act(() => {
+      pasekKlipu.dispatchEvent(
+        new MouseEvent("mousedown", {
+          bubbles: true,
+          button: 0,
+          clientX: 250
+        })
+      );
+      pasekKlipu.click();
+    });
+
+    expect(obsluzZmianeCzasuTimeline).not.toHaveBeenCalled();
+  });
+
+  it("usuwa marker po dwukliku", () => {
+    const obsluzUsuniecieMarkera = vi.fn();
+    const obszarTimeline = wyrenderujPanelOsiCzasu(vi.fn(), {
+      markeryTimeline: [{ id: "marker-1000", czasMs: 1000 }],
+      naUsunMarkerTimeline: obsluzUsuniecieMarkera
+    });
+    const markerTimeline =
+      obszarTimeline.querySelector<HTMLButtonElement>(".marker-timeline");
+
+    if (!markerTimeline) {
+      throw new Error("Brak markera timeline w tescie.");
+    }
+
+    act(() => {
+      markerTimeline.dispatchEvent(
+        new MouseEvent("dblclick", {
+          bubbles: true,
+          button: 0
+        })
+      );
+    });
+
+    expect(obsluzUsuniecieMarkera).toHaveBeenCalledWith("marker-1000");
   });
 
   it("ogranicza przeciaganie glowicy do czasu trwania filmu", () => {

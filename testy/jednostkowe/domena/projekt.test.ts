@@ -18,6 +18,7 @@ describe("projekt montazu", () => {
       segmentyCiszy: []
     });
     expect(projekt.timeline.klipy).toEqual([]);
+    expect(projekt.timeline.markery).toEqual([]);
     expect(projekt.timeline.ustawieniaDociagania).toEqual({
       wlaczone: false,
       tryb: "brak",
