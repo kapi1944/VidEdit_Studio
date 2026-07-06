@@ -33,6 +33,11 @@ import {
   zatwierdzWszystkiePropozycjeCiec
 } from "../moduly/propozycje-ciec/indeksPropozycjiCiec";
 import {
+  DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY,
+  type UstawieniaWykrywaniaCiszy
+} from "../moduly/cisza/indeksCiszy";
+import { Panel_Ustawien_Ciszy } from "../moduly/cisza/komponenty/Panel_Ustawien_Ciszy";
+import {
   OBSLUGIWANE_ROZSZERZENIA_WIDEO,
   walidujPlikMediow,
   zaimportujPlikMediow
@@ -303,6 +308,9 @@ export function Aplikacja() {
     (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
   );
   const idAktywnegoSegmentuCiszyTimeline = aktywnySegmentCiszyTimeline?.id;
+  const ustawieniaWykrywaniaCiszy =
+    projekt.audio.ustawieniaWykrywaniaCiszy ??
+    DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY;
 
   function formatujCzasNaTimeline(czasMs: number) {
     return formatujCzas(
@@ -732,6 +740,19 @@ export function Aplikacja() {
     zaktualizujPropozycjeCiec(zatwierdzWszystkiePropozycjeCiec);
   }
 
+  function obsluzZmianeUstawienWykrywaniaCiszy(
+    ustawieniaWykrywaniaCiszy: UstawieniaWykrywaniaCiszy
+  ) {
+    ustawProjekt((aktualnyProjekt) => ({
+      ...aktualnyProjekt,
+      dataModyfikacjiIso: new Date().toISOString(),
+      audio: {
+        ...aktualnyProjekt.audio,
+        ustawieniaWykrywaniaCiszy
+      }
+    }));
+  }
+
   function obsluzWybranieSegmentuCiszy(segmentCiszy: SegmentCiszy) {
     ustawIdAktywnegoSegmentuCiszy(segmentCiszy.id);
     ustawAktualnyCzasTimelineMs(segmentCiszy.czasPoczatkuMs);
@@ -883,6 +904,10 @@ export function Aplikacja() {
             dzieci={
               <>
                 <Inspektor_Klipu daneInspektoraKlipu={daneInspektoraKlipu} />
+                <Panel_Ustawien_Ciszy
+                  ustawienia={ustawieniaWykrywaniaCiszy}
+                  naZmianeUstawien={obsluzZmianeUstawienWykrywaniaCiszy}
+                />
                 <Panel_Propozycji_Ciec
                   propozycjeCiec={projekt.timeline.propozycjeCiec}
                   formatujCzasCiecia={formatujCzasNaTimeline}

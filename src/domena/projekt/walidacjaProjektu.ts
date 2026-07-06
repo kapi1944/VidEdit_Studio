@@ -1,6 +1,7 @@
 import { STATUSY_ANALIZY_AUDIO } from "../audio/typyAudio";
 import { walidujSciezkeAudio } from "../audio/walidacjaAudio";
 import type { DaneAudioProjektu } from "../audio/typyAudio";
+import { walidujUstawieniaWykrywaniaCiszy } from "../../moduly/cisza/indeksCiszy";
 import { OBSLUGIWANE_FORMATY_CZASU } from "../czas/typyCzasu";
 import type { CzasMs } from "../czas/typyCzasu";
 import {
@@ -170,6 +171,17 @@ export function walidujDaneAudioProjektu(
       ...walidujSciezkeAudio(daneAudio.sciezkaAudio).map((blad) => ({
         ...blad,
         pole: `sciezkaAudio.${blad.pole}`
+      }))
+    );
+  }
+
+  if (daneAudio.ustawieniaWykrywaniaCiszy) {
+    bledy.push(
+      ...walidujUstawieniaWykrywaniaCiszy(
+        daneAudio.ustawieniaWykrywaniaCiszy
+      ).map((blad) => ({
+        ...blad,
+        pole: `ustawieniaWykrywaniaCiszy.${blad.pole}`
       }))
     );
   }

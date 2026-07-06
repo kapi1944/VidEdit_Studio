@@ -14,6 +14,8 @@ export type UstawieniaWykrywaniaCiszy = {
   minimalnaPrzerwaMiedzySegmentamiMs: CzasMs;
 };
 
+export type PresetWykrywaniaCiszy = "delikatny" | "normalny" | "agresywny";
+
 export type SurowySegmentCiszy = {
   czasPoczatkuMs: CzasMs;
   czasKoncaMs: CzasMs;

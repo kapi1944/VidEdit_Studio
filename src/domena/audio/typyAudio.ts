@@ -1,5 +1,6 @@
 import type { CzasMs } from "../czas/typyCzasu";
 import type { SegmentCiszy } from "../timeline/typyTimeline";
+import type { UstawieniaWykrywaniaCiszy } from "../../moduly/cisza/typyCiszy";
 
 export type StatusAnalizyAudio =
   | "brak"
@@ -29,6 +30,7 @@ export type SciezkaAudio = {
 export type DaneAudioProjektu = {
   sciezkaAudio?: SciezkaAudio;
   statusAnalizyAudio: StatusAnalizyAudio;
+  ustawieniaWykrywaniaCiszy?: UstawieniaWykrywaniaCiszy;
   segmentyCiszy: SegmentCiszy[];
   ostatniBladAudio?: string;
 };

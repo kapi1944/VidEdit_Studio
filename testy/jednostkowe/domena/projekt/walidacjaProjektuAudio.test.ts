@@ -4,6 +4,7 @@ import type {
   DaneAudioProjektu,
   SciezkaAudio
 } from "../../../../src/domena/audio/typyAudio";
+import { DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY } from "../../../../src/moduly/cisza/indeksCiszy";
 import { utworzPustyProjekt } from "../../../../src/domena/projekt/fabrykaProjektu";
 import {
   sprawdzCzyProjektJestPoprawny,
@@ -31,6 +32,7 @@ describe("projekt montazu z danymi audio", () => {
 
     expect(projekt.audio).toEqual({
       statusAnalizyAudio: "brak",
+      ustawieniaWykrywaniaCiszy: DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY,
       segmentyCiszy: []
     });
     expect(sprawdzCzyProjektJestPoprawny(projekt)).toEqual([]);
@@ -104,6 +106,23 @@ describe("projekt montazu z danymi audio", () => {
     };
 
     expect(walidujDaneAudioProjektu(daneAudio)).toEqual([]);
+  });
+
+  it("odrzuca ustawienia wykrywania ciszy spoza zakresu", () => {
+    const daneAudio: DaneAudioProjektu = {
+      statusAnalizyAudio: "brak",
+      ustawieniaWykrywaniaCiszy: {
+        ...DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY,
+        progCiszyDb: -90
+      },
+      segmentyCiszy: []
+    };
+
+    expect(walidujDaneAudioProjektu(daneAudio)).toContainEqual(
+      expect.objectContaining({
+        pole: "ustawieniaWykrywaniaCiszy.progCiszyDb"
+      })
+    );
   });
 
   it("odrzuca bledna sciezke audio w projekcie", () => {

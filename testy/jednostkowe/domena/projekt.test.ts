@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY } from "../../../src/moduly/cisza/indeksCiszy";
 import { utworzPustyProjekt } from "../../../src/domena/projekt/fabrykaProjektu";
 import {
   sprawdzCzyProjektJestPoprawny,
@@ -15,6 +16,7 @@ describe("projekt montazu", () => {
     expect(projekt.media).toEqual([]);
     expect(projekt.audio).toEqual({
       statusAnalizyAudio: "brak",
+      ustawieniaWykrywaniaCiszy: DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY,
       segmentyCiszy: []
     });
     expect(projekt.timeline.sciezki.map((sciezka) => sciezka.nazwa)).toEqual([

@@ -1,5 +1,8 @@
 import type { BladWalidacji } from "../../wspolne/bledy";
-import type { UstawieniaWykrywaniaCiszy } from "./typyCiszy";
+import type {
+  PresetWykrywaniaCiszy,
+  UstawieniaWykrywaniaCiszy
+} from "./typyCiszy";
 
 export const DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY: UstawieniaWykrywaniaCiszy =
   {
@@ -10,9 +13,87 @@ export const DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY: UstawieniaWykrywaniaCiszy =
     minimalnaPrzerwaMiedzySegmentamiMs: 200
   };
 
+export const ZAKRESY_USTAWIEN_WYKRYWANIA_CISZY = {
+  progCiszyDb: { minimum: -80, maksimum: -10, jednostka: "dB" },
+  minimalnaDlugoscCiszyMs: { minimum: 100, maksimum: 10000, jednostka: "ms" },
+  marginesPrzedMs: { minimum: 0, maksimum: 2000, jednostka: "ms" },
+  marginesPoMs: { minimum: 0, maksimum: 2000, jednostka: "ms" },
+  minimalnaPrzerwaMiedzySegmentamiMs: {
+    minimum: 0,
+    maksimum: 10000,
+    jednostka: "ms"
+  }
+} as const;
+
+export const listaPresetowWykrywaniaCiszy: Array<{
+  id: PresetWykrywaniaCiszy;
+  etykieta: string;
+  opis: string;
+  ustawienia: UstawieniaWykrywaniaCiszy;
+}> = [
+  {
+    id: "delikatny",
+    etykieta: "Delikatny",
+    opis: "Mniej czuly, zostawia wiecej naturalnych pauz.",
+    ustawienia: {
+      progCiszyDb: -50,
+      minimalnaDlugoscCiszyMs: 700,
+      marginesPrzedMs: 120,
+      marginesPoMs: 160,
+      minimalnaPrzerwaMiedzySegmentamiMs: 300
+    }
+  },
+  {
+    id: "normalny",
+    etykieta: "Normalny",
+    opis: "Zbalansowane ustawienia do typowej mowy.",
+    ustawienia: DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY
+  },
+  {
+    id: "agresywny",
+    etykieta: "Agresywny",
+    opis: "Bardziej czuly, szuka krotszych i cichszych przerw.",
+    ustawienia: {
+      progCiszyDb: -35,
+      minimalnaDlugoscCiszyMs: 300,
+      marginesPrzedMs: 40,
+      marginesPoMs: 60,
+      minimalnaPrzerwaMiedzySegmentamiMs: 100
+    }
+  }
+];
+
+export function pobierzPresetWykrywaniaCiszy(
+  preset: PresetWykrywaniaCiszy
+): UstawieniaWykrywaniaCiszy {
+  const znalezionyPreset = listaPresetowWykrywaniaCiszy.find(
+    (pozycjaPresetu) => pozycjaPresetu.id === preset
+  );
+
+  return {
+    ...(znalezionyPreset?.ustawienia ??
+      DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY)
+  };
+}
+
+function dodajBladZakresu(
+  bledy: BladWalidacji[],
+  pole: keyof UstawieniaWykrywaniaCiszy,
+  wartosc: number
+) {
+  const zakres = ZAKRESY_USTAWIEN_WYKRYWANIA_CISZY[pole];
+
+  if (wartosc < zakres.minimum || wartosc > zakres.maksimum) {
+    bledy.push({
+      pole,
+      komunikat: `${pole} musi byc w zakresie od ${zakres.minimum} do ${zakres.maksimum} ${zakres.jednostka}.`
+    });
+  }
+}
+
 export function walidujUstawieniaWykrywaniaCiszy(
   ustawienia: UstawieniaWykrywaniaCiszy,
-  czasTrwaniaAudioMs: number
+  czasTrwaniaAudioMs = 1
 ): BladWalidacji[] {
   const bledy: BladWalidacji[] = [];
 
@@ -21,6 +102,8 @@ export function walidujUstawieniaWykrywaniaCiszy(
       pole: "progCiszyDb",
       komunikat: "Prog ciszy musi byc liczba skonczona."
     });
+  } else {
+    dodajBladZakresu(bledy, "progCiszyDb", ustawienia.progCiszyDb);
   }
 
   if (
@@ -31,6 +114,12 @@ export function walidujUstawieniaWykrywaniaCiszy(
       pole: "minimalnaDlugoscCiszyMs",
       komunikat: "Minimalna dlugosc ciszy musi byc wieksza od zera."
     });
+  } else {
+    dodajBladZakresu(
+      bledy,
+      "minimalnaDlugoscCiszyMs",
+      ustawienia.minimalnaDlugoscCiszyMs
+    );
   }
 
   if (
@@ -41,6 +130,8 @@ export function walidujUstawieniaWykrywaniaCiszy(
       pole: "marginesPrzedMs",
       komunikat: "Margines przed cisza nie moze byc ujemny."
     });
+  } else {
+    dodajBladZakresu(bledy, "marginesPrzedMs", ustawienia.marginesPrzedMs);
   }
 
   if (
@@ -51,6 +142,8 @@ export function walidujUstawieniaWykrywaniaCiszy(
       pole: "marginesPoMs",
       komunikat: "Margines po ciszy nie moze byc ujemny."
     });
+  } else {
+    dodajBladZakresu(bledy, "marginesPoMs", ustawienia.marginesPoMs);
   }
 
   if (
@@ -61,6 +154,12 @@ export function walidujUstawieniaWykrywaniaCiszy(
       pole: "minimalnaPrzerwaMiedzySegmentamiMs",
       komunikat: "Minimalna przerwa miedzy segmentami nie moze byc ujemna."
     });
+  } else {
+    dodajBladZakresu(
+      bledy,
+      "minimalnaPrzerwaMiedzySegmentamiMs",
+      ustawienia.minimalnaPrzerwaMiedzySegmentamiMs
+    );
   }
 
   if (!Number.isFinite(czasTrwaniaAudioMs) || czasTrwaniaAudioMs <= 0) {

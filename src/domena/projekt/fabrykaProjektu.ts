@@ -1,4 +1,5 @@
 import { DOMYSLNA_LICZBA_KLATEK_NA_SEKUNDE, WERSJA_MODELU_PROJEKTU } from "../../wspolne/stale";
+import { DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY } from "../../moduly/cisza/indeksCiszy";
 import {
   DOMYSLNE_SCIEZKI_TIMELINE,
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE
@@ -29,6 +30,7 @@ export function utworzPustyProjekt(nazwa: string): ProjektMontazu {
     media: [],
     audio: {
       statusAnalizyAudio: "brak",
+      ustawieniaWykrywaniaCiszy: DOMYSLNE_USTAWIENIA_WYKRYWANIA_CISZY,
       segmentyCiszy: []
     },
     timeline: {

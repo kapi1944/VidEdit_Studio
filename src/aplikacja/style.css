@@ -1684,6 +1684,92 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
+.panel-ustawien-ciszy {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: var(--radius-panelu);
+  background: var(--kolor-powierzchni);
+  box-shadow: var(--cien-panelu);
+}
+
+.panel-ustawien-ciszy__naglowek {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.panel-ustawien-ciszy__naglowek h2 {
+  margin: 0;
+}
+
+.panel-ustawien-ciszy__etykieta {
+  margin: 0;
+  color: var(--kolor-etykiety);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.panel-ustawien-ciszy__wybor,
+.panel-ustawien-ciszy__pole {
+  display: grid;
+  gap: 6px;
+}
+
+.panel-ustawien-ciszy__wybor span,
+.panel-ustawien-ciszy__nazwa {
+  color: var(--kolor-etykiety);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.panel-ustawien-ciszy__wybor select,
+.panel-ustawien-ciszy__pole input {
+  min-height: 36px;
+  width: 100%;
+  border: 1px solid var(--kolor-obramowania-selecta);
+  border-radius: var(--radius-elementu);
+  color: var(--kolor-tekstu-mocny);
+  background: var(--kolor-powierzchni-delikatny);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-ustawien-ciszy__wybor select {
+  padding: 7px 10px;
+}
+
+.panel-ustawien-ciszy__pole input {
+  padding: 7px 8px;
+}
+
+.panel-ustawien-ciszy__opis,
+.panel-ustawien-ciszy__opis-pola,
+.panel-ustawien-ciszy__zakres {
+  margin: 0;
+  color: var(--kolor-tekstu-slaby);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.panel-ustawien-ciszy__opis {
+  margin-top: 12px;
+}
+
+.panel-ustawien-ciszy__pola {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.panel-ustawien-ciszy__blad {
+  color: var(--kolor-bledu-tekstu);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 .panel-propozycji-ciec {
   margin-top: 20px;
   padding: 20px;
