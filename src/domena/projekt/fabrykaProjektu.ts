@@ -1,5 +1,8 @@
 import { DOMYSLNA_LICZBA_KLATEK_NA_SEKUNDE, WERSJA_MODELU_PROJEKTU } from "../../wspolne/stale";
-import { DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE } from "../timeline/typyTimeline";
+import {
+  DOMYSLNE_SCIEZKI_TIMELINE,
+  DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE
+} from "../timeline/typyTimeline";
 import type { ProjektMontazu } from "./typyProjektu";
 
 function utworzIdProjektu() {
@@ -29,6 +32,7 @@ export function utworzPustyProjekt(nazwa: string): ProjektMontazu {
       segmentyCiszy: []
     },
     timeline: {
+      sciezki: DOMYSLNE_SCIEZKI_TIMELINE,
       klipy: [],
       markery: [],
       ustawieniaDociagania: DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,

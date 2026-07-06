@@ -17,6 +17,11 @@ describe("projekt montazu", () => {
       statusAnalizyAudio: "brak",
       segmentyCiszy: []
     });
+    expect(projekt.timeline.sciezki.map((sciezka) => sciezka.nazwa)).toEqual([
+      "Wideo 1",
+      "Obrazy",
+      "Audio 1"
+    ]);
     expect(projekt.timeline.klipy).toEqual([]);
     expect(projekt.timeline.markery).toEqual([]);
     expect(projekt.timeline.ustawieniaDociagania).toEqual({
@@ -33,6 +38,51 @@ describe("projekt montazu", () => {
     const projekt = utworzPustyProjekt("Kurs montazu");
 
     expect(sprawdzCzyProjektJestPoprawny(projekt)).toEqual([]);
+  });
+
+  it("akceptuje projekt zapisany przed modelem sciezek timeline", () => {
+    const projekt = utworzPustyProjekt("Stary projekt");
+    const projektBezSciezek = {
+      ...projekt,
+      timeline: {
+        klipy: [],
+        markery: [],
+        ustawieniaDociagania: projekt.timeline.ustawieniaDociagania,
+        segmentyCiszy: [],
+        propozycjeCiec: []
+      }
+    };
+
+    expect(
+      sprawdzCzyProjektJestPoprawny(
+        projektBezSciezek as unknown as typeof projekt
+      )
+    ).toEqual([]);
+  });
+
+  it("zwraca blad, gdy sciezka timeline ma pusty identyfikator", () => {
+    const projekt = utworzPustyProjekt("Projekt ze zla sciezka");
+    const bledy = sprawdzCzyProjektJestPoprawny({
+      ...projekt,
+      timeline: {
+        ...projekt.timeline,
+        sciezki: [
+          {
+            id: "",
+            nazwa: "Wideo 1",
+            rodzaj: "wideo",
+            kolejnosc: 1,
+            czyWidoczna: true,
+            czyZablokowana: false
+          }
+        ]
+      }
+    });
+
+    expect(bledy).toContainEqual({
+      pole: "timeline.sciezki.id",
+      komunikat: "Sciezka musi miec identyfikator."
+    });
   });
 
   it("zwraca blad, gdy nazwa projektu jest pusta", () => {

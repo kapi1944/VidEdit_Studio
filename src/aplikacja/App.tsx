@@ -62,6 +62,7 @@ import {
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   obliczCzasKoncaKlipu,
   pobierzKrokEdycjiTimeline,
+  pobierzSciezkiTimelineZFallbackiem,
   przetnijKlipTimeline,
   przesunKlipTimeline,
   skrocKoniecKlipuTimeline,
@@ -271,6 +272,9 @@ export function Aplikacja() {
       : projekt.timeline.segmentyCiszy;
   const klipyTimeline = projekt.timeline.klipy ?? [];
   const markeryTimeline = projekt.timeline.markery ?? [];
+  const sciezkiTimeline = pobierzSciezkiTimelineZFallbackiem(
+    projekt.timeline.sciezki
+  );
   const czasTrwaniaKlipowTimelineMs = klipyTimeline.reduce(
     (najdluzszyCzasMs, klipTimeline) =>
       Math.max(najdluzszyCzasMs, obliczCzasKoncaKlipu(klipTimeline)),
@@ -842,6 +846,7 @@ export function Aplikacja() {
             <Panel_Osi_Czasu
               nazwaProjektu={projekt.nazwa}
               klipyTimeline={klipyTimeline}
+              sciezkiTimeline={sciezkiTimeline}
               markeryTimeline={markeryTimeline}
               czasTrwaniaMs={czasTechnicznyTimelineMs}
               czasAktualnyMs={czasAktualnyWZakresieMs}

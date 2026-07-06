@@ -10,12 +10,16 @@ import {
 import type {
   KlipTimeline,
   MarkerTimeline,
+  SciezkaTimeline,
   SegmentCiszy,
   UstawieniaSiatkiTimeline
 } from "../../../domena/timeline/typyTimeline";
 import {
+  DOMYSLNE_SCIEZKI_TIMELINE,
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   opiszTrybSiatkiTimeline,
+  pobierzSciezkaIdKlipuTimeline,
+  pobierzSciezkiTimelineZFallbackiem,
   USTAWIENIA_DOCIAGANIA_TIMELINE_MVP
 } from "../../../domena/timeline/typyTimeline";
 import { przeliczPozycjeNaCzas } from "../przeliczCzasNaPozycje";
@@ -27,6 +31,7 @@ import { Znacznik_Czasu } from "./Znacznik_Czasu";
 type WlasciwosciPaneluOsiCzasu = {
   nazwaProjektu: string;
   klipyTimeline: KlipTimeline[];
+  sciezkiTimeline?: SciezkaTimeline[];
   markeryTimeline?: MarkerTimeline[];
   czasTrwaniaMs: number;
   czasAktualnyMs: number;
@@ -57,6 +62,7 @@ type WlasciwosciPaneluOsiCzasu = {
 export function Panel_Osi_Czasu({
   nazwaProjektu,
   klipyTimeline,
+  sciezkiTimeline = DOMYSLNE_SCIEZKI_TIMELINE,
   markeryTimeline = [],
   czasTrwaniaMs,
   czasAktualnyMs,
@@ -90,6 +96,15 @@ export function Panel_Osi_Czasu({
   const zaznaczonyKlipTimeline = klipyTimeline.find(
     (klipTimeline) => klipTimeline.id === idZaznaczonegoKlipuTimeline
   );
+  const uporzadkowaneSciezkiTimeline = [
+    ...pobierzSciezkiTimelineZFallbackiem(sciezkiTimeline)
+  ].sort((pierwszaSciezka, drugaSciezka) => {
+    if (pierwszaSciezka.kolejnosc !== drugaSciezka.kolejnosc) {
+      return pierwszaSciezka.kolejnosc - drugaSciezka.kolejnosc;
+    }
+
+    return pierwszaSciezka.id.localeCompare(drugaSciezka.id);
+  });
   const czySaKlipyTimeline = klipyTimeline.length > 0;
   const czyCiecieDostepne = Boolean(
     zaznaczonyKlipTimeline && naPrzetnijZaznaczonyKlip
@@ -287,16 +302,38 @@ export function Panel_Osi_Czasu({
           </div>
           {czySaKlipyTimeline ? (
             <div className="panel-osi-czasu__klipy">
-              {klipyTimeline.map((klipTimeline) => (
-                <Pasek_Klipu
-                  key={klipTimeline.id}
-                  klipTimeline={klipTimeline}
-                  czasTrwaniaTimelineMs={czasTrwaniaMs}
-                  czyZaznaczony={klipTimeline.id === idZaznaczonegoKlipuTimeline}
-                  formatujCzas={formatujCzasTimeline}
-                  naZaznacz={naZaznaczKlipTimeline}
-                />
-              ))}
+              {uporzadkowaneSciezkiTimeline.map((sciezkaTimeline) => {
+                const klipySciezki = klipyTimeline.filter(
+                  (klipTimeline) =>
+                    pobierzSciezkaIdKlipuTimeline(klipTimeline) ===
+                    sciezkaTimeline.id
+                );
+
+                return (
+                  <div
+                    key={sciezkaTimeline.id}
+                    className="panel-osi-czasu__sciezka"
+                  >
+                    <div className="panel-osi-czasu__etykieta-sciezki">
+                      {sciezkaTimeline.nazwa}
+                    </div>
+                    <div className="panel-osi-czasu__klipy-sciezki">
+                      {klipySciezki.map((klipTimeline) => (
+                        <Pasek_Klipu
+                          key={klipTimeline.id}
+                          klipTimeline={klipTimeline}
+                          czasTrwaniaTimelineMs={czasTrwaniaMs}
+                          czyZaznaczony={
+                            klipTimeline.id === idZaznaczonegoKlipuTimeline
+                          }
+                          formatujCzas={formatujCzasTimeline}
+                          naZaznacz={naZaznaczKlipTimeline}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="panel-osi-czasu__pusty">
@@ -332,6 +369,7 @@ export function Panel_Osi_Czasu({
           Zaznaczony klip: {zaznaczonyKlipTimeline?.nazwa ?? "brak"}
         </span>
         <span>Markery: {markeryTimeline.length}</span>
+        <span>Sciezki: {uporzadkowaneSciezkiTimeline.length}</span>
         <span>Segmenty ciszy: {segmentyCiszy.length}</span>
         <span>
           Aktywny:{" "}

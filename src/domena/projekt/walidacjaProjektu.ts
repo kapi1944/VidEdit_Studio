@@ -5,14 +5,17 @@ import { OBSLUGIWANE_FORMATY_CZASU } from "../czas/typyCzasu";
 import type { CzasMs } from "../czas/typyCzasu";
 import {
   POWODY_PROPOZYCJI_CIEC,
+  pobierzSciezkiTimelineZFallbackiem,
   STATUSY_PROPOZYCJI_CIEC,
   walidujKlipTimeline,
-  walidujMarkerTimeline
+  walidujMarkerTimeline,
+  walidujSciezkeTimeline
 } from "../timeline/typyTimeline";
 import type {
   KlipTimeline,
   MarkerTimeline,
   PropozycjaCiecia,
+  SciezkaTimeline,
   SegmentCzasu
 } from "../timeline/typyTimeline";
 import type { BladWalidacji } from "../../wspolne/bledy";
@@ -214,6 +217,29 @@ export function sprawdzCzyProjektJestPoprawny(
     });
   }
 
+  const sciezkiTimeline = pobierzSciezkiTimelineZFallbackiem(
+    projekt.timeline?.sciezki
+  );
+
+  if (
+    projekt.timeline?.sciezki !== undefined &&
+    !Array.isArray(projekt.timeline.sciezki)
+  ) {
+    bledy.push({
+      pole: "timeline.sciezki",
+      komunikat: "Sciezki timeline musza byc tablica."
+    });
+  } else {
+    sciezkiTimeline.forEach((sciezka: SciezkaTimeline) => {
+      bledy.push(
+        ...walidujSciezkeTimeline(sciezka).map((blad) => ({
+          ...blad,
+          pole: `timeline.sciezki.${blad.pole}`
+        }))
+      );
+    });
+  }
+
   if (projekt.timeline && !Array.isArray(projekt.timeline.klipy)) {
     bledy.push({
       pole: "timeline.klipy",
@@ -225,7 +251,11 @@ export function sprawdzCzyProjektJestPoprawny(
 
     klipyTimeline.forEach((klip: KlipTimeline) => {
       bledy.push(
-        ...walidujKlipTimeline(klip, idPlikowMediow).map((blad) => ({
+        ...walidujKlipTimeline(
+          klip,
+          idPlikowMediow,
+          sciezkiTimeline
+        ).map((blad) => ({
           ...blad,
           pole: `timeline.klipy.${blad.pole}`
         }))

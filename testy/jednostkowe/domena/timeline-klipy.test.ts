@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 import type { PlikMediow } from "../../../src/domena/media/typyMediow";
 import {
   czyKlipTimelineJestPoprawny,
+  DOMYSLNE_SCIEZKI_TIMELINE,
+  ID_SCIEZKI_OBRAZY,
+  ID_SCIEZKI_WIDEO_1,
   obliczDlugoscTimelineZKlipow,
   obliczCzasKoncaKlipu,
+  pobierzSciezkaIdKlipuTimeline,
   posortujKlipyTimeline,
   type RodzajKlipuTimeline,
   utworzKlipTimeline,
@@ -52,10 +56,12 @@ describe("klipy timeline", () => {
       czasTrwaniaMs: 6_000,
       zrodloStartMs: 2_000,
       zrodloKoniecMs: 8_000,
-      sciezka: "wideo-1",
+      sciezkaId: ID_SCIEZKI_WIDEO_1,
       nazwa: "nagranie.mp4"
     });
-    expect(czyKlipTimelineJestPoprawny(klip, ["wideo-1"])).toEqual([]);
+    expect(
+      czyKlipTimelineJestPoprawny(klip, ["wideo-1"], DOMYSLNE_SCIEZKI_TIMELINE)
+    ).toEqual([]);
   });
 
   it("tworzy klip z grafiki z czasem trwania ustawionym przez uzytkownika", () => {
@@ -82,7 +88,7 @@ describe("klipy timeline", () => {
       rodzaj: "grafika",
       czasStartuMs: 5_000,
       czasTrwaniaMs: 3_000,
-      sciezka: "wideo-1",
+      sciezkaId: ID_SCIEZKI_OBRAZY,
       nazwa: "plansza.png"
     });
     expect(klip.zrodloStartMs).toBeUndefined();
@@ -113,6 +119,35 @@ describe("klipy timeline", () => {
       czasTrwaniaMs: 5000
     });
     expect(czyKlipTimelineJestPoprawny(klip, ["grafika-1"])).toEqual([]);
+  });
+
+  it("mapuje stara sciezke klipu na domyslna sciezke wideo", () => {
+    expect(
+      pobierzSciezkaIdKlipuTimeline({
+        id: "klip-stary",
+        idPlikuMediow: "wideo-1",
+        rodzaj: "wideo",
+        czasStartuMs: 0,
+        czasTrwaniaMs: 1000,
+        sciezka: "wideo-1",
+        nazwa: "Stary klip"
+      })
+    ).toBe(ID_SCIEZKI_WIDEO_1);
+  });
+
+  it("odrzuca klip ze sciezka spoza modelu timeline", () => {
+    const klip = utworzKlipTimelineZDodanegoMedium({
+      id: "klip-1",
+      plikMediow: utworzPlikMediow(),
+      sciezkaId: "brak-sciezki"
+    });
+
+    expect(
+      czyKlipTimelineJestPoprawny(klip, ["media-1"], DOMYSLNE_SCIEZKI_TIMELINE)
+    ).toContainEqual({
+      pole: "sciezkaId",
+      komunikat: "Klip musi wskazywac istniejaca sciezke timeline."
+    });
   });
 
   it("oblicza poprawny czas konca klipu", () => {

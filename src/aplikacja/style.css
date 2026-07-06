@@ -1336,7 +1336,7 @@ h2 {
 
 .panel-osi-czasu__tor {
   position: relative;
-  height: 168px;
+  height: 240px;
   overflow: hidden;
   border: 1px solid var(--kolor-timeline-obramowania);
   border-radius: var(--radius-timeline);
@@ -1393,7 +1393,9 @@ h2 {
   top: 40px;
   right: 0;
   left: 0;
-  height: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .panel-osi-czasu__pusty {
@@ -1412,6 +1414,36 @@ h2 {
   font-weight: 800;
 }
 
+.panel-osi-czasu__sciezka {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+  min-height: 32px;
+}
+
+.panel-osi-czasu__etykieta-sciezki {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 8px;
+  border: 1px solid var(--kolor-obramowania-mocny);
+  border-radius: var(--radius-maly);
+  color: var(--kolor-tekstu-slaby);
+  background: var(--kolor-powierzchni-delikatny);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.panel-osi-czasu__klipy-sciezki {
+  position: relative;
+  min-height: 32px;
+  border-bottom: 1px solid var(--kolor-toru-linia);
+}
+
 .pasek-klipu {
   position: absolute;
   top: 0;
@@ -1419,8 +1451,8 @@ h2 {
   gap: 10px;
   align-items: center;
   justify-content: space-between;
-  min-height: 36px;
-  padding: 8px 12px;
+  min-height: 30px;
+  padding: 6px 10px;
   border: 1px solid var(--kolor-obramowania-mocny);
   border-radius: var(--radius-klipu);
   color: var(--kolor-klipu-tekstu);
@@ -1454,7 +1486,7 @@ h2 {
 
 .panel-osi-czasu__segmenty {
   position: absolute;
-  top: 96px;
+  top: 168px;
   right: 0;
   left: 0;
   height: 28px;

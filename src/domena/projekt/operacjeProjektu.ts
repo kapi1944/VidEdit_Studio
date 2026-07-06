@@ -1,7 +1,9 @@
 import type { MetadaneWideo, PlikMediow } from "../media/typyMediow";
 import {
+  DOMYSLNE_SCIEZKI_TIMELINE,
   DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   obliczDlugoscTimelineZKlipow,
+  pobierzSciezkiTimelineZFallbackiem,
   type RodzajKlipuTimeline,
   utworzKlipTimeline,
   walidujKlipTimeline,
@@ -19,15 +21,20 @@ function czyMediumMozeBycKlipemTimeline(
 }
 
 function pobierzTimelineProjektu(projekt: ProjektMontazu) {
-  return (
+  const timeline =
     projekt.timeline ?? {
+      sciezki: DOMYSLNE_SCIEZKI_TIMELINE,
       klipy: [],
       markery: [],
       ustawieniaDociagania: DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
       segmentyCiszy: [],
       propozycjeCiec: []
-    }
-  );
+    };
+
+  return {
+    ...timeline,
+    sciezki: pobierzSciezkiTimelineZFallbackiem(timeline.sciezki)
+  };
 }
 
 export function dodajMediumDoProjektu(
@@ -105,7 +112,8 @@ export function dodajMediumNaTimeline(
   });
   const bledyKlipu = walidujKlipTimeline(
     klipTimeline,
-    projekt.media.map((plikMediow) => plikMediow.id)
+    projekt.media.map((plikMediow) => plikMediow.id),
+    timeline.sciezki
   );
 
   if (bledyKlipu.length > 0) {

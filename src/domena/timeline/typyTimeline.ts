@@ -37,6 +37,16 @@ export type PropozycjaCiecia = SegmentCzasu & {
 };
 
 export type RodzajKlipuTimeline = "wideo" | "grafika";
+export type RodzajSciezkiTimeline = "wideo" | "obraz" | "audio" | "napisy";
+
+export type SciezkaTimeline = {
+  id: string;
+  nazwa: string;
+  rodzaj: RodzajSciezkiTimeline;
+  kolejnosc: number;
+  czyWidoczna: boolean;
+  czyZablokowana: boolean;
+};
 
 export type MarkerTimeline = {
   id: string;
@@ -51,13 +61,44 @@ export type KlipTimeline = {
   czasTrwaniaMs: CzasMs;
   zrodloStartMs?: CzasMs;
   zrodloKoniecMs?: CzasMs;
-  sciezka: "wideo-1";
+  sciezkaId?: string;
+  sciezka?: "wideo-1";
   nazwa: string;
   kolor?: string;
   czyZablokowany?: boolean;
 };
 
 export const DOMYSLNY_CZAS_TRWANIA_GRAFIKI_MS = 5000;
+export const ID_SCIEZKI_WIDEO_1 = "sciezka-wideo-1";
+export const ID_SCIEZKI_OBRAZY = "sciezka-obrazy";
+export const ID_SCIEZKI_AUDIO_1 = "sciezka-audio-1";
+
+export const DOMYSLNE_SCIEZKI_TIMELINE: SciezkaTimeline[] = [
+  {
+    id: ID_SCIEZKI_WIDEO_1,
+    nazwa: "Wideo 1",
+    rodzaj: "wideo",
+    kolejnosc: 1,
+    czyWidoczna: true,
+    czyZablokowana: false
+  },
+  {
+    id: ID_SCIEZKI_OBRAZY,
+    nazwa: "Obrazy",
+    rodzaj: "obraz",
+    kolejnosc: 2,
+    czyWidoczna: true,
+    czyZablokowana: false
+  },
+  {
+    id: ID_SCIEZKI_AUDIO_1,
+    nazwa: "Audio 1",
+    rodzaj: "audio",
+    kolejnosc: 3,
+    czyWidoczna: true,
+    czyZablokowana: false
+  }
+];
 
 export type TrybDociaganiaTimeline = "czas" | "klatki" | "brak";
 
@@ -88,6 +129,7 @@ export type DaneUtworzeniaKlipuTimeline = {
   czasTrwaniaMs?: CzasMs;
   zrodloStartMs?: CzasMs;
   zrodloKoniecMs?: CzasMs;
+  sciezkaId?: string;
   sciezka?: "wideo-1";
   nazwa?: string;
   kolor?: string;
@@ -219,6 +261,7 @@ export function pobierzKrokEdycjiTimeline(
 }
 
 export type TimelineProjektu = {
+  sciezki: SciezkaTimeline[];
   klipy: KlipTimeline[];
   markery: MarkerTimeline[];
   ustawieniaDociagania: UstawieniaDociaganiaTimeline;
@@ -234,6 +277,32 @@ function pobierzCzasTrwaniaMedium(plikMediow: PlikMediow): CzasMs {
   return plikMediow.metadane?.czasTrwaniaMs ?? plikMediow.czasTrwaniaMs ?? 0;
 }
 
+export function pobierzDomyslnaSciezkeIdDlaRodzaju(
+  rodzajKlipu: RodzajKlipuTimeline
+) {
+  return rodzajKlipu === "grafika" ? ID_SCIEZKI_OBRAZY : ID_SCIEZKI_WIDEO_1;
+}
+
+export function pobierzSciezkaIdKlipuTimeline(klip: KlipTimeline) {
+  if (klip.sciezkaId && klip.sciezkaId.trim().length > 0) {
+    return klip.sciezkaId;
+  }
+
+  if (klip.sciezka === "wideo-1") {
+    return ID_SCIEZKI_WIDEO_1;
+  }
+
+  return pobierzDomyslnaSciezkeIdDlaRodzaju(klip.rodzaj);
+}
+
+export function pobierzSciezkiTimelineZFallbackiem(
+  sciezki?: SciezkaTimeline[]
+) {
+  return Array.isArray(sciezki) && sciezki.length > 0
+    ? sciezki
+    : DOMYSLNE_SCIEZKI_TIMELINE;
+}
+
 export function utworzKlipTimelineZDodanegoMedium({
   id,
   plikMediow,
@@ -241,7 +310,8 @@ export function utworzKlipTimelineZDodanegoMedium({
   czasTrwaniaMs,
   zrodloStartMs = 0,
   zrodloKoniecMs,
-  sciezka = "wideo-1",
+  sciezkaId,
+  sciezka,
   nazwa,
   kolor,
   czyZablokowany
@@ -263,7 +333,11 @@ export function utworzKlipTimelineZDodanegoMedium({
     czasTrwaniaMs:
       plikMediow.typ === "grafika" ? czasTrwaniaGrafikiMs : czasTrwaniaKlipuMs,
     ...(plikMediow.typ === "wideo" ? { zrodloStartMs, zrodloKoniecMs: koniecZrodlaMs } : {}),
-    sciezka,
+    sciezkaId:
+      sciezkaId ??
+      (sciezka === "wideo-1"
+        ? ID_SCIEZKI_WIDEO_1
+        : pobierzDomyslnaSciezkeIdDlaRodzaju(plikMediow.typ)),
     nazwa: nazwa ?? plikMediow.nazwaPliku,
     ...(kolor ? { kolor } : {}),
     ...(czyZablokowany !== undefined ? { czyZablokowany } : {})
@@ -773,7 +847,8 @@ export function znajdzKlipTimelinePoId(
 
 export function walidujKlipTimeline(
   klip: KlipTimeline,
-  istniejaceIdPlikowMediow?: string[]
+  istniejaceIdPlikowMediow?: string[],
+  istniejaceSciezkiTimeline?: SciezkaTimeline[]
 ): BladWalidacji[] {
   const bledy: BladWalidacji[] = [];
 
@@ -801,6 +876,21 @@ export function walidujKlipTimeline(
       pole: "rodzaj",
       komunikat: "Rodzaj klipu timeline nie jest obslugiwany."
     });
+  }
+
+  const sciezkaId = pobierzSciezkaIdKlipuTimeline(klip);
+
+  if (istniejaceSciezkiTimeline) {
+    const czySciezkaIstnieje = istniejaceSciezkiTimeline.some(
+      (sciezkaTimeline) => sciezkaTimeline.id === sciezkaId
+    );
+
+    if (!czySciezkaIstnieje) {
+      bledy.push({
+        pole: "sciezkaId",
+        komunikat: "Klip musi wskazywac istniejaca sciezke timeline."
+      });
+    }
   }
 
   if (!Number.isInteger(klip.czasStartuMs) || klip.czasStartuMs < 0) {
@@ -851,6 +941,55 @@ export function walidujKlipTimeline(
   return bledy;
 }
 
+export function walidujSciezkeTimeline(
+  sciezka: SciezkaTimeline
+): BladWalidacji[] {
+  const bledy: BladWalidacji[] = [];
+
+  if (!sciezka.id) {
+    bledy.push({ pole: "id", komunikat: "Sciezka musi miec identyfikator." });
+  }
+
+  if (sciezka.nazwa.trim().length === 0) {
+    bledy.push({ pole: "nazwa", komunikat: "Sciezka musi miec nazwe." });
+  }
+
+  if (
+    sciezka.rodzaj !== "wideo" &&
+    sciezka.rodzaj !== "obraz" &&
+    sciezka.rodzaj !== "audio" &&
+    sciezka.rodzaj !== "napisy"
+  ) {
+    bledy.push({
+      pole: "rodzaj",
+      komunikat: "Rodzaj sciezki timeline nie jest obslugiwany."
+    });
+  }
+
+  if (!Number.isInteger(sciezka.kolejnosc) || sciezka.kolejnosc < 0) {
+    bledy.push({
+      pole: "kolejnosc",
+      komunikat: "Kolejnosc sciezki musi byc liczba nieujemna."
+    });
+  }
+
+  if (typeof sciezka.czyWidoczna !== "boolean") {
+    bledy.push({
+      pole: "czyWidoczna",
+      komunikat: "Sciezka musi okreslac widocznosc."
+    });
+  }
+
+  if (typeof sciezka.czyZablokowana !== "boolean") {
+    bledy.push({
+      pole: "czyZablokowana",
+      komunikat: "Sciezka musi okreslac blokade."
+    });
+  }
+
+  return bledy;
+}
+
 export function walidujMarkerTimeline(marker: MarkerTimeline): BladWalidacji[] {
   const bledy: BladWalidacji[] = [];
 
@@ -870,7 +1009,12 @@ export function walidujMarkerTimeline(marker: MarkerTimeline): BladWalidacji[] {
 
 export function czyKlipTimelineJestPoprawny(
   klip: KlipTimeline,
-  istniejaceIdPlikowMediow?: string[]
+  istniejaceIdPlikowMediow?: string[],
+  istniejaceSciezkiTimeline?: SciezkaTimeline[]
 ): BladWalidacji[] {
-  return walidujKlipTimeline(klip, istniejaceIdPlikowMediow);
+  return walidujKlipTimeline(
+    klip,
+    istniejaceIdPlikowMediow,
+    istniejaceSciezkiTimeline
+  );
 }
