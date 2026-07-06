@@ -82,6 +82,10 @@ import {
   type RozmiaryLayoutu,
   type TrybInterfejsu
 } from "./ustawieniaInterfejsu";
+import {
+  czySkrotCieciaTimeline,
+  czySkrotyTimelineDozwolone
+} from "./skrotyTimeline";
 
 type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 
@@ -483,6 +487,7 @@ export function Aplikacja() {
 
   function obsluzPrzeciecieZaznaczonegoKlipu() {
     if (!idZaznaczonegoKlipuTimeline) {
+      ustawBladImportuMediow("Najpierw zaznacz klip do ciecia.");
       return;
     }
 
@@ -516,6 +521,30 @@ export function Aplikacja() {
       };
     });
   }
+
+  useEffect(() => {
+    function obsluzSkrotTimeline(zdarzenie: KeyboardEvent) {
+      if (
+        !czySkrotyTimelineDozwolone(document.activeElement) ||
+        !czySkrotCieciaTimeline(zdarzenie)
+      ) {
+        return;
+      }
+
+      zdarzenie.preventDefault();
+      obsluzPrzeciecieZaznaczonegoKlipu();
+    }
+
+    document.addEventListener("keydown", obsluzSkrotTimeline);
+
+    return () => {
+      document.removeEventListener("keydown", obsluzSkrotTimeline);
+    };
+  }, [
+    czasAktualnyWZakresieMs,
+    idZaznaczonegoKlipuTimeline,
+    ustawieniaSiatkiTimeline
+  ]);
 
   function zastosujEdycjeKlipowTimeline(
     edytujKlipy: (

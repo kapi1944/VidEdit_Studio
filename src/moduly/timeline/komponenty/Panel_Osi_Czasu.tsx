@@ -364,8 +364,9 @@ export function Panel_Osi_Czasu({
                 type="button"
                 disabled={!czyCiecieDostepne}
                 onClick={naPrzetnijZaznaczonyKlip}
+                title="Przetnij w playheadzie (S)"
               >
-                Przetnij klip
+                Przetnij w playheadzie
               </button>
             </div>
           </>

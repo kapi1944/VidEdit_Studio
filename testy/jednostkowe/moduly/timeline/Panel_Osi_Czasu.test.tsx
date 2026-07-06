@@ -326,7 +326,7 @@ describe("Panel_Osi_Czasu", () => {
 
     const przyciskCiecia = Array.from(
       kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
-    ).find((przycisk) => przycisk.textContent === "Przetnij klip");
+    ).find((przycisk) => przycisk.textContent === "Przetnij w playheadzie");
 
     expect(przyciskCiecia?.disabled).toBe(true);
   });
@@ -409,7 +409,7 @@ describe("Panel_Osi_Czasu", () => {
       kontener?.querySelector<HTMLButtonElement>(".pasek-klipu");
     const przyciskCiecia = Array.from(
       kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
-    ).find((przycisk) => przycisk.textContent === "Przetnij klip");
+    ).find((przycisk) => przycisk.textContent === "Przetnij w playheadzie");
 
     if (!pasekKlipu || !przyciskCiecia) {
       throw new Error("Brak elementow ciecia klipu w tescie.");
@@ -435,7 +435,7 @@ describe("Panel_Osi_Czasu", () => {
       kontener?.querySelector<HTMLButtonElement>(".pasek-klipu");
     const przyciskCiecia = Array.from(
       kontener?.querySelectorAll<HTMLButtonElement>("button") ?? []
-    ).find((przycisk) => przycisk.textContent === "Przetnij klip");
+    ).find((przycisk) => przycisk.textContent === "Przetnij w playheadzie");
 
     if (!pasekKlipu || !przyciskCiecia) {
       throw new Error("Brak elementow ciecia klipu w tescie.");
