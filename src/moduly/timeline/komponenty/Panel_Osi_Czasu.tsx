@@ -376,18 +376,16 @@ export function Panel_Osi_Czasu({
       <div className="panel-osi-czasu__tor">
         <div className="panel-osi-czasu__gutter-sciezek" aria-hidden="true">
           <div className="panel-osi-czasu__gutter-markerow" />
-          {czySaKlipyTimeline ? (
-            <div className="panel-osi-czasu__etykiety-sciezek">
-              {uporzadkowaneSciezkiTimeline.map((sciezkaTimeline) => (
-                <div
-                  key={sciezkaTimeline.id}
-                  className="panel-osi-czasu__etykieta-sciezki"
-                >
-                  {sciezkaTimeline.nazwa}
-                </div>
-              ))}
-            </div>
-          ) : null}
+          <div className="panel-osi-czasu__etykiety-sciezek">
+            {uporzadkowaneSciezkiTimeline.map((sciezkaTimeline) => (
+              <div
+                key={sciezkaTimeline.id}
+                className={`panel-osi-czasu__etykieta-sciezki panel-osi-czasu__etykieta-sciezki--${sciezkaTimeline.rodzaj}`}
+              >
+                {sciezkaTimeline.nazwa}
+              </div>
+            ))}
+          </div>
         </div>
         <div
           className="panel-osi-czasu__obszar"
@@ -405,44 +403,43 @@ export function Panel_Osi_Czasu({
               naUsunMarker={naUsunMarkerTimeline}
             />
           </div>
-          {czySaKlipyTimeline ? (
-            <div className="panel-osi-czasu__klipy">
-              {uporzadkowaneSciezkiTimeline.map((sciezkaTimeline) => {
-                const klipySciezki = klipyTimeline.filter(
-                  (klipTimeline) =>
-                    pobierzSciezkaIdKlipuTimeline(klipTimeline) ===
-                    sciezkaTimeline.id
-                );
+          <div className="panel-osi-czasu__klipy">
+            {uporzadkowaneSciezkiTimeline.map((sciezkaTimeline) => {
+              const klipySciezki = klipyTimeline.filter(
+                (klipTimeline) =>
+                  pobierzSciezkaIdKlipuTimeline(klipTimeline) ===
+                  sciezkaTimeline.id
+              );
 
-                return (
-                  <div
-                    key={sciezkaTimeline.id}
-                    className="panel-osi-czasu__sciezka"
-                  >
-                    <div className="panel-osi-czasu__klipy-sciezki">
-                      {klipySciezki.map((klipTimeline) => (
-                        <Pasek_Klipu
-                          key={klipTimeline.id}
-                          klipTimeline={klipTimeline}
-                          czasTrwaniaTimelineMs={czasTrwaniaMs}
-                          czyZaznaczony={
-                            klipTimeline.id === idZaznaczonegoKlipuTimeline
-                          }
-                          formatujCzas={formatujCzasTimeline}
-                          naZaznacz={naZaznaczKlipTimeline}
-                          naRozpocznijEdycjeMysza={rozpocznijEdycjeKlipuMysza}
-                        />
-                      ))}
-                    </div>
+              return (
+                <div
+                  key={sciezkaTimeline.id}
+                  className={`panel-osi-czasu__sciezka panel-osi-czasu__sciezka--${sciezkaTimeline.rodzaj}`}
+                >
+                  <div className="panel-osi-czasu__klipy-sciezki">
+                    {klipySciezki.map((klipTimeline) => (
+                      <Pasek_Klipu
+                        key={klipTimeline.id}
+                        klipTimeline={klipTimeline}
+                        czasTrwaniaTimelineMs={czasTrwaniaMs}
+                        czyZaznaczony={
+                          klipTimeline.id === idZaznaczonegoKlipuTimeline
+                        }
+                        formatujCzas={formatujCzasTimeline}
+                        naZaznacz={naZaznaczKlipTimeline}
+                        naRozpocznijEdycjeMysza={rozpocznijEdycjeKlipuMysza}
+                      />
+                    ))}
                   </div>
-                );
-              })}
-            </div>
-          ) : (
+                </div>
+              );
+            })}
+          </div>
+          {!czySaKlipyTimeline ? (
             <div className="panel-osi-czasu__pusty">
               Brak klipow na osi czasu.
             </div>
-          )}
+          ) : null}
           <div className="panel-osi-czasu__segmenty">
             {segmentyCiszy.map((segmentCiszy) => (
               <Segment_Ciszy_Na_Timeline

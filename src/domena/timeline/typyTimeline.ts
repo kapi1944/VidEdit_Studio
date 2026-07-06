@@ -75,11 +75,20 @@ export type KlipTimeline = {
 
 export const DOMYSLNY_CZAS_TRWANIA_GRAFIKI_MS = 5000;
 export const MINIMALNY_CZAS_TRWANIA_KLIPU_TIMELINE_MS = 100;
+export const ID_SCIEZKI_NAPISY = "sciezka-napisy";
 export const ID_SCIEZKI_WIDEO_1 = "sciezka-wideo-1";
 export const ID_SCIEZKI_OBRAZY = "sciezka-obrazy";
 export const ID_SCIEZKI_AUDIO_1 = "sciezka-audio-1";
 
 export const DOMYSLNE_SCIEZKI_TIMELINE: SciezkaTimeline[] = [
+  {
+    id: ID_SCIEZKI_NAPISY,
+    nazwa: "Napisy",
+    rodzaj: "napisy",
+    kolejnosc: 0,
+    czyWidoczna: true,
+    czyZablokowana: false
+  },
   {
     id: ID_SCIEZKI_WIDEO_1,
     nazwa: "Wideo 1",
@@ -308,12 +317,31 @@ export function pobierzSciezkaIdKlipuTimeline(klip: KlipTimeline) {
   return pobierzDomyslnaSciezkeIdDlaRodzaju(klip.rodzaj);
 }
 
+function posortujSciezkiTimeline(sciezki: SciezkaTimeline[]) {
+  return [...sciezki].sort((pierwszaSciezka, drugaSciezka) => {
+    if (pierwszaSciezka.kolejnosc !== drugaSciezka.kolejnosc) {
+      return pierwszaSciezka.kolejnosc - drugaSciezka.kolejnosc;
+    }
+
+    return pierwszaSciezka.id.localeCompare(drugaSciezka.id);
+  });
+}
+
 export function pobierzSciezkiTimelineZFallbackiem(
   sciezki?: SciezkaTimeline[]
 ) {
-  return Array.isArray(sciezki) && sciezki.length > 0
-    ? sciezki
-    : DOMYSLNE_SCIEZKI_TIMELINE;
+  const sciezkiBazowe =
+    Array.isArray(sciezki) && sciezki.length > 0
+      ? sciezki
+      : DOMYSLNE_SCIEZKI_TIMELINE;
+  const istniejaceIdSciezek = new Set(
+    sciezkiBazowe.map((sciezkaTimeline) => sciezkaTimeline.id)
+  );
+  const brakujaceSciezki = DOMYSLNE_SCIEZKI_TIMELINE.filter(
+    (sciezkaTimeline) => !istniejaceIdSciezek.has(sciezkaTimeline.id)
+  );
+
+  return posortujSciezkiTimeline([...sciezkiBazowe, ...brakujaceSciezki]);
 }
 
 export function utworzKlipTimelineZDodanegoMedium({
@@ -1047,6 +1075,16 @@ export function znajdzKlipTimelinePoId(
   return klipy.find((klip) => klip.id === idKlipu);
 }
 
+export function czyRodzajKlipuPasujeDoSciezkiTimeline(
+  rodzajKlipu: RodzajKlipuTimeline,
+  sciezka: SciezkaTimeline
+) {
+  if (rodzajKlipu === "grafika") {
+    return sciezka.rodzaj === "obraz";
+  }
+
+  return sciezka.rodzaj === "wideo";
+}
 export function walidujKlipTimeline(
   klip: KlipTimeline,
   istniejaceIdPlikowMediow?: string[],
@@ -1083,14 +1121,19 @@ export function walidujKlipTimeline(
   const sciezkaId = pobierzSciezkaIdKlipuTimeline(klip);
 
   if (istniejaceSciezkiTimeline) {
-    const czySciezkaIstnieje = istniejaceSciezkiTimeline.some(
+    const sciezkaKlipu = istniejaceSciezkiTimeline.find(
       (sciezkaTimeline) => sciezkaTimeline.id === sciezkaId
     );
 
-    if (!czySciezkaIstnieje) {
+    if (!sciezkaKlipu) {
       bledy.push({
         pole: "sciezkaId",
         komunikat: "Klip musi wskazywac istniejaca sciezke timeline."
+      });
+    } else if (!czyRodzajKlipuPasujeDoSciezkiTimeline(klip.rodzaj, sciezkaKlipu)) {
+      bledy.push({
+        pole: "sciezkaId",
+        komunikat: "Klip nie moze zostac umieszczony na tym rodzaju sciezki."
       });
     }
   }

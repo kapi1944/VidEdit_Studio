@@ -11,22 +11,26 @@ type WlasciwosciPaneluImportuMediow = {
   rozszerzeniaMediow: readonly string[];
   bladImportuMediow?: string;
   statusImportuMediow: StatusImportuMediow;
-  naWybranoPlik: (plik: File) => void;
+  naWybranoPliki: (pliki: File[]) => void;
 };
 
 function pobierzKomunikatStatusuImportu(
   statusImportuMediow: StatusImportuMediow
 ): string | undefined {
+  if (statusImportuMediow === "wybieranie") {
+    return "Przygotowuje import...";
+  }
+
   if (statusImportuMediow === "odczyt_metadanych") {
     return "Odczytuje metadane...";
   }
 
   if (statusImportuMediow === "gotowe") {
-    return "Metadane odczytane";
+    return "Import zakonczony";
   }
 
   if (statusImportuMediow === "blad") {
-    return "Nie udalo sie odczytac metadanych";
+    return "Import zakonczony z uwagami";
   }
 
   return undefined;
@@ -36,7 +40,7 @@ export function Panel_Importu_Mediow({
   rozszerzeniaMediow,
   bladImportuMediow,
   statusImportuMediow,
-  naWybranoPlik
+  naWybranoPliki
 }: WlasciwosciPaneluImportuMediow) {
   const polePliku = useRef<HTMLInputElement>(null);
   const komunikatStatusuImportu = pobierzKomunikatStatusuImportu(
@@ -48,10 +52,10 @@ export function Panel_Importu_Mediow({
   }
 
   function obsluzZmianePliku(zdarzenie: ChangeEvent<HTMLInputElement>) {
-    const plik = zdarzenie.currentTarget.files?.[0];
+    const pliki = Array.from(zdarzenie.currentTarget.files ?? []);
 
-    if (plik) {
-      naWybranoPlik(plik);
+    if (pliki.length > 0) {
+      naWybranoPliki(pliki);
     }
 
     zdarzenie.currentTarget.value = "";
@@ -63,7 +67,7 @@ export function Panel_Importu_Mediow({
         <p className="panel-importu-mediow__etykieta">Media projektu</p>
         <h2 id="import-mediow">Import mediow</h2>
         <p className="panel-importu-mediow__opis">
-          Obecnie import dziala dla pojedynczego pliku wideo lub grafiki.
+          Mozesz wybrac jeden lub wiele plikow wideo i grafik.
         </p>
       </div>
 
@@ -72,6 +76,7 @@ export function Panel_Importu_Mediow({
           ref={polePliku}
           className="panel-importu-mediow__input"
           type="file"
+          multiple
           accept="video/mp4,video/webm,video/quicktime,image/png,image/jpeg,image/webp,image/gif,.mp4,.webm,.mov,.mkv,.avi,.m4v,.png,.jpg,.jpeg,.webp,.gif"
           onChange={obsluzZmianePliku}
         />
@@ -80,7 +85,7 @@ export function Panel_Importu_Mediow({
           type="button"
           onClick={otworzWyborPliku}
         >
-          Wybierz plik
+          Importuj pliki
         </button>
         <span className="panel-importu-mediow__formaty">
           {rozszerzeniaMediow.join(", ")}

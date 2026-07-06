@@ -1,4 +1,4 @@
-﻿@import "./tokeny.css";
+@import "./tokeny.css";
 
 :root {
   color: var(--kolor-tekstu);
@@ -1108,18 +1108,72 @@ h2 {
   margin-top: 18px;
 }
 
-.lista-mediow h2 {
-  margin-bottom: 12px;
+.lista-mediow {
+  display: grid;
+  gap: 12px;
+}
+
+.lista-mediow__naglowek {
+  display: grid;
+  gap: 10px;
+}
+
+.lista-mediow__naglowek h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.lista-mediow__licznik {
+  margin: 3px 0 0;
+  color: var(--kolor-tekstu-slaby);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.lista-mediow__filtry {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--kolor-obramowania-selecta);
+  border-radius: var(--radius-elementu);
+  background: var(--kolor-powierzchni-delikatny);
+}
+
+.lista-mediow__filtry button {
+  min-height: 28px;
+  min-width: 0;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-elementu);
+  color: var(--kolor-tekstu-mocny);
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.lista-mediow__filtry button[aria-pressed="true"] {
+  border-color: var(--kolor-obramowania-akcent);
+  color: var(--kolor-przycisku-tekstu);
+  background: var(--kolor-przycisku);
 }
 
 .lista-mediow__pusty {
   margin: 0;
+  padding: 10px;
+  border: 1px dashed var(--kolor-obramowania-mocny);
+  border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-slaby);
+  background: var(--kolor-powierzchni-delikatny);
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
-.lista-mediow__lista {
+.lista-mediow__siatka {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1131,14 +1185,14 @@ h2 {
 
 .karta-medium {
   display: grid;
-  grid-template-columns: minmax(170px, 260px) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-  padding: 14px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+  padding: 7px;
   border: 1px solid var(--kolor-obramowania);
-  border-radius: var(--radius-panelu);
+  border-radius: var(--radius-elementu);
   background: var(--kolor-powierzchni);
-  box-shadow: var(--cien-panelu);
+  box-shadow: none;
 }
 
 .karta-medium--aktywna {
@@ -1147,6 +1201,7 @@ h2 {
 }
 
 .karta-medium__miniatura {
+  position: relative;
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -1168,73 +1223,87 @@ h2 {
   width: 100%;
   height: 100%;
   place-items: center;
-  padding: 12px;
+  padding: 8px;
   color: var(--kolor-tekstu-na-ciemnym);
   background:
     var(--gradient-tla-mediow),
     var(--kolor-tla-mediow);
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   text-align: center;
 }
 
-.karta-medium__nazwa {
-  margin-bottom: 10px;
-  color: var(--kolor-tekstu-mocny);
-  font-weight: 800;
-  overflow-wrap: anywhere;
-}
-
-.karta-medium__metadane {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 12px;
-  min-width: 0;
-  margin: 0;
-}
-
-.karta-medium__metadane div {
-  min-width: 0;
-}
-
-.karta-medium__metadane dt {
-  margin-bottom: 4px;
-  color: var(--kolor-etykiety);
-  font-size: 0.78rem;
-  font-weight: 700;
+.karta-medium__typ {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  max-width: calc(100% - 10px);
+  padding: 2px 5px;
+  overflow: hidden;
+  border-radius: var(--radius-maly);
+  color: var(--kolor-tekstu-na-ciemnym);
+  background: rgb(0 0 0 / 72%);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.karta-medium__metadane dd {
+.karta-medium__opis {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.karta-medium__nazwa {
   margin: 0;
+  min-width: 0;
   color: var(--kolor-tekstu-mocny);
-  font-weight: 700;
-  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.karta-medium__status {
-  margin: 12px 0 0;
+.karta-medium__metki {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.karta-medium__metki span {
+  max-width: 100%;
+  padding: 2px 5px;
+  overflow: hidden;
+  border: 1px solid var(--kolor-obramowania);
+  border-radius: var(--radius-maly);
   color: var(--kolor-tekstu-slaby);
-  font-size: 0.95rem;
-  font-weight: 700;
+  background: var(--kolor-powierzchni-delikatny);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .karta-medium__akcje {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-start;
-  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
 }
 
 .karta-medium__akcje button {
-  min-height: 32px;
-  padding: 0 12px;
+  min-height: 28px;
+  min-width: 0;
+  padding: 0 7px;
   border: 1px solid var(--kolor-obramowania-selecta);
   border-radius: var(--radius-elementu);
   color: var(--kolor-tekstu-mocny);
   background: var(--kolor-tla-przycisku-drugorzednego);
-  font-weight: 800;
+  font-size: 0.76rem;
+  font-weight: 900;
   cursor: pointer;
 }
 
@@ -1413,8 +1482,9 @@ h2 {
 }
 
 .panel-osi-czasu__tor {
+  --kolor-separatora-napisow: #f59e0b;
   display: grid;
-  grid-template-columns: 104px minmax(0, 1fr);
+  grid-template-columns: 112px minmax(0, 1fr);
   gap: 10px;
   height: 240px;
   overflow: hidden;
@@ -1502,7 +1572,7 @@ h2 {
 
 .panel-osi-czasu__pusty {
   position: absolute;
-  top: 40px;
+  top: 82px;
   right: 0;
   left: 0;
   display: flex;
@@ -1514,11 +1584,17 @@ h2 {
   color: var(--kolor-tekstu-slaby);
   font-size: 0.9rem;
   font-weight: 800;
+  z-index: 1;
 }
 
 .panel-osi-czasu__sciezka {
   display: block;
   min-height: 32px;
+}
+
+.panel-osi-czasu__sciezka--napisy {
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--kolor-separatora-napisow);
 }
 
 .panel-osi-czasu__etykieta-sciezki {
@@ -1535,6 +1611,12 @@ h2 {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.panel-osi-czasu__etykieta-sciezki--napisy {
+  border-color: color-mix(in srgb, var(--kolor-separatora-napisow) 80%, var(--kolor-obramowania-mocny));
+  color: var(--kolor-tekstu-mocny);
+  box-shadow: inset 0 -2px 0 var(--kolor-separatora-napisow);
 }
 
 .panel-osi-czasu__klipy-sciezki {

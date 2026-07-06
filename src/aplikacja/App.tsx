@@ -107,6 +107,14 @@ const kluczTrybuInterfejsu = "videdit-studio.tryb-interfejsu";
 const kluczRozmiarowLayoutu = "videdit-studio.rozmiary-layoutu";
 const minimalnyCzasTechnicznyTimelineMs = 10_000;
 
+type WynikImportuPliku = {
+  nazwaPliku: string;
+  czySukces: boolean;
+  idMedium?: string;
+  komunikatBledu?: string;
+  ostrzezenie?: string;
+};
+
 function obliczKoniecZakresowTimeline(
   zakresyTimeline: Array<Pick<SegmentCiszy | PropozycjaCiecia, "czasKoncaMs">>
 ) {
@@ -226,6 +234,8 @@ export function Aplikacja() {
     utworzPustyProjekt("Nowy projekt")
   );
   const [bladImportuMediow, ustawBladImportuMediow] = useState<string>();
+  const [komunikatImportuMediow, ustawKomunikatImportuMediow] =
+    useState<string>();
   const [statusImportuMediow, ustawStatusImportuMediow] =
     useState<StatusImportuMediow>("bezczynny");
   const [trybWygladu, ustawTrybWygladu] = useState(pobierzPoczatkowyTrybWygladu);
@@ -405,25 +415,31 @@ export function Aplikacja() {
     }
   }
 
-  async function obsluzWybraniePliku(plik: File) {
-    ustawStatusImportuMediow("wybieranie");
+  async function zaimportujPojedynczyPlik(
+    plik: File
+  ): Promise<WynikImportuPliku> {
     const bledyWalidacji = walidujPlikMediow(plik);
 
     if (bledyWalidacji.length > 0) {
-      ustawBladImportuMediow(
-        bledyWalidacji[0]?.komunikat ?? "Nie udalo sie zaimportowac pliku."
-      );
-      return;
+      return {
+        nazwaPliku: plik.name,
+        czySukces: false,
+        komunikatBledu:
+          bledyWalidacji[0]?.komunikat ?? "Nie udalo sie zaimportowac pliku."
+      };
     }
 
     const daneImportu = utworzDaneImportuZPlikuBrowserowego(plik);
     const wynikImportu = zaimportujPlikMediow(daneImportu);
 
     if (!wynikImportu.czySukces) {
-      ustawBladImportuMediow(
-        wynikImportu.bledy[0]?.komunikat ?? "Nie udalo sie zaimportowac pliku."
-      );
-      return;
+      return {
+        nazwaPliku: plik.name,
+        czySukces: false,
+        komunikatBledu:
+          wynikImportu.bledy[0]?.komunikat ??
+          "Nie udalo sie zaimportowac pliku."
+      };
     }
 
     const idMedium = wynikImportu.dane.id;
@@ -436,9 +452,6 @@ export function Aplikacja() {
       ...(czyImportGrafiki ? { miniaturaDataUrl: objectUrlPodgladu } : {})
     };
 
-    ustawAktualnyCzasTimelineMs(0);
-    ustawCzyPrzeciaganieGlowicy(false);
-    ustawIdAktywnegoMediumBiblioteki(idMedium);
     ustawProjekt((aktualnyProjekt) =>
       dodajMediumDoProjektu(aktualnyProjekt, wynikImportu.dane)
     );
@@ -460,8 +473,6 @@ export function Aplikacja() {
       podgladyMediowRef.current = nowePodglady;
       return nowePodglady;
     });
-    ustawBladImportuMediow(undefined);
-    ustawStatusImportuMediow("odczyt_metadanych");
 
     if (czyImportGrafiki) {
       try {
@@ -476,15 +487,16 @@ export function Aplikacja() {
             metadane
           )
         );
-        ustawStatusImportuMediow("gotowe");
       } catch {
-        ustawBladImportuMediow(
-          "Zaimportowano, ale nie udalo sie odczytac wymiarow grafiki."
-        );
-        ustawStatusImportuMediow("blad");
+        return {
+          nazwaPliku: plik.name,
+          czySukces: true,
+          idMedium,
+          ostrzezenie: "Nie udalo sie odczytac wymiarow grafiki."
+        };
       }
 
-      return;
+      return { nazwaPliku: plik.name, czySukces: true, idMedium };
     }
 
     void przygotujMiniatureMedium(idMedium, plik);
@@ -499,13 +511,84 @@ export function Aplikacja() {
           metadane
         )
       );
-      ustawStatusImportuMediow("gotowe");
     } catch {
-      ustawBladImportuMediow(
-        "Zaimportowano, ale nie udalo sie odczytac metadanych."
-      );
-      ustawStatusImportuMediow("blad");
+      return {
+        nazwaPliku: plik.name,
+        czySukces: true,
+        idMedium,
+        ostrzezenie: "Nie udalo sie odczytac metadanych."
+      };
     }
+
+    return { nazwaPliku: plik.name, czySukces: true, idMedium };
+  }
+
+  function opiszWynikImportu(
+    wynikiImportu: WynikImportuPliku[],
+    liczbaPlikow: number
+  ) {
+    const udaneImporty = wynikiImportu.filter((wynik) => wynik.czySukces);
+    const nieudaneImporty = wynikiImportu.filter((wynik) => !wynik.czySukces);
+    const importyZOstrzezeniami = wynikiImportu.filter(
+      (wynik) => wynik.ostrzezenie
+    );
+    const etykietaPlikow = liczbaPlikow === 1 ? "plik" : "pliki";
+    const podsumowanie = `Zaimportowano ${udaneImporty.length}/${liczbaPlikow} ${etykietaPlikow}.`;
+
+    if (nieudaneImporty.length > 0) {
+      return `${podsumowanie} Nieudane: ${nieudaneImporty
+        .map((wynik) => wynik.nazwaPliku)
+        .join(", ")}.`;
+    }
+
+    if (importyZOstrzezeniami.length > 0) {
+      return `${podsumowanie} Uwagi: ${importyZOstrzezeniami
+        .map((wynik) => wynik.nazwaPliku)
+        .join(", ")}.`;
+    }
+
+    return podsumowanie;
+  }
+
+  async function obsluzWybraniePlikow(pliki: File[]) {
+    if (pliki.length === 0) {
+      return;
+    }
+
+    ustawStatusImportuMediow("wybieranie");
+    ustawBladImportuMediow(undefined);
+    ustawKomunikatImportuMediow(undefined);
+    ustawAktualnyCzasTimelineMs(0);
+    ustawCzyPrzeciaganieGlowicy(false);
+
+    const wynikiImportu: WynikImportuPliku[] = [];
+
+    for (const plik of pliki) {
+      ustawStatusImportuMediow("odczyt_metadanych");
+      wynikiImportu.push(await zaimportujPojedynczyPlik(plik));
+    }
+
+    const ostatniUdanyImport = [...wynikiImportu]
+      .reverse()
+      .find((wynik) => wynik.czySukces && wynik.idMedium);
+    const czySaNieudaneImporty = wynikiImportu.some(
+      (wynik) => !wynik.czySukces
+    );
+    const czySaOstrzezenia = wynikiImportu.some((wynik) => wynik.ostrzezenie);
+    const komunikatWyniku = opiszWynikImportu(wynikiImportu, pliki.length);
+
+    if (ostatniUdanyImport?.idMedium) {
+      ustawIdAktywnegoMediumBiblioteki(ostatniUdanyImport.idMedium);
+    }
+
+    if (czySaNieudaneImporty || czySaOstrzezenia) {
+      ustawBladImportuMediow(komunikatWyniku);
+      ustawStatusImportuMediow("blad");
+      return;
+    }
+
+    ustawKomunikatImportuMediow(komunikatWyniku);
+    ustawStatusImportuMediow("gotowe");
   }
 
   function zaktualizujPropozycjeCiec(
@@ -931,7 +1014,7 @@ export function Aplikacja() {
                       rozszerzeniaMediow={OBSLUGIWANE_ROZSZERZENIA_MEDIOW}
                       bladImportuMediow={bladImportuMediow}
                       statusImportuMediow={statusImportuMediow}
-                      naWybranoPlik={obsluzWybraniePliku}
+                      naWybranoPliki={obsluzWybraniePlikow}
                     />
                     {projekt.media.length > 0 ? (
                       <Lista_Mediow

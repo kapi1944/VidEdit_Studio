@@ -10,6 +10,12 @@ export type WlasciwosciKartyMedium = {
   naDodajNaTimeline?: (idMedium: string) => void;
 };
 
+const etykietyTypowMediow: Record<PlikMediow["typ"], string> = {
+  wideo: "Wideo",
+  audio: "Audio",
+  grafika: "Grafika"
+};
+
 export function Karta_Medium({
   plikMediow,
   miniaturaDataUrl,
@@ -19,6 +25,13 @@ export function Karta_Medium({
   naDodajNaTimeline
 }: WlasciwosciKartyMedium) {
   const daneKarty = utworzDaneKartyMedium(plikMediow, status);
+  const klasyKarty = [
+    "karta-medium",
+    `karta-medium--${plikMediow.typ}`,
+    czyAktywne ? "karta-medium--aktywna" : undefined
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   function obsluzDodanieNaTimeline() {
     naDodajNaTimeline?.(plikMediow.id);
@@ -29,10 +42,7 @@ export function Karta_Medium({
   }
 
   return (
-    <article
-      className={`karta-medium${czyAktywne ? " karta-medium--aktywna" : ""}`}
-      aria-label={daneKarty.nazwaPliku}
-    >
+    <article className={klasyKarty} aria-label={daneKarty.nazwaPliku}>
       <div className="karta-medium__miniatura">
         {miniaturaDataUrl ? (
           <img
@@ -48,33 +58,20 @@ export function Karta_Medium({
             Brak miniatury
           </div>
         )}
+        <span className="karta-medium__typ">
+          {etykietyTypowMediow[plikMediow.typ]}
+        </span>
       </div>
 
-      <div>
-        <p className="karta-medium__nazwa">{daneKarty.nazwaPliku}</p>
-        <dl className="karta-medium__metadane">
-          <div>
-            <dt>Typ pliku</dt>
-            <dd>{daneKarty.typPliku}</dd>
-          </div>
-          <div>
-            <dt>Czas</dt>
-            <dd>{daneKarty.czasTrwania}</dd>
-          </div>
-          <div>
-            <dt>Rozdzielczosc</dt>
-            <dd>{daneKarty.rozdzielczosc}</dd>
-          </div>
-          <div>
-            <dt>FPS</dt>
-            <dd>{daneKarty.fps}</dd>
-          </div>
-          <div>
-            <dt>Audio</dt>
-            <dd>{daneKarty.audio}</dd>
-          </div>
-        </dl>
-        <p className="karta-medium__status">Status: {daneKarty.status}</p>
+      <div className="karta-medium__opis">
+        <p className="karta-medium__nazwa" title={daneKarty.nazwaPliku}>
+          {daneKarty.nazwaPliku}
+        </p>
+        <div className="karta-medium__metki" aria-label="Metadane medium">
+          <span>{daneKarty.czasTrwania}</span>
+          <span>{daneKarty.rozdzielczosc}</span>
+          <span>{daneKarty.status}</span>
+        </div>
         {naDodajNaTimeline || naWybierzDoPodgladu ? (
           <div className="karta-medium__akcje">
             {naWybierzDoPodgladu ? (
@@ -87,8 +84,12 @@ export function Karta_Medium({
               </button>
             ) : null}
             {naDodajNaTimeline ? (
-              <button type="button" onClick={obsluzDodanieNaTimeline}>
-                Dodaj na os czasu
+              <button
+                type="button"
+                title="Dodaj na os czasu"
+                onClick={obsluzDodanieNaTimeline}
+              >
+                Na os
               </button>
             ) : null}
           </div>
