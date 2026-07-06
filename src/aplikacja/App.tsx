@@ -67,11 +67,14 @@ import {
 } from "../domena/timeline/typyTimeline";
 import {
   domyslnyMotywInterfejsu,
+  domyslneRozmiaryLayoutu,
   domyslnyTrybInterfejsu,
+  pobierzOgraniczoneRozmiaryLayoutu,
   pobierzWidocznoscFunkcjiDlaTrybu,
   sprawdzCzyMotywInterfejsuJestPoprawny,
   sprawdzCzyTrybInterfejsuJestPoprawny,
   type MotywInterfejsu,
+  type RozmiaryLayoutu,
   type TrybInterfejsu
 } from "./ustawieniaInterfejsu";
 
@@ -80,6 +83,7 @@ type TrybWygladu = "jasny" | "ciemny" | "systemowy";
 const kluczTrybuWygladu = "videdit-studio.tryb-wygladu";
 const kluczMotywuInterfejsu = "videdit-studio.motyw-interfejsu";
 const kluczTrybuInterfejsu = "videdit-studio.tryb-interfejsu";
+const kluczRozmiarowLayoutu = "videdit-studio.rozmiary-layoutu";
 const minimalnyCzasTechnicznyTimelineMs = 10_000;
 
 function obliczKoniecZakresowTimeline(
@@ -140,6 +144,37 @@ function pobierzPoczatkowyTrybInterfejsu(): TrybInterfejsu {
   return domyslnyTrybInterfejsu;
 }
 
+function pobierzPoczatkoweRozmiaryLayoutu(): RozmiaryLayoutu {
+  const zapisaneRozmiaryLayoutu = localStorage.getItem(kluczRozmiarowLayoutu);
+
+  if (!zapisaneRozmiaryLayoutu) {
+    return domyslneRozmiaryLayoutu;
+  }
+
+  try {
+    const rozmiaryLayoutu = JSON.parse(zapisaneRozmiaryLayoutu) as Partial<
+      Record<keyof RozmiaryLayoutu, unknown>
+    >;
+
+    return pobierzOgraniczoneRozmiaryLayoutu({
+      szerokoscPaneluLewegoPx:
+        typeof rozmiaryLayoutu.szerokoscPaneluLewegoPx === "number"
+          ? rozmiaryLayoutu.szerokoscPaneluLewegoPx
+          : undefined,
+      szerokoscPaneluPrawegoPx:
+        typeof rozmiaryLayoutu.szerokoscPaneluPrawegoPx === "number"
+          ? rozmiaryLayoutu.szerokoscPaneluPrawegoPx
+          : undefined,
+      wysokoscTimelinePx:
+        typeof rozmiaryLayoutu.wysokoscTimelinePx === "number"
+          ? rozmiaryLayoutu.wysokoscTimelinePx
+          : undefined
+    });
+  } catch {
+    return domyslneRozmiaryLayoutu;
+  }
+}
+
 export function Aplikacja() {
   const [projekt, ustawProjekt] = useState(() =>
     utworzPustyProjekt("Nowy projekt")
@@ -153,6 +188,9 @@ export function Aplikacja() {
   );
   const [trybInterfejsu, ustawTrybInterfejsu] = useState(
     pobierzPoczatkowyTrybInterfejsu
+  );
+  const [rozmiaryLayoutu, ustawRozmiaryLayoutu] = useState(
+    pobierzPoczatkoweRozmiaryLayoutu
   );
   const [podgladyMediow, ustawPodgladyMediow] = useState<PodgladyMediow>({});
   const [idAktywnegoSegmentuCiszy, ustawIdAktywnegoSegmentuCiszy] =
@@ -183,6 +221,13 @@ export function Aplikacja() {
     document.documentElement.dataset.trybInterfejsu = trybInterfejsu;
     localStorage.setItem(kluczTrybuInterfejsu, trybInterfejsu);
   }, [trybInterfejsu]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      kluczRozmiarowLayoutu,
+      JSON.stringify(rozmiaryLayoutu)
+    );
+  }, [rozmiaryLayoutu]);
 
   useEffect(() => {
     podgladyMediowRef.current = podgladyMediow;
@@ -595,6 +640,21 @@ export function Aplikacja() {
     ustawTrybInterfejsu(nowyTrybInterfejsu);
   }
 
+  function obsluzZmianeRozmiarowLayoutu(
+    noweRozmiaryLayoutu: Partial<RozmiaryLayoutu>
+  ) {
+    ustawRozmiaryLayoutu((aktualneRozmiaryLayoutu) =>
+      pobierzOgraniczoneRozmiaryLayoutu({
+        ...aktualneRozmiaryLayoutu,
+        ...noweRozmiaryLayoutu
+      })
+    );
+  }
+
+  function obsluzResetUkladu() {
+    ustawRozmiaryLayoutu(domyslneRozmiaryLayoutu);
+  }
+
   const liczbaPropozycjiCiec = projekt.timeline.propozycjeCiec.length;
   const liczbaPropozycjiOczekujacych =
     projekt.timeline.propozycjeCiec.filter(
@@ -620,6 +680,8 @@ export function Aplikacja() {
 
   return (
     <AplikacjaVidEdit
+      rozmiaryLayoutu={rozmiaryLayoutu}
+      naZmianeRozmiarowLayoutu={obsluzZmianeRozmiarowLayoutu}
       pasekGorny={
         <PasekGornyAplikacji
           nazwaProjektu={projekt.nazwa}
@@ -634,6 +696,7 @@ export function Aplikacja() {
           naZmianeTrybuWygladu={obsluzZmianeTrybuWygladu}
           naZmianeMotywuInterfejsu={obsluzZmianeMotywuInterfejsu}
           naZmianeTrybuInterfejsu={obsluzZmianeTrybuInterfejsu}
+          naResetUkladu={obsluzResetUkladu}
         />
       }
       panelLewy={

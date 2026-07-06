@@ -50,7 +50,7 @@ select:focus-visible {
 
 .aplikacja-videdit {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto minmax(0, 1fr) 8px var(--wysokosc-timeline) auto;
   width: 100%;
   height: 100vh;
   min-height: 640px;
@@ -61,14 +61,76 @@ select:focus-visible {
 
 .aplikacja-videdit__srodek {
   display: grid;
-  grid-template-columns: minmax(240px, 280px) minmax(360px, 1fr) minmax(360px, 420px);
+  grid-template-columns:
+    var(--szerokosc-panelu-lewego)
+    8px
+    minmax(360px, 1fr)
+    8px
+    var(--szerokosc-panelu-prawego);
   min-height: 0;
   border-top: 1px solid var(--kolor-obramowania-sekcji);
   border-bottom: 1px solid var(--kolor-obramowania-sekcji);
 }
 
 .aplikacja-videdit--bez-panelu-prawego .aplikacja-videdit__srodek {
-  grid-template-columns: minmax(240px, 300px) minmax(360px, 1fr);
+  grid-template-columns:
+    var(--szerokosc-panelu-lewego)
+    8px
+    minmax(360px, 1fr);
+}
+
+.aplikacja-videdit--zmiana-rozmiaru {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.uchwyt-zmiany-rozmiaru {
+  position: relative;
+  z-index: 3;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--kolor-powierzchni-delikatny);
+}
+
+.uchwyt-zmiany-rozmiaru::after {
+  position: absolute;
+  border-radius: var(--radius-pill);
+  background: var(--kolor-obramowania-mocny);
+  content: "";
+  opacity: 0.8;
+}
+
+.uchwyt-zmiany-rozmiaru:hover::after,
+.uchwyt-zmiany-rozmiaru:focus-visible::after {
+  background: var(--kolor-obramowania-akcent);
+  opacity: 1;
+}
+
+.uchwyt-zmiany-rozmiaru--pionowy {
+  min-width: 8px;
+  cursor: col-resize;
+}
+
+.uchwyt-zmiany-rozmiaru--pionowy::after {
+  top: 20px;
+  bottom: 20px;
+  left: 3px;
+  width: 2px;
+}
+
+.uchwyt-zmiany-rozmiaru--poziomy {
+  min-height: 8px;
+  border-top: 1px solid var(--kolor-obramowania-sekcji);
+  border-bottom: 1px solid var(--kolor-obramowania-sekcji);
+  cursor: row-resize;
+}
+
+.uchwyt-zmiany-rozmiaru--poziomy::after {
+  top: 3px;
+  right: 40%;
+  left: 40%;
+  height: 2px;
 }
 
 .pasek-gorny-aplikacji {
@@ -552,8 +614,8 @@ select:focus-visible {
 }
 
 .timeline-montazu {
-  min-height: 180px;
-  max-height: 260px;
+  min-height: 0;
+  height: var(--wysokosc-timeline);
   overflow: auto;
   padding: 12px 16px;
   background: var(--kolor-powierzchni);
@@ -732,11 +794,15 @@ select:focus-visible {
   }
 
   .aplikacja-videdit__srodek {
-    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    grid-template-columns: var(--szerokosc-panelu-lewego) 8px minmax(0, 1fr);
   }
 
   .aplikacja-videdit--bez-panelu-prawego .aplikacja-videdit__srodek {
-    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    grid-template-columns: var(--szerokosc-panelu-lewego) 8px minmax(0, 1fr);
+  }
+
+  .aplikacja-videdit__srodek > .uchwyt-zmiany-rozmiaru:nth-of-type(2) {
+    display: none;
   }
 
   .panel-boczny-prawy {
@@ -760,6 +826,10 @@ select:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .uchwyt-zmiany-rozmiaru {
+    display: none;
+  }
+
   .panel-boczny-lewy,
   .panel-boczny-prawy {
     border-right: 0;
@@ -771,6 +841,7 @@ select:focus-visible {
   }
 
   .timeline-montazu {
+    height: auto;
     max-height: none;
   }
 }

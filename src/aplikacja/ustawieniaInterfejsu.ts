@@ -15,8 +15,34 @@ export type WidocznoscFunkcji = {
   pokazZaawansowaneParametryEksportu: boolean;
 };
 
+export type RozmiaryLayoutu = {
+  szerokoscPaneluLewegoPx: number;
+  szerokoscPaneluPrawegoPx: number;
+  wysokoscTimelinePx: number;
+};
+
 export const domyslnyMotywInterfejsu: MotywInterfejsu = "black-red";
 export const domyslnyTrybInterfejsu: TrybInterfejsu = "pro";
+export const domyslneRozmiaryLayoutu: RozmiaryLayoutu = {
+  szerokoscPaneluLewegoPx: 280,
+  szerokoscPaneluPrawegoPx: 420,
+  wysokoscTimelinePx: 220
+};
+
+const ograniczeniaRozmiarowLayoutu = {
+  panelLewy: {
+    minimumPx: 220,
+    maksimumPx: 420
+  },
+  panelPrawy: {
+    minimumPx: 300,
+    maksimumPx: 560
+  },
+  timeline: {
+    minimumPx: 180,
+    maksimumPx: 360
+  }
+};
 
 export const etykietyMotywuInterfejsu: Record<MotywInterfejsu, string> = {
   "black-red": "Black&Red",
@@ -76,5 +102,56 @@ export function pobierzWidocznoscFunkcjiDlaTrybu(
     pokazPanelSzybkichAkcji: false,
     pokazPelnyInspektor: true,
     pokazZaawansowaneParametryEksportu: true
+  };
+}
+
+function ograniczLiczbeDoZakresu(
+  wartosc: number,
+  minimum: number,
+  maksimum: number
+) {
+  return Math.min(Math.max(wartosc, minimum), maksimum);
+}
+
+export function ograniczSzerokoscPaneluLewego(szerokoscPx: number) {
+  return ograniczLiczbeDoZakresu(
+    szerokoscPx,
+    ograniczeniaRozmiarowLayoutu.panelLewy.minimumPx,
+    ograniczeniaRozmiarowLayoutu.panelLewy.maksimumPx
+  );
+}
+
+export function ograniczSzerokoscPaneluPrawego(szerokoscPx: number) {
+  return ograniczLiczbeDoZakresu(
+    szerokoscPx,
+    ograniczeniaRozmiarowLayoutu.panelPrawy.minimumPx,
+    ograniczeniaRozmiarowLayoutu.panelPrawy.maksimumPx
+  );
+}
+
+export function ograniczWysokoscTimeline(wysokoscPx: number) {
+  return ograniczLiczbeDoZakresu(
+    wysokoscPx,
+    ograniczeniaRozmiarowLayoutu.timeline.minimumPx,
+    ograniczeniaRozmiarowLayoutu.timeline.maksimumPx
+  );
+}
+
+export function pobierzOgraniczoneRozmiaryLayoutu(
+  rozmiaryLayoutu: Partial<RozmiaryLayoutu>
+): RozmiaryLayoutu {
+  return {
+    szerokoscPaneluLewegoPx: ograniczSzerokoscPaneluLewego(
+      rozmiaryLayoutu.szerokoscPaneluLewegoPx ??
+        domyslneRozmiaryLayoutu.szerokoscPaneluLewegoPx
+    ),
+    szerokoscPaneluPrawegoPx: ograniczSzerokoscPaneluPrawego(
+      rozmiaryLayoutu.szerokoscPaneluPrawegoPx ??
+        domyslneRozmiaryLayoutu.szerokoscPaneluPrawegoPx
+    ),
+    wysokoscTimelinePx: ograniczWysokoscTimeline(
+      rozmiaryLayoutu.wysokoscTimelinePx ??
+        domyslneRozmiaryLayoutu.wysokoscTimelinePx
+    )
   };
 }

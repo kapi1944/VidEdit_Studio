@@ -1,4 +1,9 @@
-import type { ReactNode, RefObject } from "react";
+import type {
+  CSSProperties,
+  PointerEvent as ZdarzenieWskaznika,
+  ReactNode,
+  RefObject
+} from "react";
 import {
   pobierzCzasTrwaniaMedium,
   utworzDaneKartyMedium
@@ -10,6 +15,7 @@ import {
   etykietyMotywuInterfejsu,
   etykietyTrybuInterfejsu,
   type MotywInterfejsu,
+  type RozmiaryLayoutu,
   type TrybInterfejsu
 } from "../ustawieniaInterfejsu";
 import { PodgladWideo } from "./PodgladWideo";
@@ -34,12 +40,14 @@ import {
 } from "./pomocnicyPaskaGornego";
 
 type WlasciwosciAplikacjiVidEdit = {
+  rozmiaryLayoutu: RozmiaryLayoutu;
   pasekGorny: ReactNode;
   panelLewy: ReactNode;
   obszarRoboczy: ReactNode;
   panelPrawy?: ReactNode;
   timeline: ReactNode;
   pasekStatusu: ReactNode;
+  naZmianeRozmiarowLayoutu: (rozmiaryLayoutu: Partial<RozmiaryLayoutu>) => void;
 };
 
 type WlasciwosciPaskaGornegoAplikacji = {
@@ -53,6 +61,7 @@ type WlasciwosciPaskaGornegoAplikacji = {
   naZmianeTrybuWygladu: (trybWygladu: string) => void;
   naZmianeMotywuInterfejsu: (motywInterfejsu: string) => void;
   naZmianeTrybuInterfejsu?: (trybInterfejsu: TrybInterfejsu) => void;
+  naResetUkladu?: () => void;
   naEksportuj?: () => void;
 };
 
@@ -116,12 +125,14 @@ export function pobierzNazweProjektuDoPaska(nazwaProjektu?: string) {
 }
 
 export function AplikacjaVidEdit({
+  rozmiaryLayoutu,
   pasekGorny,
   panelLewy,
   obszarRoboczy,
   panelPrawy,
   timeline,
-  pasekStatusu
+  pasekStatusu,
+  naZmianeRozmiarowLayoutu
 }: WlasciwosciAplikacjiVidEdit) {
   const klasyAplikacji = [
     "aplikacja-videdit",
@@ -129,15 +140,105 @@ export function AplikacjaVidEdit({
   ]
     .filter(Boolean)
     .join(" ");
+  const styleLayoutu = {
+    "--szerokosc-panelu-lewego": `${rozmiaryLayoutu.szerokoscPaneluLewegoPx}px`,
+    "--szerokosc-panelu-prawego": `${rozmiaryLayoutu.szerokoscPaneluPrawegoPx}px`,
+    "--wysokosc-timeline": `${rozmiaryLayoutu.wysokoscTimelinePx}px`
+  } as CSSProperties;
+
+  function rozpocznijPrzeciaganieRozmiaru(
+    zdarzenie: ZdarzenieWskaznika<HTMLButtonElement>,
+    obsluzRuch: (przesuniecieX: number, przesuniecieY: number) => void
+  ) {
+    const startX = zdarzenie.clientX;
+    const startY = zdarzenie.clientY;
+
+    zdarzenie.preventDefault();
+
+    function obsluzRuchWskaznika(zdarzenieRuchu: PointerEvent) {
+      obsluzRuch(
+        zdarzenieRuchu.clientX - startX,
+        zdarzenieRuchu.clientY - startY
+      );
+    }
+
+    function zakonczPrzeciaganie() {
+      document.removeEventListener("pointermove", obsluzRuchWskaznika);
+      document.removeEventListener("pointerup", zakonczPrzeciaganie);
+      document.removeEventListener("pointercancel", zakonczPrzeciaganie);
+      document.body.classList.remove("aplikacja-videdit--zmiana-rozmiaru");
+    }
+
+    document.body.classList.add("aplikacja-videdit--zmiana-rozmiaru");
+    document.addEventListener("pointermove", obsluzRuchWskaznika);
+    document.addEventListener("pointerup", zakonczPrzeciaganie);
+    document.addEventListener("pointercancel", zakonczPrzeciaganie);
+  }
+
+  function rozpocznijZmianePaneluLewego(
+    zdarzenie: ZdarzenieWskaznika<HTMLButtonElement>
+  ) {
+    const poczatkowaSzerokosc = rozmiaryLayoutu.szerokoscPaneluLewegoPx;
+
+    rozpocznijPrzeciaganieRozmiaru(zdarzenie, (przesuniecieX) => {
+      naZmianeRozmiarowLayoutu({
+        szerokoscPaneluLewegoPx: poczatkowaSzerokosc + przesuniecieX
+      });
+    });
+  }
+
+  function rozpocznijZmianePaneluPrawego(
+    zdarzenie: ZdarzenieWskaznika<HTMLButtonElement>
+  ) {
+    const poczatkowaSzerokosc = rozmiaryLayoutu.szerokoscPaneluPrawegoPx;
+
+    rozpocznijPrzeciaganieRozmiaru(zdarzenie, (przesuniecieX) => {
+      naZmianeRozmiarowLayoutu({
+        szerokoscPaneluPrawegoPx: poczatkowaSzerokosc - przesuniecieX
+      });
+    });
+  }
+
+  function rozpocznijZmianeTimeline(
+    zdarzenie: ZdarzenieWskaznika<HTMLButtonElement>
+  ) {
+    const poczatkowaWysokosc = rozmiaryLayoutu.wysokoscTimelinePx;
+
+    rozpocznijPrzeciaganieRozmiaru(zdarzenie, (_przesuniecieX, przesuniecieY) => {
+      naZmianeRozmiarowLayoutu({
+        wysokoscTimelinePx: poczatkowaWysokosc - przesuniecieY
+      });
+    });
+  }
 
   return (
-    <main className={klasyAplikacji}>
+    <main className={klasyAplikacji} style={styleLayoutu}>
       {pasekGorny}
       <div className="aplikacja-videdit__srodek">
         {panelLewy}
+        <button
+          type="button"
+          className="uchwyt-zmiany-rozmiaru uchwyt-zmiany-rozmiaru--pionowy"
+          aria-label="Zmien szerokosc lewego panelu"
+          onPointerDown={rozpocznijZmianePaneluLewego}
+        />
         {obszarRoboczy}
+        {panelPrawy ? (
+          <button
+            type="button"
+            className="uchwyt-zmiany-rozmiaru uchwyt-zmiany-rozmiaru--pionowy"
+            aria-label="Zmien szerokosc prawego panelu"
+            onPointerDown={rozpocznijZmianePaneluPrawego}
+          />
+        ) : null}
         {panelPrawy}
       </div>
+      <button
+        type="button"
+        className="uchwyt-zmiany-rozmiaru uchwyt-zmiany-rozmiaru--poziomy"
+        aria-label="Zmien wysokosc timeline"
+        onPointerDown={rozpocznijZmianeTimeline}
+      />
       {timeline}
       {pasekStatusu}
     </main>
@@ -155,6 +256,7 @@ export function PasekGornyAplikacji({
   naZmianeTrybuWygladu,
   naZmianeMotywuInterfejsu,
   naZmianeTrybuInterfejsu,
+  naResetUkladu,
   naEksportuj
 }: WlasciwosciPaskaGornegoAplikacji) {
   const nazwaProjektuDoPaska = pobierzNazweProjektuDoPaska(nazwaProjektu);
@@ -225,6 +327,9 @@ export function PasekGornyAplikacji({
           title={tytulPlaceholderaHistorii}
         >
           Ponow
+        </button>
+        <button type="button" onClick={naResetUkladu}>
+          Reset ukladu
         </button>
         <label className="pasek-gorny-aplikacji__wybor">
           <span>Wyglad</span>
