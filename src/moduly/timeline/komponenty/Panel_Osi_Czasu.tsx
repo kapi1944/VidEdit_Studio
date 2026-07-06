@@ -12,6 +12,8 @@ import type {
   MarkerTimeline,
   SciezkaTimeline,
   SegmentCiszy,
+  StanEdycjiKlipuMysza,
+  TrybEdycjiKlipuMysza,
   UstawieniaSiatkiTimeline
 } from "../../../domena/timeline/typyTimeline";
 import {
@@ -20,6 +22,10 @@ import {
   opiszTrybSiatkiTimeline,
   pobierzSciezkaIdKlipuTimeline,
   pobierzSciezkiTimelineZFallbackiem,
+  przeliczPrzesuniecieKlipuMysza,
+  przeliczTrimLewejKrawedzi,
+  przeliczTrimPrawejKrawedzi,
+  rozpocznijPrzesuwanieKlipu,
   USTAWIENIA_DOCIAGANIA_TIMELINE_MVP
 } from "../../../domena/timeline/typyTimeline";
 import { przeliczPozycjeNaCzas } from "../przeliczCzasNaPozycje";
@@ -40,6 +46,7 @@ type WlasciwosciPaneluOsiCzasu = {
   idZaznaczonegoKlipuTimeline?: string;
   uchwytWideoRef: RefObject<HTMLVideoElement | null>;
   formatujCzasTimeline: (czasMs: number) => string;
+  fpsTimeline?: number;
   ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline;
   opcjeSiatkiTimeline?: UstawieniaSiatkiTimeline[];
   czyPokazacZaawansowaneUstawienia?: boolean;
@@ -50,6 +57,7 @@ type WlasciwosciPaneluOsiCzasu = {
   naDodajMarkerTimeline?: () => void;
   naUsunMarkerTimeline?: (idMarkera: string) => void;
   naZaznaczKlipTimeline?: (idKlipu: string) => void;
+  naZmienKlipTimeline?: (klipTimeline: KlipTimeline) => void;
   naPrzetnijZaznaczonyKlip?: () => void;
   naPrzesunZaznaczonyKlipWLewo?: () => void;
   naPrzesunZaznaczonyKlipWPrawo?: () => void;
@@ -71,6 +79,7 @@ export function Panel_Osi_Czasu({
   idZaznaczonegoKlipuTimeline,
   uchwytWideoRef,
   formatujCzasTimeline,
+  fpsTimeline,
   ustawieniaSiatkiTimeline = DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE,
   opcjeSiatkiTimeline = USTAWIENIA_DOCIAGANIA_TIMELINE_MVP,
   czyPokazacZaawansowaneUstawienia = true,
@@ -79,6 +88,7 @@ export function Panel_Osi_Czasu({
   naDodajMarkerTimeline,
   naUsunMarkerTimeline = () => undefined,
   naZaznaczKlipTimeline,
+  naZmienKlipTimeline,
   naPrzetnijZaznaczonyKlip,
   naPrzesunZaznaczonyKlipWLewo,
   naPrzesunZaznaczonyKlipWPrawo,
@@ -90,6 +100,9 @@ export function Panel_Osi_Czasu({
   const uchwytTimelineRef = useRef<HTMLDivElement>(null);
   const [czyPrzeciaganieGlowicy, ustawCzyPrzeciaganieGlowicy] =
     useState(false);
+  const [edycjaKlipuMysza, ustawEdycjaKlipuMysza] = useState<
+    (StanEdycjiKlipuMysza & { trybEdycji: TrybEdycjiKlipuMysza }) | undefined
+  >();
   const aktywnySegmentCiszy = segmentyCiszy.find(
     (segmentCiszy) => segmentCiszy.id === idAktywnegoSegmentuCiszy
   );
@@ -174,6 +187,27 @@ export function Panel_Osi_Czasu({
     ustawCzasZPozycjiMyszy(zdarzenie.clientX);
   }
 
+  function rozpocznijEdycjeKlipuMysza(
+    klipTimeline: KlipTimeline,
+    trybEdycji: TrybEdycjiKlipuMysza,
+    pozycjaMyszyX: number,
+    szerokoscTimelinePx: number
+  ) {
+    if (czasTrwaniaMs <= 0 || szerokoscTimelinePx <= 0) {
+      return;
+    }
+
+    ustawEdycjaKlipuMysza({
+      ...rozpocznijPrzesuwanieKlipu(
+        klipTimeline,
+        pozycjaMyszyX,
+        szerokoscTimelinePx,
+        czasTrwaniaMs
+      ),
+      trybEdycji
+    });
+  }
+
   useEffect(() => {
     if (!czyPrzeciaganieGlowicy) {
       return;
@@ -195,6 +229,61 @@ export function Panel_Osi_Czasu({
       document.removeEventListener("mouseup", zakonczPrzeciaganieGlowicy);
     };
   }, [czyPrzeciaganieGlowicy, ustawCzasZPozycjiMyszy]);
+
+  useEffect(() => {
+    if (!edycjaKlipuMysza || !naZmienKlipTimeline) {
+      return;
+    }
+
+    const zmienKlipTimeline = naZmienKlipTimeline;
+
+    function obsluzRuchMyszy(zdarzenie: MouseEvent) {
+      if (!edycjaKlipuMysza) {
+        return;
+      }
+
+      const klipPoEdycji =
+        edycjaKlipuMysza.trybEdycji === "trim-lewy"
+          ? przeliczTrimLewejKrawedzi(
+              edycjaKlipuMysza,
+              zdarzenie.clientX,
+              ustawieniaSiatkiTimeline,
+              fpsTimeline
+            )
+          : edycjaKlipuMysza.trybEdycji === "trim-prawy"
+            ? przeliczTrimPrawejKrawedzi(
+                edycjaKlipuMysza,
+                zdarzenie.clientX,
+                ustawieniaSiatkiTimeline,
+                fpsTimeline
+              )
+            : przeliczPrzesuniecieKlipuMysza(
+                edycjaKlipuMysza,
+                zdarzenie.clientX,
+                ustawieniaSiatkiTimeline,
+                fpsTimeline
+              );
+
+      zmienKlipTimeline(klipPoEdycji);
+    }
+
+    function zakonczEdycjeKlipuMysza() {
+      ustawEdycjaKlipuMysza(undefined);
+    }
+
+    document.addEventListener("mousemove", obsluzRuchMyszy);
+    document.addEventListener("mouseup", zakonczEdycjeKlipuMysza);
+
+    return () => {
+      document.removeEventListener("mousemove", obsluzRuchMyszy);
+      document.removeEventListener("mouseup", zakonczEdycjeKlipuMysza);
+    };
+  }, [
+    edycjaKlipuMysza,
+    fpsTimeline,
+    naZmienKlipTimeline,
+    ustawieniaSiatkiTimeline
+  ]);
 
   return (
     <section className="panel-osi-czasu" aria-label="Os czasu projektu">
@@ -328,6 +417,7 @@ export function Panel_Osi_Czasu({
                           }
                           formatujCzas={formatujCzasTimeline}
                           naZaznacz={naZaznaczKlipTimeline}
+                          naRozpocznijEdycjeMysza={rozpocznijEdycjeKlipuMysza}
                         />
                       ))}
                     </div>

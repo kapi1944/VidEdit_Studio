@@ -53,6 +53,11 @@ export type MarkerTimeline = {
   czasMs: CzasMs;
 };
 
+export type TrybEdycjiKlipuMysza =
+  | "przesuwanie"
+  | "trim-lewy"
+  | "trim-prawy";
+
 export type KlipTimeline = {
   id: string;
   idPlikuMediow: string;
@@ -69,6 +74,7 @@ export type KlipTimeline = {
 };
 
 export const DOMYSLNY_CZAS_TRWANIA_GRAFIKI_MS = 5000;
+export const MINIMALNY_CZAS_TRWANIA_KLIPU_TIMELINE_MS = 100;
 export const ID_SCIEZKI_WIDEO_1 = "sciezka-wideo-1";
 export const ID_SCIEZKI_OBRAZY = "sciezka-obrazy";
 export const ID_SCIEZKI_AUDIO_1 = "sciezka-audio-1";
@@ -134,6 +140,13 @@ export type DaneUtworzeniaKlipuTimeline = {
   nazwa?: string;
   kolor?: string;
   czyZablokowany?: boolean;
+};
+
+export type StanEdycjiKlipuMysza = {
+  klipPoczatkowy: KlipTimeline;
+  pozycjaStartowaMyszyX: number;
+  szerokoscTimelinePx: number;
+  czasTrwaniaTimelineMs: CzasMs;
 };
 
 export const DOMYSLNE_USTAWIENIA_DOCIAGANIA_TIMELINE: UstawieniaDociaganiaTimeline =
@@ -459,6 +472,42 @@ function przeliczCzasEdycjiNaMs(
   return Math.max(0, Math.round(czasPoSiatceSekundy * 1000));
 }
 
+function ograniczLiczbe(
+  wartosc: number,
+  wartoscMinimalna: number,
+  wartoscMaksymalna: number
+) {
+  return Math.min(Math.max(wartosc, wartoscMinimalna), wartoscMaksymalna);
+}
+
+function przeliczPrzesuniecieMyszyNaMs(
+  stanEdycji: StanEdycjiKlipuMysza,
+  pozycjaMyszyX: number
+) {
+  if (
+    stanEdycji.szerokoscTimelinePx <= 0 ||
+    stanEdycji.czasTrwaniaTimelineMs <= 0
+  ) {
+    return 0;
+  }
+
+  return (
+    ((pozycjaMyszyX - stanEdycji.pozycjaStartowaMyszyX) /
+      stanEdycji.szerokoscTimelinePx) *
+    stanEdycji.czasTrwaniaTimelineMs
+  );
+}
+
+function przeliczCzasMsZSiatka(
+  czasMs: CzasMs,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+) {
+  return (
+    przeliczCzasEdycjiNaMs(czasMs / 1000, ustawieniaSiatkiTimeline, fps) ?? 0
+  );
+}
+
 function zaktualizujKlipWTablicy(
   klipy: KlipTimeline[],
   indeksKlipu: number,
@@ -585,6 +634,159 @@ export function przesunMarkerTimeline(
       ...markery.slice(indeksMarkera + 1)
     ])
   );
+}
+
+export function rozpocznijPrzesuwanieKlipu(
+  klipPoczatkowy: KlipTimeline,
+  pozycjaStartowaMyszyX: number,
+  szerokoscTimelinePx: number,
+  czasTrwaniaTimelineMs: CzasMs
+): StanEdycjiKlipuMysza {
+  return {
+    klipPoczatkowy,
+    pozycjaStartowaMyszyX,
+    szerokoscTimelinePx,
+    czasTrwaniaTimelineMs
+  };
+}
+
+export function ograniczKlipDoZrodla(
+  klip: KlipTimeline,
+  minimalnyCzasTrwaniaMs: CzasMs = MINIMALNY_CZAS_TRWANIA_KLIPU_TIMELINE_MS
+): KlipTimeline {
+  const czasTrwaniaMs = Math.max(minimalnyCzasTrwaniaMs, klip.czasTrwaniaMs);
+  const klipPoOgraniczeniu: KlipTimeline = {
+    ...klip,
+    czasTrwaniaMs
+  };
+
+  if (klip.rodzaj !== "wideo") {
+    delete klipPoOgraniczeniu.zrodloStartMs;
+    delete klipPoOgraniczeniu.zrodloKoniecMs;
+    return klipPoOgraniczeniu;
+  }
+
+  const zrodloStartMs = Math.max(0, klip.zrodloStartMs ?? 0);
+  const zrodloKoniecMs = Math.max(
+    zrodloStartMs + minimalnyCzasTrwaniaMs,
+    klip.zrodloKoniecMs ?? zrodloStartMs + czasTrwaniaMs
+  );
+  const dostepnyCzasZrodlaMs = zrodloKoniecMs - zrodloStartMs;
+  const ograniczonyCzasTrwaniaMs = Math.min(
+    czasTrwaniaMs,
+    dostepnyCzasZrodlaMs
+  );
+
+  return {
+    ...klipPoOgraniczeniu,
+    czasTrwaniaMs: ograniczonyCzasTrwaniaMs,
+    zrodloStartMs,
+    zrodloKoniecMs: zrodloStartMs + ograniczonyCzasTrwaniaMs
+  };
+}
+
+export function przeliczPrzesuniecieKlipuMysza(
+  stanEdycji: StanEdycjiKlipuMysza,
+  pozycjaMyszyX: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number
+): KlipTimeline {
+  const przesuniecieMs = przeliczPrzesuniecieMyszyNaMs(
+    stanEdycji,
+    pozycjaMyszyX
+  );
+  const nowyCzasStartuMs = przeliczCzasMsZSiatka(
+    stanEdycji.klipPoczatkowy.czasStartuMs + przesuniecieMs,
+    ustawieniaSiatkiTimeline,
+    fps
+  );
+
+  return {
+    ...stanEdycji.klipPoczatkowy,
+    czasStartuMs: Math.max(0, nowyCzasStartuMs)
+  };
+}
+
+export function przeliczTrimLewejKrawedzi(
+  stanEdycji: StanEdycjiKlipuMysza,
+  pozycjaMyszyX: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number,
+  minimalnyCzasTrwaniaMs: CzasMs = MINIMALNY_CZAS_TRWANIA_KLIPU_TIMELINE_MS
+): KlipTimeline {
+  const klip = stanEdycji.klipPoczatkowy;
+  const czasKoncaKlipuMs = obliczCzasKoncaKlipu(klip);
+  const przesuniecieMs = przeliczPrzesuniecieMyszyNaMs(
+    stanEdycji,
+    pozycjaMyszyX
+  );
+  const czasStartuPoSiatceMs = przeliczCzasMsZSiatka(
+    klip.czasStartuMs + przesuniecieMs,
+    ustawieniaSiatkiTimeline,
+    fps
+  );
+  const najpozniejszyStartMs = Math.max(
+    klip.czasStartuMs,
+    czasKoncaKlipuMs - minimalnyCzasTrwaniaMs
+  );
+  const nowyCzasStartuMs = ograniczLiczbe(
+    czasStartuPoSiatceMs,
+    klip.czasStartuMs,
+    najpozniejszyStartMs
+  );
+  const przesunieciePoczatkuMs = nowyCzasStartuMs - klip.czasStartuMs;
+  const klipPoTrimie: KlipTimeline = {
+    ...klip,
+    czasStartuMs: nowyCzasStartuMs,
+    czasTrwaniaMs: czasKoncaKlipuMs - nowyCzasStartuMs
+  };
+
+  if (klip.rodzaj === "wideo") {
+    klipPoTrimie.zrodloStartMs =
+      (klip.zrodloStartMs ?? 0) + przesunieciePoczatkuMs;
+  }
+
+  return ograniczKlipDoZrodla(klipPoTrimie, minimalnyCzasTrwaniaMs);
+}
+
+export function przeliczTrimPrawejKrawedzi(
+  stanEdycji: StanEdycjiKlipuMysza,
+  pozycjaMyszyX: number,
+  ustawieniaSiatkiTimeline?: UstawieniaSiatkiTimeline,
+  fps?: number,
+  minimalnyCzasTrwaniaMs: CzasMs = MINIMALNY_CZAS_TRWANIA_KLIPU_TIMELINE_MS
+): KlipTimeline {
+  const klip = stanEdycji.klipPoczatkowy;
+  const czasKoncaKlipuMs = obliczCzasKoncaKlipu(klip);
+  const przesuniecieMs = przeliczPrzesuniecieMyszyNaMs(
+    stanEdycji,
+    pozycjaMyszyX
+  );
+  const czasKoncaPoSiatceMs = przeliczCzasMsZSiatka(
+    czasKoncaKlipuMs + przesuniecieMs,
+    ustawieniaSiatkiTimeline,
+    fps
+  );
+  const najwczesniejszyKoniecMs = Math.min(
+    czasKoncaKlipuMs,
+    klip.czasStartuMs + minimalnyCzasTrwaniaMs
+  );
+  const nowyCzasKoncaMs = ograniczLiczbe(
+    czasKoncaPoSiatceMs,
+    najwczesniejszyKoniecMs,
+    czasKoncaKlipuMs
+  );
+  const klipPoTrimie: KlipTimeline = {
+    ...klip,
+    czasTrwaniaMs: nowyCzasKoncaMs - klip.czasStartuMs
+  };
+
+  if (klip.rodzaj === "wideo") {
+    klipPoTrimie.zrodloKoniecMs =
+      (klip.zrodloStartMs ?? 0) + klipPoTrimie.czasTrwaniaMs;
+  }
+
+  return ograniczKlipDoZrodla(klipPoTrimie, minimalnyCzasTrwaniaMs);
 }
 
 export function przetnijKlipTimeline(

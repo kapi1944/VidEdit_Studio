@@ -1457,8 +1457,12 @@ h2 {
   border-radius: var(--radius-klipu);
   color: var(--kolor-klipu-tekstu);
   background: var(--kolor-klipu-tla);
-  cursor: pointer;
+  cursor: grab;
   text-align: left;
+}
+
+.pasek-klipu:active {
+  cursor: grabbing;
 }
 
 .pasek-klipu--zaznaczony {
@@ -1482,6 +1486,25 @@ h2 {
 
 .pasek-klipu__czas {
   font-variant-numeric: tabular-nums;
+}
+
+.pasek-klipu__uchwyt {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  width: 8px;
+  border-radius: var(--radius-maly);
+  background: color-mix(in srgb, var(--kolor-klipu-zaznaczenia) 65%, transparent);
+  cursor: ew-resize;
+  opacity: 0.85;
+}
+
+.pasek-klipu__uchwyt--lewy {
+  left: 3px;
+}
+
+.pasek-klipu__uchwyt--prawy {
+  right: 3px;
 }
 
 .panel-osi-czasu__segmenty {

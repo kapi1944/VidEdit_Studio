@@ -1,5 +1,8 @@
 import type { MouseEvent as ZdarzenieMyszy } from "react";
-import type { KlipTimeline } from "../../../domena/timeline/typyTimeline";
+import type {
+  KlipTimeline,
+  TrybEdycjiKlipuMysza
+} from "../../../domena/timeline/typyTimeline";
 import { przeliczZakresCzasuNaPolozenie } from "../przeliczCzasNaPozycje";
 
 type WlasciwosciPaskaKlipu = {
@@ -8,6 +11,12 @@ type WlasciwosciPaskaKlipu = {
   czyZaznaczony?: boolean;
   formatujCzas: (czasMs: number) => string;
   naZaznacz?: (idKlipu: string) => void;
+  naRozpocznijEdycjeMysza?: (
+    klipTimeline: KlipTimeline,
+    trybEdycji: TrybEdycjiKlipuMysza,
+    pozycjaMyszyX: number,
+    szerokoscTimelinePx: number
+  ) => void;
 };
 
 export function Pasek_Klipu({
@@ -15,7 +24,8 @@ export function Pasek_Klipu({
   czasTrwaniaTimelineMs,
   czyZaznaczony = false,
   formatujCzas,
-  naZaznacz
+  naZaznacz,
+  naRozpocznijEdycjeMysza
 }: WlasciwosciPaskaKlipu) {
   const { polozenieOdLewejProcent, szerokoscProcent } =
     przeliczZakresCzasuNaPolozenie(
@@ -33,6 +43,35 @@ export function Pasek_Klipu({
     naZaznacz?.(klipTimeline.id);
   }
 
+  function pobierzSzerokoscTimeline(
+    zdarzenie: ZdarzenieMyszy<HTMLButtonElement | HTMLSpanElement>
+  ) {
+    return (
+      zdarzenie.currentTarget
+        .closest(".panel-osi-czasu__klipy-sciezki")
+        ?.getBoundingClientRect().width ?? 0
+    );
+  }
+
+  function rozpocznijEdycjeMysza(
+    zdarzenie: ZdarzenieMyszy<HTMLButtonElement | HTMLSpanElement>,
+    trybEdycji: TrybEdycjiKlipuMysza
+  ) {
+    if (zdarzenie.button !== 0 || !naRozpocznijEdycjeMysza) {
+      return;
+    }
+
+    zdarzenie.preventDefault();
+    zdarzenie.stopPropagation();
+    naZaznacz?.(klipTimeline.id);
+    naRozpocznijEdycjeMysza(
+      klipTimeline,
+      trybEdycji,
+      zdarzenie.clientX,
+      pobierzSzerokoscTimeline(zdarzenie)
+    );
+  }
+
   return (
     <button
       type="button"
@@ -43,10 +82,27 @@ export function Pasek_Klipu({
       }}
       aria-label={`Klip ${klipTimeline.nazwa}, dlugosc ${etykietaCzasu}`}
       aria-pressed={czyZaznaczony}
+      onMouseDown={(zdarzenie) =>
+        rozpocznijEdycjeMysza(zdarzenie, "przesuwanie")
+      }
       onClick={obsluzZaznaczenie}
     >
+      <span
+        className="pasek-klipu__uchwyt pasek-klipu__uchwyt--lewy"
+        aria-hidden="true"
+        onMouseDown={(zdarzenie) =>
+          rozpocznijEdycjeMysza(zdarzenie, "trim-lewy")
+        }
+      />
       <span className="pasek-klipu__nazwa">{klipTimeline.nazwa}</span>
       <span className="pasek-klipu__czas">{etykietaCzasu}</span>
+      <span
+        className="pasek-klipu__uchwyt pasek-klipu__uchwyt--prawy"
+        aria-hidden="true"
+        onMouseDown={(zdarzenie) =>
+          rozpocznijEdycjeMysza(zdarzenie, "trim-prawy")
+        }
+      />
     </button>
   );
 }

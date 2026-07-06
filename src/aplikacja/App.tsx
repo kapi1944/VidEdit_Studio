@@ -52,6 +52,7 @@ import { generujMiniatureWideoZPliku } from "../infrastruktura/media/generujMini
 import { odczytajMetadaneWideoZPliku } from "../infrastruktura/media/odczytajMetadaneWideoBrowser";
 import { utworzDaneImportuZPlikuBrowserowego } from "../infrastruktura/media/utworzDaneImportuZPlikuBrowserowego";
 import type {
+  KlipTimeline,
   MarkerTimeline,
   PropozycjaCiecia,
   SegmentCiszy,
@@ -624,6 +625,19 @@ export function Aplikacja() {
     });
   }
 
+  function obsluzZmianeKlipuTimeline(klipPoZmianie: KlipTimeline) {
+    ustawProjekt((aktualnyProjekt) => ({
+      ...aktualnyProjekt,
+      dataModyfikacjiIso: new Date().toISOString(),
+      timeline: {
+        ...aktualnyProjekt.timeline,
+        klipy: aktualnyProjekt.timeline.klipy.map((klipTimeline) =>
+          klipTimeline.id === klipPoZmianie.id ? klipPoZmianie : klipTimeline
+        )
+      }
+    }));
+  }
+
   function obsluzDodanieMarkeraTimeline() {
     zaktualizujMarkeryTimeline((aktualneMarkery) => {
       const wynikDodania = dodajMarkerTimeline(
@@ -855,6 +869,7 @@ export function Aplikacja() {
               idZaznaczonegoKlipuTimeline={idZaznaczonegoKlipuTimeline}
               uchwytWideoRef={uchwytWideoRef}
               formatujCzasTimeline={formatujCzasNaTimeline}
+              fpsTimeline={projekt.ustawienia.liczbaKlatekNaSekunde}
               ustawieniaSiatkiTimeline={ustawieniaSiatkiTimeline}
               czyPokazacZaawansowaneUstawienia={
                 widocznoscFunkcji.pokazZaawansowaneUstawieniaTimeline
@@ -864,6 +879,7 @@ export function Aplikacja() {
               naDodajMarkerTimeline={obsluzDodanieMarkeraTimeline}
               naUsunMarkerTimeline={obsluzUsuniecieMarkeraTimeline}
               naZaznaczKlipTimeline={ustawIdZaznaczonegoKlipuTimeline}
+              naZmienKlipTimeline={obsluzZmianeKlipuTimeline}
               naPrzetnijZaznaczonyKlip={obsluzPrzeciecieZaznaczonegoKlipu}
               naPrzesunZaznaczonyKlipWLewo={obsluzPrzesuniecieKlipuWLewo}
               naPrzesunZaznaczonyKlipWPrawo={obsluzPrzesuniecieKlipuWPrawo}
