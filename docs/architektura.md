@@ -32,7 +32,7 @@ UI zmienia się szybciej niż reguły domenowe. Oddzielenie domeny pozwala testo
 
 Pierwszy moduł importu mediów działa wyłącznie na danych wejściowych przekazanych do domeny. Waliduje nazwę pliku, ścieżkę, rozszerzenie wideo, opcjonalny czas trwania i opcjonalny rozmiar pliku.
 
-W tym etapie import nie otwiera okna wyboru pliku, nie czyta dysku, nie używa Electron API, `fs`, FFmpeg ani FFprobe. Warstwa infrastruktury zawiera tylko port `PortWyboruPliku`, który zostanie użyty przy późniejszej implementacji adaptera desktopowego.
+Ten kierunek nie używa Electron API ani `fs`. Import mediów powinien korzystać z przeglądarkowego modelu `File`, a ewentualne adaptery zapisu lub eksportu wymagają osobnych decyzji technicznych.
 
 ## Diagnostyka FFmpeg i FFprobe
 

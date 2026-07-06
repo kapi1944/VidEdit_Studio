@@ -1,8 +1,14 @@
 # VidEdit Studio
 
-VidEdit Studio to prosty desktopowy edytor wideo dla twórców YouTube. MVP ma najpierw obsłużyć import jednego filmu, analizę audio, wykrywanie ciszy, ręczne zatwierdzanie cięć i eksport.
+VidEdit Studio to lokalna aplikacja webowa do prostszego montażu nagrań mówionych. MVP rozwija import mediów, analizę audio, wykrywanie ciszy, ręczne zatwierdzanie cięć i eksport.
 
 Projekt jest teraz na etapie `porzadki-techniczne`: stabilizuje fundament developerski przed realnym importem pliku.
+
+## Aktualny kierunek techniczny
+
+Projekt idzie w kierunku web-first: Vite, React i TypeScript uruchamiane lokalnie w przeglądarce. Nie używamy Electrona i nie wracamy do niego bez osobnej decyzji ADR oraz testów na komputerach docelowych.
+
+Kod aplikacji nie powinien zakładać Electron API. Import, zapis i eksport mają być projektowane jako jawne, osobne etapy zgodne z aktualną architekturą webową.
 
 ## Wymagania
 

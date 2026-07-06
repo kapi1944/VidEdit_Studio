@@ -45,7 +45,7 @@ Wymagane typy domenowe juz istnieja:
 - `SegmentCiszy` w `src/domena/timeline/typyTimeline.ts`,
 - `PropozycjaCiecia` w `src/domena/timeline/typyTimeline.ts`.
 
-Wazne: dokumenty `docs/architektura.md` i `docs/decyzje-adr/0001-fundament-projektu.md` zawieraja historyczne wzmianki o Electronie. Aktualny kierunek dla UI jest webowy i bez Electrona.
+Wazne: `docs/decyzje-adr/0001-fundament-projektu.md` zawiera historyczna wzmianke o Electronie. Aktualna decyzja jest w `docs/decyzje-adr/0002-rezygnacja-z-electrona.md`: kierunek jest web-first i bez Electrona.
 
 ## Docelowy uklad aplikacji
 
@@ -258,7 +258,7 @@ Nie zmieniac:
 - `Panel_Propozycji_Ciec` miesci dzis liste i karte w jednym komponencie. Rozdzielanie powinno zachowac te same propsy akcji.
 - `Panel_Osi_Czasu` jest powiazany z przeliczeniami czasu. Layout moze sie zmieniac, ale funkcje `przeliczCzasNaPozycje` i `przeliczZakresCzasuNaPolozenie` powinny zostac nietkniete.
 - Istniejace dokumenty i czesc tekstow UI maja widoczne problemy z kodowaniem znakow w odczycie terminalowym. Przed masowa korekta tekstow warto zrobic osobny etap tylko dla UTF-8 i widocznych napisow.
-- `docs/decyzje-adr/0001-fundament-projektu.md` jest historyczne i wspomina Electrona. Dalsze prace UI powinny trzymac sie aktualnej zasady: bez Electrona.
+- `docs/decyzje-adr/0001-fundament-projektu.md` jest historyczne i wspomina Electrona. Aktualna decyzja ADR 0002 wymaga dalszych prac bez Electrona, chyba ze powstanie osobny ADR i testy na komputerach docelowych.
 - Port `5173` nie powinien byc uzywany ani zwalniany. Aktualny skrypt dev uzywa `5180`.
 
 ## Rekomendacja

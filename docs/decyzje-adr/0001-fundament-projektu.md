@@ -4,6 +4,8 @@
 
 Zaakceptowana
 
+Uwaga: decyzja o Electronie z tego ADR jest historyczna. Aktualny kierunek runtime opisuje ADR 0002: rezygnacja z Electrona i podejście web-first.
+
 ## Kontekst
 
 VidEdit Studio ma być lokalną aplikacją desktopową do prostszego montażu nagrań mówionych. Pierwszy etap ma stworzyć fundament bez implementowania funkcji montażowych.
