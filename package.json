@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5180 --strictPort",
+    "dev:most": "node scripts/lokalny-most-ffmpeg.mjs",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 5180 --strictPort",
     "test": "vitest run",
