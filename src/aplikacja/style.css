@@ -1930,6 +1930,57 @@ h2 {
 .panel-ustawien-ciszy__opis {
   margin-top: 12px;
 }
+.panel-ustawien-ciszy__diagnostyka {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid var(--kolor-obramowania);
+  border-radius: var(--radius-elementu);
+  background: var(--kolor-powierzchni-delikatny);
+}
+
+.panel-ustawien-ciszy__przycisk-diagnostyki {
+  min-height: 34px;
+  width: fit-content;
+  padding: 0 10px;
+  border: 1px solid var(--kolor-obramowania-selecta);
+  border-radius: var(--radius-elementu);
+  color: var(--kolor-tekstu-mocny);
+  background: var(--kolor-tla-przycisku-drugorzednego);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.panel-ustawien-ciszy__przycisk-diagnostyki:hover:not(:disabled) {
+  border-color: var(--kolor-obramowania-akcent);
+  background: var(--kolor-tla-przycisku-drugorzednego-hover);
+}
+
+.panel-ustawien-ciszy__przycisk-diagnostyki:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.panel-ustawien-ciszy__status-mostu,
+.panel-ustawien-ciszy__statusy-mostu {
+  margin: 0;
+  color: var(--kolor-tekstu-slaby);
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.panel-ustawien-ciszy__status-mostu p {
+  margin: 0;
+}
+
+.panel-ustawien-ciszy__statusy-mostu {
+  display: grid;
+  gap: 4px;
+  padding-left: 18px;
+}
+
 
 .panel-ustawien-ciszy__pola {
   display: grid;

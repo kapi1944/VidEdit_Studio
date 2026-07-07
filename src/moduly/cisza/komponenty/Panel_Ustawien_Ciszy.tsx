@@ -1,3 +1,10 @@
+import { useState } from "react";
+
+import {
+  BladLokalnegoMostu,
+  pobierzStatusFfmpegZLokalnegoMostu,
+  type StatusFfmpegLokalnegoMostu
+} from "../../../infrastruktura/lokalny-most/klientLokalnegoMostu";
 import {
   ZAKRESY_USTAWIEN_WYKRYWANIA_CISZY,
   listaPresetowWykrywaniaCiszy,
@@ -10,6 +17,7 @@ import type {
 } from "../indeksCiszy";
 
 type PoleUstawienCiszy = keyof UstawieniaWykrywaniaCiszy;
+type StatusSprawdzaniaLokalnegoMostu = "bezczynny" | "sprawdzanie" | "gotowe" | "blad";
 
 type WlasciwosciPaneluUstawienCiszy = {
   ustawienia: UstawieniaWykrywaniaCiszy;
@@ -80,10 +88,31 @@ function pobierzKomunikatBledu(
   return bledy.find((blad) => blad.pole === pole)?.komunikat;
 }
 
+function pobierzKomunikatyStatusuFfmpeg(status: StatusFfmpegLokalnegoMostu) {
+  return [
+    status.czyFfmpegDostepny ? "FFmpeg dostepny" : "FFmpeg niedostepny",
+    status.czyFfprobeDostepny ? "FFprobe dostepny" : "FFprobe niedostepny",
+    ...(status.blad ? [`Blad: ${status.blad}`] : [])
+  ];
+}
+
+function pobierzKomunikatBleduMostu(blad: unknown) {
+  if (blad instanceof BladLokalnegoMostu || blad instanceof Error) {
+    return blad.message;
+  }
+
+  return "Nie udalo sie sprawdzic lokalnego mostu FFmpeg.";
+}
+
 export function Panel_Ustawien_Ciszy({
   ustawienia,
   naZmianeUstawien
 }: WlasciwosciPaneluUstawienCiszy) {
+  const [statusSprawdzaniaMostu, ustawStatusSprawdzaniaMostu] =
+    useState<StatusSprawdzaniaLokalnegoMostu>("bezczynny");
+  const [statusFfmpegMostu, ustawStatusFfmpegMostu] =
+    useState<StatusFfmpegLokalnegoMostu>();
+  const [bladMostu, ustawBladMostu] = useState<string>();
   const aktywnyPreset = pobierzAktywnyPreset(ustawienia);
   const aktywneDanePresetu = listaPresetowWykrywaniaCiszy.find(
     (preset) => preset.id === aktywnyPreset
@@ -107,6 +136,22 @@ export function Panel_Ustawien_Ciszy({
       ...ustawienia,
       [pole]: wartoscLiczbowa
     });
+  }
+
+  async function obsluzSprawdzenieFfmpeg() {
+    ustawStatusSprawdzaniaMostu("sprawdzanie");
+    ustawBladMostu(undefined);
+
+    try {
+      const status = await pobierzStatusFfmpegZLokalnegoMostu();
+
+      ustawStatusFfmpegMostu(status);
+      ustawStatusSprawdzaniaMostu("gotowe");
+    } catch (blad) {
+      ustawStatusFfmpegMostu(undefined);
+      ustawBladMostu(pobierzKomunikatBleduMostu(blad));
+      ustawStatusSprawdzaniaMostu("blad");
+    }
   }
 
   return (
@@ -141,6 +186,38 @@ export function Panel_Ustawien_Ciszy({
         Zmiana ustawien nie uruchamia analizy automatycznie. Parametry zostana
         uzyte dopiero po kliknieciu "Wykryj cisze".
       </p>
+
+      <div className="panel-ustawien-ciszy__diagnostyka" aria-live="polite">
+        <button
+          className="panel-ustawien-ciszy__przycisk-diagnostyki"
+          type="button"
+          onClick={obsluzSprawdzenieFfmpeg}
+          disabled={statusSprawdzaniaMostu === "sprawdzanie"}
+        >
+          Sprawdz FFmpeg
+        </button>
+
+        {statusSprawdzaniaMostu === "sprawdzanie" ? (
+          <p className="panel-ustawien-ciszy__status-mostu">Sprawdzanie FFmpeg...</p>
+        ) : null}
+
+        {statusSprawdzaniaMostu === "gotowe" && statusFfmpegMostu ? (
+          <ul className="panel-ustawien-ciszy__statusy-mostu">
+            {pobierzKomunikatyStatusuFfmpeg(statusFfmpegMostu).map(
+              (komunikat) => (
+                <li key={komunikat}>{komunikat}</li>
+              )
+            )}
+          </ul>
+        ) : null}
+
+        {statusSprawdzaniaMostu === "blad" ? (
+          <div className="panel-ustawien-ciszy__status-mostu" role="alert">
+            <p>Most niedostepny</p>
+            {bladMostu ? <p>Blad: {bladMostu}</p> : null}
+          </div>
+        ) : null}
+      </div>
 
       <div className="panel-ustawien-ciszy__pola">
         {polaUstawienCiszy.map(({ pole, etykieta, opis }) => {
