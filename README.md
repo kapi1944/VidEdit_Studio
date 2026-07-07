@@ -35,8 +35,8 @@ npm run preview
 ## Obecne ograniczenia
 
 - Brak realnego importu pliku z dysku.
-- Brak integracji z FFmpeg i FFprobe.
-- Brak analizy audio, wykrywania ciszy, timeline i eksportu.
+- Jest lokalna infrastruktura diagnostyki FFmpeg/FFprobe oraz moduł wyodrębniania audio, ale nie są jeszcze podpięte do webowego UI.
+- Brak analizy audio, wykrywania ciszy i eksportu.
 - UI pokazuje fundament aplikacji oraz placeholdery przyszłych modułów.
 
 Następny etap: `prawdziwy-import-pliku`.
